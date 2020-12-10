@@ -9,8 +9,8 @@ function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallback
   const allowTraversalCallback = (() => {
     const seen = {};
     return ({ next }) => {
-      if (!seen[next.get('id')]) {
-        seen[next.get('id')] = true;
+      if (!seen[next]) {
+        seen[next] = true;
         return true;
       }
       return false;

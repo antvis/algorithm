@@ -19,7 +19,7 @@ export class LinkedListNode {
     this.next = next;
   }
 
-  toString(callback) {
+  toString(callback?: any) {
     return callback ? callback(this.value) : `${this.value}`;
   }
 }

@@ -9,7 +9,9 @@ import { getNeighbors } from "./util";
  * @param epsilon 判断是否收敛的精度值，默认 0.000001
  * @param linkProb 阻尼系数（dumping factor），指任意时刻，用户访问到某节点后继续访问该节点链接的下一个节点的概率，经验值 0.85
  */
-const getPageRank = (graphData: GraphData, epsilon?: number, linkProb?: number) => {
+const pageRank = (graphData: GraphData, epsilon?: number, linkProb?: number): {
+  [key: string]: number;
+} => {
   if (typeof epsilon !== 'number') epsilon = 0.000001;
   if (typeof linkProb !== 'number') linkProb = 0.85;
 
@@ -67,4 +69,4 @@ const getPageRank = (graphData: GraphData, epsilon?: number, linkProb?: number) 
   return prevRanks;
 }
 
-export default getPageRank
+export default pageRank
