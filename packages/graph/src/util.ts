@@ -7,27 +7,27 @@ import { EdgeConfig, GraphData, Matrix } from './types'
  * @param type 邻居类型
  */
 export const getNeighbors = (nodeId: string, edges: EdgeConfig[], type?: 'target' | 'source' | undefined): string[] => {
-
+  const currentEdges = edges.filter(edge => edge.source === nodeId || edge.target === nodeId)
   if (type === 'target') {
     // 当前节点为 source，它所指向的目标节点
     const neighhborsConverter = (edge: EdgeConfig) => {
       return edge.source === nodeId;
     };
-    return edges.filter(neighhborsConverter).map((edge) => edge.target);
+    return currentEdges.filter(neighhborsConverter).map((edge) => edge.target);
   }
   if (type === 'source') {
     // 当前节点为 target，它所指向的源节点
     const neighhborsConverter = (edge: EdgeConfig) => {
       return edge.target === nodeId;
     };
-    return edges.filter(neighhborsConverter).map((edge) => edge.source);
+    return currentEdges.filter(neighhborsConverter).map((edge) => edge.source);
   }
 
   // 若未指定 type ，则返回所有邻居
   const neighhborsConverter = (edge: EdgeConfig) => {
     return edge.source === nodeId ? edge.target : edge.source;
   };
-  return edges.map(neighhborsConverter);
+  return currentEdges.map(neighhborsConverter);
 }
 
 /**
@@ -61,7 +61,7 @@ export const uniqueId = (index: number = 0) => {
  * @param data graph data
  * @param directed whether it's a directed graph
  */
-export const getAdjMatrix = (graphData: GraphData, directed: boolean): Matrix[] => {
+export const getAdjMatrix = (graphData: GraphData, directed?: boolean): Matrix[] => {
   const { nodes, edges } = graphData;
   const matrix: Matrix[] = [];
   // map node with index in data.nodes

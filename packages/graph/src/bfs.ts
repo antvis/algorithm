@@ -17,7 +17,7 @@ function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallback
   const allowTraversalCallback = (() => {
     const seen = {};
     return ({ next }) => {
-      const id = next.get('id');
+      const id = next;
       if (!seen[id]) {
         seen[id] = true;
         return true;
@@ -52,7 +52,7 @@ const breadthFirstSearch = (
   // 初始化队列元素
   nodeQueue.enqueue(startNodeId);
 
-  let previousNode = null;
+  let previousNode = '';
 
   // 遍历队列中的所有顶点
   while (!nodeQueue.isEmpty()) {

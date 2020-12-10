@@ -101,9 +101,9 @@ const kruskalMST = (graphData: GraphData, weight?: string): EdgeConfig[] => {
  * @param graph
  * @param weight 指定用于作为边权重的属性，若不指定，则认为所有边权重一致
  * @param algo 'prim' | 'kruskal' 算法类型
- * @return IEdge[] 返回构成MST的边的数组
+ * @return EdgeConfig[] 返回构成MST的边的数组
  */
-export default function mst(graphData: GraphData, weight?: string, algo?: string) {
+const minimumSpanningTree = (graphData: GraphData, weight?: string, algo?: string): EdgeConfig[] => {
   const algos = {
     prim: primMST,
     kruskal: kruskalMST,
@@ -112,3 +112,5 @@ export default function mst(graphData: GraphData, weight?: string, algo?: string
 
   return algos[algo](graphData, weight);
 }
+
+export default minimumSpanningTree

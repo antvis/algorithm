@@ -184,36 +184,36 @@ export const detectAllDirectedCycle = (graphData: GraphData, nodeIds?: string[],
   const node2Idx = {};
 
   // 辅助函数： unblock all blocked nodes
-  const unblock = (thisNode) => {
+  const unblock = (thisNode: NodeConfig) => {
     const stack = [thisNode];
     while (stack.length > 0) {
       const node = stack.pop();
       if (blocked.has(node)) {
         blocked.delete(node);
-        B[node.get('id')].forEach((n) => {
+        B[node.id].forEach((n) => {
           stack.push(n);
         });
-        B[node.get('id')].clear();
+        B[node.id].clear();
       }
     }
   };
 
-  const circuit = (node, start, adjList) => {
+  const circuit = (node: NodeConfig, start: NodeConfig, adjList) => {
     let closed = false; // whether a path is closed
-    if (nodeIds && include === false && nodeIds.indexOf(node.get('id')) > -1) return closed;
+    if (nodeIds && include === false && nodeIds.indexOf(node.id) > -1) return closed;
     path.push(node);
     blocked.add(node);
 
-    const neighbors = adjList[node.getID()];
+    const neighbors = adjList[node.id];
     for (let i = 0; i < neighbors.length; i += 1) {
       const neighbor = idx2Node[neighbors[i]];
       if (neighbor === start) {
         const cycle = {};
         for (let index = 1; index < path.length; index += 1) {
-          cycle[path[index - 1].getID()] = path[index];
+          cycle[path[index - 1].id] = path[index];
         }
         if (path.length) {
-          cycle[path[path.length - 1].getID()] = path[0];
+          cycle[path[path.length - 1].id] = path[0];
         }
         allCycles.push(cycle);
         closed = true;
@@ -300,7 +300,7 @@ export const detectAllDirectedCycle = (graphData: GraphData, nodeIds?: string[],
   let nodeIdx = 0;
   while (nodeIdx < nodes.length) {
     const subgraphNodes = nodes.filter((n) => node2Idx[n.id] >= nodeIdx);
-    const sccs = detectStrongConnectComponents({ nodes: subgraphNodes, edges: [] }).filter(
+    const sccs = detectStrongConnectComponents({ nodes: subgraphNodes, edges: graphData.edges }).filter(
       (component) => component.length > 1,
     );
     if (sccs.length === 0) break;
