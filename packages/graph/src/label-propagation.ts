@@ -1,5 +1,6 @@
 
-import { getAdjMatrix, uniqueId } from './util';
+import getAdjMatrix from './adjacent-matrix'
+import { uniqueId } from './util';
 import { GraphData, ClusterData } from './types';
 
 /**
@@ -16,7 +17,7 @@ const labelPropagation = (
   maxIteration: number = 1000
 ): ClusterData => {
   // the origin data
-  const { nodes, edges } = graphData;
+  const { nodes = [], edges = [] } = graphData;
 
   const clusters = {};
   const nodeMap = {};

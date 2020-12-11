@@ -15,8 +15,8 @@ export interface EdgeConfig {
 }
 
 export interface GraphData {
-  nodes: NodeConfig[];
-  edges: EdgeConfig[];
+  nodes?: NodeConfig[];
+  edges?: EdgeConfig[];
 }
 
 export interface Cluster {

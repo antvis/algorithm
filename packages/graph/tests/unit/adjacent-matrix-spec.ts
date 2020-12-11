@@ -1,4 +1,4 @@
-import { adjacentMatrix } from '../../src';
+import { getAdjMatrix } from '../../src';
 
 
 const data = {
@@ -70,7 +70,7 @@ const data = {
 
 describe('Adjacency Matrix', () => {
   it('undirected', () => {
-    const matrix = adjacentMatrix(data);
+    const matrix = getAdjMatrix(data);
     expect(Object.keys(matrix).length).toBe(8);
     const node0Adj = matrix[0];
     expect(node0Adj.length).toBe(5);
@@ -96,7 +96,7 @@ describe('Adjacency Matrix', () => {
   });
 
   it('directed', () => {
-    const matrix = adjacentMatrix(data, true);
+    const matrix = getAdjMatrix(data, true);
     expect(Object.keys(matrix).length).toBe(8);
     const node0Adj = matrix[0];
     expect(node0Adj.length).toBe(5);

@@ -1,4 +1,5 @@
-import { getAdjMatrix, uniqueId } from './util';
+import getAdjMatrix from './adjacent-matrix'
+import { uniqueId } from './util';
 import { NodeConfig, ClusterData, GraphData } from './types';
 
 const getModularity = (
@@ -39,7 +40,7 @@ const louvain = (
   threshold: number = 0.0001
 ): ClusterData => {
   // the origin data
-  const { nodes, edges } = graphData;
+  const { nodes = [], edges = [] } = graphData;
 
   const clusters = {};
   const nodeMap = {};

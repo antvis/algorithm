@@ -2,7 +2,7 @@ import { GraphData, DegreeType } from "./types";
 
 const degree = (graphData: GraphData): DegreeType => {
   const degrees: DegreeType = {};
-  const { nodes, edges } = graphData
+  const { nodes = [], edges = [] } = graphData
 
   nodes.forEach((node) => {
     degrees[node.id] = {

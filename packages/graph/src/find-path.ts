@@ -21,7 +21,7 @@ export const findAllPath = (
 ) => {
   if (start === end) return [[start]];
 
-  const { edges } = graphData
+  const { edges = [] } = graphData
 
   const visited = [start];
   const isVisited = { [start]: true };

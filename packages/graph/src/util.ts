@@ -6,7 +6,7 @@ import { EdgeConfig, GraphData, Matrix } from './types'
  * @param edges 图中的所有边数据
  * @param type 邻居类型
  */
-export const getNeighbors = (nodeId: string, edges: EdgeConfig[], type?: 'target' | 'source' | undefined): string[] => {
+export const getNeighbors = (nodeId: string, edges: EdgeConfig[] = [], type?: 'target' | 'source' | undefined): string[] => {
   const currentEdges = edges.filter(edge => edge.source === nodeId || edge.target === nodeId)
   if (type === 'target') {
     // 当前节点为 source，它所指向的目标节点
@@ -56,44 +56,4 @@ export const uniqueId = (index: number = 0) => {
   const random1 = `${Math.random()}`.split('.')[1].substr(0, 5);
   const random2 = `${Math.random()}`.split('.')[1].substr(0, 5);
   return `${index}-${random1}${random2}`
-};
-
-/**
- * get adjacency matrix
- * @param data graph data
- * @param directed whether it's a directed graph
- */
-export const getAdjMatrix = (graphData: GraphData, directed?: boolean): Matrix[] => {
-  const { nodes, edges } = graphData;
-  const matrix: Matrix[] = [];
-  // map node with index in data.nodes
-  const nodeMap: {
-    [key: string]: number;
-  } = {};
-
-  if (!nodes) {
-    throw new Error('invalid nodes data!');
-  }
-  
-  if (nodes) {
-    nodes.forEach((node, i) => {
-      nodeMap[node.id] = i;
-      const row: number[] = [];
-      matrix.push(row);
-    });
-  }
-
-  if (edges) {
-    edges.forEach((e) => {
-      const { source, target } = e;
-      const sIndex = nodeMap[source as string];
-      const tIndex = nodeMap[target as string];
-      matrix[sIndex][tIndex] = 1;
-      if (!directed) {
-        matrix[tIndex][sIndex] = 1;
-      }
-    });
-  }
-
-  return matrix;
 };

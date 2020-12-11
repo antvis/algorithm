@@ -1,8 +1,7 @@
 {
-  "name": "@antv/graph-algorithm",
-  "version": "0.0.2",
+  "name": "@antv/algorithm",
+  "version": "0.0.4",
   "description": "graph algorithm",
-  "main": "index.ts",
   "keywords": [
     "graph",
     "algorithm",
@@ -17,6 +16,9 @@
     "LICENSE",
     "README.md"
   ],
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "browser": "dist/index.min.js",
   "scripts": {
     "build": "npm run clean && father build",
     "ci": "npm run build && npm run coverage",

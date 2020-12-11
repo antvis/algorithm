@@ -41,7 +41,9 @@ function depthFirstSearchRecursive(
     previous: previousNode,
   });
 
-  getNeighbors(currentNode, graphData.edges, 'target').forEach((nextNode) => {
+  const { edges = [] } = graphData
+
+  getNeighbors(currentNode, edges, 'target').forEach((nextNode) => {
     if (
       callbacks.allowTraversal({
         previous: previousNode,
