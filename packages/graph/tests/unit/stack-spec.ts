@@ -50,6 +50,8 @@ describe('stack unit test', () => {
     });
     
     expect(stack.isMaxStack()).toBe(false);
+    stack.clear()
+    expect(stack.length).toBe(0)
   });
 
   it('init stack with maxStep', () => {
@@ -64,5 +66,20 @@ describe('stack unit test', () => {
       });
     }
     expect(stack.length).toBe(3);
+    
+    expect(stack.toArray()).toEqual([
+      {
+        nodes: [{ id: 'node4'}]
+      },
+      {
+        nodes: [{ id: 'node3'}]
+      },
+      {
+        nodes: [{ id: 'node2'}]
+      }
+    ])
+
+    stack.clear()
+    expect(stack.length).toBe(0)
   });
 });
