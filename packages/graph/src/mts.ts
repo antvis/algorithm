@@ -11,7 +11,7 @@ import { getEdgesByNodeId } from './util';
  */
 const primMST = (graphData: GraphData, weight?: string) => {
   const selectedEdges = [];
-  const { nodes, edges } = graphData;
+  const { nodes = [], edges = [] } = graphData;
   if (nodes.length === 0) {
     return selectedEdges;
   }
@@ -67,15 +67,15 @@ const primMST = (graphData: GraphData, weight?: string) => {
  */
 const kruskalMST = (graphData: GraphData, weight?: string): EdgeConfig[] => {
   const selectedEdges = [];
-  const { nodes } = graphData
+  const { nodes = [], edges = [] } = graphData
   if (nodes.length === 0) {
     return selectedEdges;
   }
 
   // 若指定weight，则将所有的边按权值从小到大排序
-  const edges = graphData.edges.map((edge) => edge);
+  const weightEdges = edges.map((edge) => edge);
   if (weight) {
-    edges.sort((a, b) => {
+    weightEdges.sort((a, b) => {
       return a.weight - b.weight;
     });
   }
@@ -83,8 +83,8 @@ const kruskalMST = (graphData: GraphData, weight?: string): EdgeConfig[] => {
 
   // 从权值最小的边开始，如果这条边连接的两个节点于图G中不在同一个连通分量中，则添加这条边
   // 直到遍历完所有点或边
-  while (edges.length > 0) {
-    const curEdge = edges.shift();
+  while (weightEdges.length > 0) {
+    const curEdge = weightEdges.shift();
     const source = curEdge.source;
     const target = curEdge.target;
     if (!disjointSet.connected(source, target)) {

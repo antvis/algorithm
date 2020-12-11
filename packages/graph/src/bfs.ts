@@ -47,7 +47,7 @@ const breadthFirstSearch = (
   const callbacks = initCallbacks(originalCallbacks);
   const nodeQueue = new Queue();
 
-  const { edges } = graphData
+  const { edges = [] } = graphData
 
   // 初始化队列元素
   nodeQueue.enqueue(startNodeId);

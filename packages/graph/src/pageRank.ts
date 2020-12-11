@@ -19,7 +19,7 @@ const pageRank = (graphData: GraphData, epsilon?: number, linkProb?: number): {
   let leakedRank = 0;
   let maxIterations = 1000;
 
-  const { nodes, edges } = graphData;
+  const { nodes = [], edges = [] } = graphData;
   const nodesCount = nodes.length;
   let currentRank;
   const curRanks = {};

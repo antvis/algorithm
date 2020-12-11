@@ -5,8 +5,8 @@ import { getNeighbors } from "./util";
  * Generate all connected components for an undirected graph
  * @param graph
  */
-export function detectConnectedComponents(graphData: GraphData): NodeConfig[][] {
-  const { nodes, edges } = graphData
+export const detectConnectedComponents = (graphData: GraphData): NodeConfig[][] => {
+  const { nodes = [], edges = [] } = graphData
   const allComponents: NodeConfig[][] = [];
   const visited = {};
   const nodeStack: NodeConfig[] = [];
@@ -49,8 +49,8 @@ export function detectConnectedComponents(graphData: GraphData): NodeConfig[][] 
  * @param graph
  * @return a list of strongly connected components
  */
-export function detectStrongConnectComponents(graphData: GraphData): NodeConfig[][] {
-  const { nodes, edges } = graphData
+export const detectStrongConnectComponents = (graphData: GraphData): NodeConfig[][] => {
+  const { nodes = [], edges = [] } = graphData
   const nodeStack: NodeConfig[] = [];
   const inStack = {}; // 辅助判断是否已经在stack中，减少查找开销
   const indices = {};

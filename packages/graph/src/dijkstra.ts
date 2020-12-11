@@ -25,7 +25,7 @@ const dijkstra = (
   directed?: boolean,
   weightPropertyName?: string,
 ) => {
-  const { nodes, edges } = graphData;
+  const { nodes = [], edges = [] } = graphData;
   const nodeIds = [];
   const marks = {};
   const D = {};

@@ -8,7 +8,7 @@ const detectDirectedCycle = (graphData: GraphData) => {
     [key: string]: string;
   } = null;
 
-  const { nodes } = graphData
+  const { nodes = [] } = graphData
 
   const dfsParentMap = {};
 
@@ -238,7 +238,7 @@ export const detectAllDirectedCycle = (graphData: GraphData, nodeIds?: string[],
     return closed;
   };
 
-  const { nodes } = graphData;
+  const { nodes = [] } = graphData;
 
   // Johnson's algorithm 要求给节点赋顺序，先按节点在数组中的顺序
   for (let i = 0; i < nodes.length; i += 1) {
