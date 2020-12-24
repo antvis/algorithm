@@ -2,6 +2,7 @@ import { louvain } from '../../src';
 import { GraphData } from '../../src/types';
 
 describe('louvain', () => {
+
   it('simple louvain', () => {
     const data: GraphData = {
       nodes: [
@@ -35,7 +36,6 @@ describe('louvain', () => {
       ]
     }
     const clusteredData = louvain(data, false, 'weight');
-    debugger
     expect(clusteredData.clusters.length).toBe(3);
     expect(clusteredData.clusters[0].sumTot).toBe(3);
     expect(clusteredData.clusters[1].sumTot).toBe(2);
