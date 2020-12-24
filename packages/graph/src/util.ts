@@ -53,7 +53,7 @@ export const getEdgesByNodeId = (nodeId: string, edges: EdgeConfig[]) => {
  * @param index 序号
  */
 export const uniqueId = (index: number = 0) => {
-  return `${index}_${new Date().getTime()}`
+  return `${index}${new Date().getTime()}${Math.random()}`
 };
 
 /**

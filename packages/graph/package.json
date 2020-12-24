@@ -1,5 +1,5 @@
 {
-  "name": "@antv/graph-lgorithm",
+  "name": "@antv/graph-algorithm",
   "version": "0.0.1",
   "description": "graph algorithm",
   "main": "index.ts",
@@ -26,7 +26,7 @@
     "lint:src": "eslint --ext .ts --format=pretty \"./src\"",
     "prettier": "prettier -c --write \"**/*\"",
     "test": "jest",
-    "test-live": "DEBUG_MODE=1 jest --watch  ./tests/unit/stack-spec.ts",
+    "test-live": "DEBUG_MODE=1 jest --watch  ./tests/unit/louvain-spec.ts",
     "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx"
   },
   "homepage": "https://g6.antv.vision",
