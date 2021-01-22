@@ -41,19 +41,19 @@ const dijkstra = (
   for (let i = 0; i < nodeNum; i++) {
     // Process the vertices
     const minNode = minVertex(D, nodes, marks);
-    const minNodId = minNode.id;
-    marks[minNodId] = true;
+    const minNodeId = minNode.id;
+    marks[minNodeId] = true;
 
-    if (D[minNodId] === Infinity) continue; // Unreachable vertices cannot be the intermediate point
+    if (D[minNodeId] === Infinity) continue; // Unreachable vertices cannot be the intermediate point
 
     let relatedEdges: EdgeConfig[] = [];
-    if (directed) relatedEdges = getOutEdgesNodeId(minNodId, edges);
-    else relatedEdges = getEdgesByNodeId(minNodId, edges);
+    if (directed) relatedEdges = getOutEdgesNodeId(minNodeId, edges);
+    else relatedEdges = getEdgesByNodeId(minNodeId, edges);
 
     relatedEdges.forEach(edge => {
       const edgeTarget = edge.target;
       const edgeSource = edge.source;
-      const w = edgeTarget === minNodId ? edgeSource : edgeTarget;
+      const w = edgeTarget === minNodeId ? edgeSource : edgeTarget;
       const weight =
         weightPropertyName && edge[weightPropertyName]
           ? edge[weightPropertyName]
