@@ -78,6 +78,13 @@ describe('Shortest Path from source to target on graph', () => {
     expect(path).toStrictEqual(['A', 'B', 'C']);
   });
 
+  it('find all shortest paths', () => {
+    const { length, allPath } = findShortestPath(data, 'A', 'F');
+    expect(length).toBe(2);
+    expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
+    expect(allPath[1]).toStrictEqual(['A', 'D', 'F']);
+  });
+
   it('find all paths', () => {
     const allPaths = findAllPath(data, 'A', 'E');
     expect(allPaths.length).toBe(3);
