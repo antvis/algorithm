@@ -29,7 +29,8 @@
     "prettier": "prettier -c --write \"**/*\"",
     "test": "jest",
     "test-live": "DEBUG_MODE=1 jest --watch  ./tests/unit/find-path-spec.ts",
-    "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx"
+    "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx",
+    "cdn": "antv-bin upload -n @antv/algorithm"
   },
   "homepage": "https://g6.antv.vision",
   "bugs": {
