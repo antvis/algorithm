@@ -1,16 +1,59 @@
-export { default as getAdjMatrix } from './adjacent-matrix'
-export { default as breadthFirstSearch } from './bfs'
-export { default as connectedComponent } from './connected-component'
-export { default as getDegree } from './degree'
-export { getInDegree, getOutDegree } from './degree'
-export { default as detectCycle } from './detect-cycle'
-export { default as depthFirstSearch } from './dfs'
-export { default as dijkstra } from './dijkstra'
-export { findAllPath, findShortestPath } from './find-path'
-export { default as floydWarshall } from './floydWarshall'
-export { default as labelPropagation } from './label-propagation'
-export { default as louvain } from './louvain'
-export { default as minimumSpanningTree } from './mts'
-export { default as pageRank } from './pageRank'
-export { getNeighbors } from './util'
-export { default as Stack } from './structs/stack'
+import getAdjMatrix from './adjacent-matrix';
+import breadthFirstSearch from './bfs';
+import connectedComponent from './connected-component';
+import getDegree from './degree';
+import { getInDegree, getOutDegree } from './degree';
+import detectCycle from './detect-cycle';
+import depthFirstSearch from './dfs';
+import dijkstra from './dijkstra';
+import { findAllPath, findShortestPath } from './find-path';
+import floydWarshall from './floydWarshall';
+import labelPropagation from './label-propagation';
+import louvain from './louvain';
+import minimumSpanningTree from './mts';
+import pageRank from './pageRank';
+import { getNeighbors } from './util';
+import Stack from './structs/stack';
+import { getDegreeAsync } from './workers/index';
+
+export {
+  getAdjMatrix,
+  breadthFirstSearch,
+  connectedComponent,
+  getDegree,
+  getInDegree,
+  getOutDegree,
+  detectCycle,
+  depthFirstSearch,
+  dijkstra,
+  findAllPath,
+  findShortestPath,
+  floydWarshall,
+  labelPropagation,
+  louvain,
+  minimumSpanningTree,
+  pageRank,
+  getNeighbors,
+  getDegreeAsync,
+};
+
+export default {
+  getAdjMatrix,
+  breadthFirstSearch,
+  connectedComponent,
+  getDegree,
+  getInDegree,
+  getOutDegree,
+  detectCycle,
+  depthFirstSearch,
+  dijkstra,
+  findAllPath,
+  findShortestPath,
+  floydWarshall,
+  labelPropagation,
+  louvain,
+  minimumSpanningTree,
+  pageRank,
+  getNeighbors,
+  getDegreeAsync,
+};
