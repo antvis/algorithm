@@ -1,10 +1,10 @@
-import { GraphData, NodeConfig, EdgeConfig } from "./types";
-import { getOutEdgesNodeId, getEdgesByNodeId } from "./util";
+import { GraphData, NodeConfig, EdgeConfig } from './types';
+import { getOutEdgesNodeId, getEdgesByNodeId } from './util';
 
 const minVertex = (
   D: { [key: string]: number },
   nodes: NodeConfig[],
-  marks: { [key: string]: boolean },
+  marks: { [key: string]: boolean }
 ): NodeConfig => {
   // 找出最小的点
   let minDis = Infinity;
@@ -17,13 +17,13 @@ const minVertex = (
     }
   }
   return minNode;
-}
+};
 
 const dijkstra = (
   graphData: GraphData,
   source: string,
   directed?: boolean,
-  weightPropertyName?: string,
+  weightPropertyName?: string
 ) => {
   const { nodes = [], edges = [] } = graphData;
   const nodeIds = [];
@@ -41,40 +41,65 @@ const dijkstra = (
   for (let i = 0; i < nodeNum; i++) {
     // Process the vertices
     const minNode = minVertex(D, nodes, marks);
-    const minNodId = minNode.id;
-    marks[minNodId] = true;
+    const minNodeId = minNode.id;
+    marks[minNodeId] = true;
 
-    if (D[minNodId] === Infinity) continue; // Unreachable vertices cannot be the intermediate point
+    if (D[minNodeId] === Infinity) continue; // Unreachable vertices cannot be the intermediate point
 
     let relatedEdges: EdgeConfig[] = [];
-    if (directed) relatedEdges = getOutEdgesNodeId(minNodId, edges);
-    else relatedEdges = getEdgesByNodeId(minNodId, edges);
+    if (directed) relatedEdges = getOutEdgesNodeId(minNodeId, edges);
+    else relatedEdges = getEdgesByNodeId(minNodeId, edges);
 
-    relatedEdges.forEach((edge) => {
+    relatedEdges.forEach(edge => {
       const edgeTarget = edge.target;
       const edgeSource = edge.source;
-      const w = edgeTarget === minNodId ? edgeSource : edgeTarget;
+      const w = edgeTarget === minNodeId ? edgeSource : edgeTarget;
       const weight =
         weightPropertyName && edge[weightPropertyName]
           ? edge[weightPropertyName]
           : 1;
       if (D[w] > D[minNode.id] + weight) {
         D[w] = D[minNode.id] + weight;
-        prevs[w] = minNode.id;
+        prevs[w] = [minNode.id];
+      } else if (D[w] === D[minNode.id] + weight) {
+        prevs[w].push(minNode.id);
       }
     });
   }
-  const path = {};
+
+  prevs[source] = [source];
+  // 每个节点存可能存在多条最短路径
+  const allPaths = {};
   for (const target in D) {
-    path[target] = [target];
-    let prev = prevs[target];
-    while (prev !== undefined) {
-      path[target].unshift(prev);
-      prev = prevs[prev];
+    if (D[target] !== Infinity) {
+      findAllPaths(source, target, prevs, allPaths);
     }
   }
 
-  return { length: D, path };
+  // 兼容之前单路径
+  const path = {};
+  for (const target in allPaths) {
+    path[target] = allPaths[target][0];
+  }
+  return { length: D, path, allPaths };
 };
 
 export default dijkstra;
+
+function findAllPaths(source, target, prevs, findedPaths) {
+  if (source === target) {
+    return [source];
+  }
+  if (findedPaths[target]) {
+    return findedPaths[target];
+  }
+  const paths = [];
+  for (let prev of prevs[target]) {
+    const prevPaths = findAllPaths(source, prev, prevs, findedPaths);
+    for (let prePath of prevPaths) {
+      paths.push([...prePath, target]);
+    }
+  }
+  findedPaths[target] = paths;
+  return;
+}

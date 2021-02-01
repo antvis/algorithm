@@ -1,6 +1,6 @@
 {
   "name": "@antv/algorithm",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "graph algorithm",
   "keywords": [
     "graph",
@@ -30,9 +30,10 @@
     "lint:src": "eslint --ext .ts --format=pretty \"./src\"",
     "prettier": "prettier -c --write \"**/*\"",
     "test": "npm run build:umd && jest",
-    "test-live": "npm run build:umd && DEBUG_MODE=1 jest --watch  ./tests/unit/louvain-spec.ts",
-    "test-live:async": "npm run build:umd && DEBUG_MODE=1 jest --watch  ./tests/unit/*-async-spec.ts",
-    "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx"
+    "test-live": "npm run build:umd && DEBUG_MODE=1 jest --watch ./tests/unit/louvain-spec.ts",
+    "test-live:async": "npm run build:umd && DEBUG_MODE=1 jest --watch ./tests/unit/*-async-spec.ts",
+    "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx",
+    "cdn": "antv-bin upload -n @antv/algorithm"
   },
   "homepage": "https://g6.antv.vision",
   "bugs": {

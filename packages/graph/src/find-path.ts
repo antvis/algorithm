@@ -7,27 +7,34 @@ export const findShortestPath = (
   start: string,
   end: string,
   directed?: boolean,
-  weightPropertyName?: string,
+  weightPropertyName?: string
 ) => {
-  const { length, path } = dijkstra(graphData, start, directed, weightPropertyName);
-  return { length: length[end], path: path[end] };
+  const { length, path, allPaths } = dijkstra(
+    graphData,
+    start,
+    directed,
+    weightPropertyName
+  );
+  return { length: length[end], path: path[end], allPath: allPaths[end] };
 };
 
 export const findAllPath = (
   graphData: GraphData,
   start: string,
   end: string,
-  directed?: boolean,
+  directed?: boolean
 ) => {
   if (start === end) return [[start]];
 
-  const { edges = [] } = graphData
+  const { edges = [] } = graphData;
 
   const visited = [start];
   const isVisited = { [start]: true };
   const stack: string[][] = []; // 辅助栈，用于存储访问过的节点的邻居节点
   const allPaths = [];
-  let neighbors = directed ? getNeighbors(start, edges, 'target') :getNeighbors(start, edges);
+  let neighbors = directed
+    ? getNeighbors(start, edges, 'target')
+    : getNeighbors(start, edges);
   stack.push(neighbors);
 
   while (visited.length > 0 && stack.length > 0) {
@@ -37,8 +44,10 @@ export const findAllPath = (
       if (child) {
         visited.push(child);
         isVisited[child] = true;
-        neighbors = directed ? getNeighbors(child, edges, 'target') : getNeighbors(child, edges);
-        stack.push(neighbors.filter((neighbor) => !isVisited[neighbor]));
+        neighbors = directed
+          ? getNeighbors(child, edges, 'target')
+          : getNeighbors(child, edges);
+        stack.push(neighbors.filter(neighbor => !isVisited[neighbor]));
       }
     } else {
       const node = visited.pop();
@@ -48,7 +57,7 @@ export const findAllPath = (
     }
 
     if (visited[visited.length - 1] === end) {
-      const path = visited.map((node) => node);
+      const path = visited.map(node => node);
       allPaths.push(path);
 
       const node = visited.pop();
