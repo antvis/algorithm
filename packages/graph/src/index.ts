@@ -14,7 +14,23 @@ import minimumSpanningTree from './mts';
 import pageRank from './pageRank';
 import { getNeighbors } from './util';
 import Stack from './structs/stack';
-import { getDegreeAsync } from './workers/index';
+import {
+  getAdjMatrixAsync,
+  connectedComponentAsync,
+  getDegreeAsync,
+  getInDegreeAsync,
+  getOutDegreeAsync,
+  detectCycleAsync,
+  dijkstraAsync,
+  findAllPathAsync,
+  findShortestPathAsync,
+  floydWarshallAsync,
+  labelPropagationAsync,
+  louvainAsync,
+  minimumSpanningTreeAsync,
+  pageRankAsync,
+  getNeighborsAsync,
+} from './workers/index';
 
 export {
   getAdjMatrix,
@@ -34,7 +50,21 @@ export {
   minimumSpanningTree,
   pageRank,
   getNeighbors,
+  getAdjMatrixAsync,
+  connectedComponentAsync,
   getDegreeAsync,
+  getInDegreeAsync,
+  getOutDegreeAsync,
+  detectCycleAsync,
+  dijkstraAsync,
+  findAllPathAsync,
+  findShortestPathAsync,
+  floydWarshallAsync,
+  labelPropagationAsync,
+  louvainAsync,
+  minimumSpanningTreeAsync,
+  pageRankAsync,
+  getNeighborsAsync,
 };
 
 export default {
@@ -55,5 +85,19 @@ export default {
   minimumSpanningTree,
   pageRank,
   getNeighbors,
+  getAdjMatrixAsync,
+  connectedComponentAsync,
   getDegreeAsync,
+  getInDegreeAsync,
+  getOutDegreeAsync,
+  detectCycleAsync,
+  dijkstraAsync,
+  findAllPathAsync,
+  findShortestPathAsync,
+  floydWarshallAsync,
+  labelPropagationAsync,
+  louvainAsync,
+  minimumSpanningTreeAsync,
+  pageRankAsync,
+  getNeighborsAsync,
 };

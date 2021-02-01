@@ -1,4 +1,4 @@
-import { getAdjMatrix } from '../../src';
+import { getAlgorithm } from './utils';
 
 const data = {
   nodes: [
@@ -67,9 +67,10 @@ const data = {
   ],
 };
 
-describe('Adjacency Matrix', () => {
-  it('undirected', () => {
-    const matrix = getAdjMatrix(data);
+describe('(Async) Adjacency Matrix',  () => {
+  it('undirected', async () => {
+    const { getAdjMatrixAsync } = await getAlgorithm();
+    const matrix = await getAdjMatrixAsync(data);
     expect(Object.keys(matrix).length).toBe(8);
     const node0Adj = matrix[0];
     expect(node0Adj.length).toBe(5);
@@ -94,8 +95,9 @@ describe('Adjacency Matrix', () => {
     expect(node5Adj[4]).toBe(1);
   });
 
-  it('directed', () => {
-    const matrix = getAdjMatrix(data, true);
+  it('directed', async () => {
+    const { getAdjMatrixAsync } = await getAlgorithm();
+    const matrix = await getAdjMatrixAsync(data, true);
     expect(Object.keys(matrix).length).toBe(8);
     const node0Adj = matrix[0];
     expect(node0Adj.length).toBe(5);

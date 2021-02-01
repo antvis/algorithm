@@ -1,4 +1,4 @@
-import { getAlgorithm } from '../utils';
+import { getAlgorithm } from './utils';
 
 const data = {
   nodes: [
@@ -67,8 +67,8 @@ const data = {
   ],
 };
 
-describe('degree async algorithm', () => {
-  it('getDegreeAsync', async () => {
+describe('(Async) degree algorithm', () => {
+  it('getDegree', async () => {
     const degree = {
       A: {
         degree: 3,
@@ -115,5 +115,30 @@ describe('degree async algorithm', () => {
     const { getDegreeAsync } = await getAlgorithm();
     const result = await getDegreeAsync(data);
     expect(result).toEqual(degree);
+  });
+
+
+  it('getInDegree', async () => {
+    const { getInDegreeAsync } = await getAlgorithm();
+    let result = await getInDegreeAsync(data, 'A');
+    expect(result).toBe(1);
+
+    result = await getInDegreeAsync(data, 'C')
+    expect(result).toBe(2)
+
+    result = await getInDegreeAsync(data, 'E')
+    expect(result).toBe(1)
+  });
+  
+  it('getOutDegree', async () => {
+    const { getOutDegreeAsync } = await getAlgorithm();
+    let result = await getOutDegreeAsync(data, 'A');
+    expect(result).toEqual(2);
+    
+    result = await getOutDegreeAsync(data, 'D');
+    expect(result).toEqual(2);
+
+    result = await getOutDegreeAsync(data, 'F');
+    expect(result).toEqual(1);
   });
 });

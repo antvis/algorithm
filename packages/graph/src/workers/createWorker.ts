@@ -18,7 +18,7 @@ const createWorker = <R>(type: string) => (...data) =>
         type,
         data,
       });
-  
+
       worker.onmessage = (event: Event) => {
         const { data, type } = event.data;
         if (MESSAGE.SUCCESS === type) {
@@ -26,10 +26,10 @@ const createWorker = <R>(type: string) => (...data) =>
         } else {
           reject();
         }
-  
+
         worker.terminate();
       };
-    })
+    });
   });
 
 export default createWorker;
