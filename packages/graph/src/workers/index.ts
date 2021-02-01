@@ -69,6 +69,7 @@ const dijkstraAsync = (
   createWorker<{
     length: number;
     path: any;
+    allPaths: any;
   }>(ALGORITHM.dijkstra)(...[graphData, source, directed, weightPropertyName]);
 
 /**
@@ -99,6 +100,7 @@ const findShortestPathAsync = (
   createWorker<{
     length: number;
     path: any;
+    allPaths: any;
   }>(ALGORITHM.findShortestPath)(...[graphData, start, end, directed, weightPropertyName]);
 
 /**

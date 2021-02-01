@@ -79,6 +79,23 @@ describe('(Async) Shortest Path from source to target on graph', () => {
     expect(path).toStrictEqual(['A', 'B', 'C']);
   });
 
+  it('find all shortest paths', async () => {
+    const { findShortestPathAsync } = await getAlgorithm();
+    const { length, allPath } = await findShortestPathAsync(data, 'A', 'F');
+    expect(length).toBe(2);
+    expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
+    expect(allPath[1]).toStrictEqual(['A', 'D', 'F']);
+
+    const {
+      length: directedLenght,
+      path: directedPath,
+      allPath: directedAllPath,
+    } = await findShortestPathAsync(data, 'A', 'F', true);
+    expect(directedLenght).toBe(2);
+    expect(directedAllPath[0]).toStrictEqual(['A', 'E', 'F']);
+    expect(directedPath).toStrictEqual(['A', 'E', 'F']);
+  });
+
   it('find all paths', async () => {
     const { findAllPathAsync } = await getAlgorithm();
     const allPaths = await findAllPathAsync(data, 'A', 'E');
@@ -94,5 +111,17 @@ describe('(Async) Shortest Path from source to target on graph', () => {
     expect(allPaths.length).toStrictEqual(2);
     expect(allPaths[0]).toStrictEqual(['A', 'D', 'E']);
     expect(allPaths[1]).toStrictEqual(['A', 'E']);
+  });
+
+  it('find all shortest paths in weighted graph', async () => {
+    const { findShortestPathAsync } = await getAlgorithm();
+    data.edges.forEach((edge, i) => {
+      edge.weight = ((i % 2) + 1) * 2;
+      if (edge.source === 'F' && edge.target === 'D') edge.weight = 10;
+    });
+    const { length, path, allPath } = await findShortestPathAsync(data, 'A', 'F', false, 'weight');
+    expect(length).toBe(6);
+    expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
+    expect(path).toStrictEqual(['A', 'E', 'F']);
   });
 });
