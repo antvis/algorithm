@@ -1,7 +1,7 @@
-import { GraphData, Matrix } from './types'
+import { GraphData, Matrix } from "./types";
 
 const adjMatrix = (graphData: GraphData, directed?: boolean) => {
-  const { nodes, edges } = graphData
+  const { nodes, edges } = graphData;
   const matrix: Matrix[] = [];
   // map node with index in data.nodes
   const nodeMap: {
@@ -9,9 +9,9 @@ const adjMatrix = (graphData: GraphData, directed?: boolean) => {
   } = {};
 
   if (!nodes) {
-    throw new Error('invalid nodes data!');
+    throw new Error("invalid nodes data!");
   }
-  
+
   if (nodes) {
     nodes.forEach((node, i) => {
       nodeMap[node.id] = i;
@@ -25,6 +25,7 @@ const adjMatrix = (graphData: GraphData, directed?: boolean) => {
       const { source, target } = edge;
       const sIndex = nodeMap[source as string];
       const tIndex = nodeMap[target as string];
+      if ((!sIndex && sIndex !== 0) || (!tIndex && tIndex !== 0)) return;
       matrix[sIndex][tIndex] = 1;
       if (!directed) {
         matrix[tIndex][sIndex] = 1;

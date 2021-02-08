@@ -1,8 +1,8 @@
-import getAdjMatrix from './adjacent-matrix';
-import { GraphData, Matrix } from './types';
+import getAdjMatrix from "./adjacent-matrix";
+import { GraphData, Matrix } from "./types";
 
 const floydWarshall = (graphData: GraphData, directed?: boolean) => {
-  const adjacentMatrix = getAdjMatrix(graphData, directed);;
+  const adjacentMatrix = getAdjMatrix(graphData, directed);
 
   const dist: Matrix[] = [];
   const size = adjacentMatrix.length;

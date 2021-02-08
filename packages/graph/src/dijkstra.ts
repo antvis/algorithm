@@ -1,5 +1,5 @@
-import { GraphData, NodeConfig, EdgeConfig } from './types';
-import { getOutEdgesNodeId, getEdgesByNodeId } from './util';
+import { GraphData, NodeConfig, EdgeConfig } from "./types";
+import { getOutEdgesNodeId, getEdgesByNodeId } from "./util";
 
 const minVertex = (
   D: { [key: string]: number },
@@ -50,7 +50,7 @@ const dijkstra = (
     if (directed) relatedEdges = getOutEdgesNodeId(minNodeId, edges);
     else relatedEdges = getEdgesByNodeId(minNodeId, edges);
 
-    relatedEdges.forEach(edge => {
+    relatedEdges.forEach((edge) => {
       const edgeTarget = edge.target;
       const edgeSource = edge.source;
       const w = edgeTarget === minNodeId ? edgeSource : edgeTarget;
@@ -86,20 +86,21 @@ const dijkstra = (
 
 export default dijkstra;
 
-function findAllPaths(source, target, prevs, findedPaths) {
+function findAllPaths(source, target, prevs, foundPaths) {
   if (source === target) {
     return [source];
   }
-  if (findedPaths[target]) {
-    return findedPaths[target];
+  if (foundPaths[target]) {
+    return foundPaths[target];
   }
   const paths = [];
   for (let prev of prevs[target]) {
-    const prevPaths = findAllPaths(source, prev, prevs, findedPaths);
+    const prevPaths = findAllPaths(source, prev, prevs, foundPaths);
+    if (!prevPaths) return;
     for (let prePath of prevPaths) {
       paths.push([...prePath, target]);
     }
   }
-  findedPaths[target] = paths;
+  foundPaths[target] = paths;
   return;
 }
