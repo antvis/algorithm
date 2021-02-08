@@ -15,6 +15,7 @@ export const ALGORITHM = {
   getOutDegree: 'getOutDegree',
   labelPropagation: 'labelPropagation',
   louvain: 'louvain',
+  GADDI: 'GADDI',
   minimumSpanningTree: 'minimumSpanningTree',
   SUCCESS: 'SUCCESS',
   FAILURE: 'FAILURE',

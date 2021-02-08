@@ -12,4 +12,5 @@ export { default as labelPropagation } from '../label-propagation';
 export { default as louvain } from '../louvain';
 export { default as minimumSpanningTree } from '../mts';
 export { default as pageRank } from '../pageRank';
+export { default as GADDI } from '../gaddi';
 export { getNeighbors } from '../util';

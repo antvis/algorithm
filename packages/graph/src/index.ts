@@ -12,8 +12,9 @@ import labelPropagation from './label-propagation';
 import louvain from './louvain';
 import minimumSpanningTree from './mts';
 import pageRank from './pageRank';
+import GADDI from './gaddi';
 import { getNeighbors } from './util';
-import Stack from './structs/stack';
+
 import {
   getAdjMatrixAsync,
   connectedComponentAsync,
@@ -30,6 +31,7 @@ import {
   minimumSpanningTreeAsync,
   pageRankAsync,
   getNeighborsAsync,
+  GADDIAsync,
 } from './workers/index';
 
 export {
@@ -50,6 +52,7 @@ export {
   minimumSpanningTree,
   pageRank,
   getNeighbors,
+  GADDI,
   getAdjMatrixAsync,
   connectedComponentAsync,
   getDegreeAsync,
@@ -65,6 +68,7 @@ export {
   minimumSpanningTreeAsync,
   pageRankAsync,
   getNeighborsAsync,
+  GADDIAsync,
 };
 
 export default {
@@ -85,6 +89,7 @@ export default {
   minimumSpanningTree,
   pageRank,
   getNeighbors,
+  GADDI,
   getAdjMatrixAsync,
   connectedComponentAsync,
   getDegreeAsync,
@@ -100,4 +105,5 @@ export default {
   minimumSpanningTreeAsync,
   pageRankAsync,
   getNeighborsAsync,
+  GADDIAsync,
 };
