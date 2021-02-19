@@ -1,6 +1,6 @@
 # ChangeLog
 
-#### 0.1.0-beta.2
+#### 0.1.0-beta.3
 
 - fix: cannot read degree of undefined problem of GADDI;
 
