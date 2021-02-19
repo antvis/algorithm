@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.0-beta.2
+
+- fix: cannot read degree of undefined problem of GADDI;
+
 #### 0.1.0-beta
 
 - feat: worker for algorithms;
