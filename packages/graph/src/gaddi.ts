@@ -943,7 +943,8 @@ const GADDI = (
             candidateGraphInvalid = true;
             return;
           }
-          candidateGraph.nodes.splice(candidateNodeMap[targetId].idx, 1);
+          const idx = candidateGraph.nodes.indexOf(candidateNodeMap[targetId].node);
+          candidateGraph.nodes.splice(idx, 1);
           candidateNodeMap[targetId] = undefined;
           return;
         }
@@ -966,7 +967,8 @@ const GADDI = (
             candidateGraphInvalid = true;
             return;
           }
-          candidateGraph.nodes.splice(candidateNodeMap[targetId].idx, 1);
+          const idx = candidateGraph.nodes.indexOf(candidateNodeMap[targetId].node);
+          candidateGraph.nodes.splice(idx, 1);
           candidateNodeMap[targetId] = undefined;
         }
       });

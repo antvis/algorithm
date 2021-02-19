@@ -1,5 +1,5 @@
 import GADDI from '../../src/gaddi';
-import { nodes77, nodes202, nodes1589 } from './data/test-data';
+import { nodes77, nodes202, nodes1589, nodes20 } from './data/test-data';
 
 const data3 = {
   nodes: [
@@ -436,6 +436,45 @@ describe('gSpan directed', () => {
     expect(matchedSubGraphs[0].nodes[0].id).toBe('0');
     expect(matchedSubGraphs[0].nodes[1].id).toBe('1');
     expect(matchedSubGraphs[0].nodes[2].id).toBe('2');
+  });
+});
+
+describe('GADDI switch nodes', () => {
+  it('gSpan match pattern 1', () => {
+    const pattern1 = {
+      nodes: [
+        { id: 'Person', dataType: 'Person' },
+        { id: 'Enterprise', dataType: 'Enterprise' },
+      ],
+      edges: [
+        {
+          id: 'edge-1613700998017',
+          source: 'Person',
+          target: 'Enterprise',
+          dataType: 'Person2Enterprise#Guarantee',
+          rules: [],
+        },
+      ],
+    };
+    const res1 = GADDI(nodes20, pattern1, true, undefined, undefined, 'dataType', 'dataType');
+    expect(res1.length).toBe(5);
+    const pattern2 = {
+      nodes: [
+        { id: 'Enterprise', dataType: 'Enterprise' },
+        { id: 'Person', dataType: 'Person' },
+      ],
+      edges: [
+        {
+          id: 'edge-1613700998017',
+          source: 'Person',
+          target: 'Enterprise',
+          dataType: 'Person2Enterprise#Guarantee',
+          rules: [],
+        },
+      ],
+    };
+    const res2 = GADDI(nodes20, pattern2, true, undefined, undefined, 'dataType', 'dataType');
+    expect(res2.length).toBe(6);
   });
 });
 
