@@ -1,10 +1,11 @@
-import { GraphData, NodeConfig, EdgeConfig } from "./types";
-import { getOutEdgesNodeId, getEdgesByNodeId } from "./util";
+import { isArray } from '@antv/util';
+import { GraphData, NodeConfig, EdgeConfig } from './types';
+import { getOutEdgesNodeId, getEdgesByNodeId } from './util';
 
 const minVertex = (
   D: { [key: string]: number },
   nodes: NodeConfig[],
-  marks: { [key: string]: boolean }
+  marks: { [key: string]: boolean },
 ): NodeConfig => {
   // 找出最小的点
   let minDis = Infinity;
@@ -23,7 +24,7 @@ const dijkstra = (
   graphData: GraphData,
   source: string,
   directed?: boolean,
-  weightPropertyName?: string
+  weightPropertyName?: string,
 ) => {
   const { nodes = [], edges = [] } = graphData;
   const nodeIds = [];
@@ -50,14 +51,11 @@ const dijkstra = (
     if (directed) relatedEdges = getOutEdgesNodeId(minNodeId, edges);
     else relatedEdges = getEdgesByNodeId(minNodeId, edges);
 
-    relatedEdges.forEach((edge) => {
+    relatedEdges.forEach(edge => {
       const edgeTarget = edge.target;
       const edgeSource = edge.source;
       const w = edgeTarget === minNodeId ? edgeSource : edgeTarget;
-      const weight =
-        weightPropertyName && edge[weightPropertyName]
-          ? edge[weightPropertyName]
-          : 1;
+      const weight = weightPropertyName && edge[weightPropertyName] ? edge[weightPropertyName] : 1;
       if (D[w] > D[minNode.id] + weight) {
         D[w] = D[minNode.id] + weight;
         prevs[w] = [minNode.id];
@@ -87,6 +85,7 @@ const dijkstra = (
 export default dijkstra;
 
 function findAllPaths(source, target, prevs, foundPaths) {
+  debugger;
   if (source === target) {
     return [source];
   }
@@ -98,7 +97,8 @@ function findAllPaths(source, target, prevs, foundPaths) {
     const prevPaths = findAllPaths(source, prev, prevs, foundPaths);
     if (!prevPaths) return;
     for (let prePath of prevPaths) {
-      paths.push([...prePath, target]);
+      if (isArray(prePath)) paths.push([...prePath, target]);
+      else paths.push([prePath, target]);
     }
   }
   foundPaths[target] = paths;
