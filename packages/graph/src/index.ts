@@ -13,6 +13,7 @@ import louvain from './louvain';
 import minimumSpanningTree from './mts';
 import pageRank from './pageRank';
 import GADDI from './gaddi';
+import Stack from './structs/stack';
 import { getNeighbors } from './util';
 
 import {
@@ -52,6 +53,7 @@ export {
   minimumSpanningTree,
   pageRank,
   getNeighbors,
+  Stack,
   GADDI,
   getAdjMatrixAsync,
   connectedComponentAsync,
@@ -89,6 +91,7 @@ export default {
   minimumSpanningTree,
   pageRank,
   getNeighbors,
+  Stack,
   GADDI,
   getAdjMatrixAsync,
   connectedComponentAsync,

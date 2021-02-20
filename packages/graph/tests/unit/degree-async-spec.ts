@@ -67,8 +67,13 @@ const data = {
   ],
 };
 
+<<<<<<< HEAD
 describe('(Async) degree algorithm', () => {
   it('getDegree', async () => {
+=======
+describe('degree async algorithm', () => {
+  it('getDegreeAsync', async () => {
+>>>>>>> b397393... test(webworker): add unit test for degree async algorithm
     const degree = {
       A: {
         degree: 3,
@@ -113,6 +118,7 @@ describe('(Async) degree algorithm', () => {
     };
 
     const { getDegreeAsync } = await getAlgorithm();
+<<<<<<< HEAD
     console.log('getDegreeAsync', getDegreeAsync);
     const result = await getDegreeAsync(data);
     expect(result).toEqual(degree);
@@ -141,4 +147,9 @@ describe('(Async) degree algorithm', () => {
     result = await getOutDegreeAsync(data, 'F');
     expect(result).toEqual(1);
   });
+=======
+    const result = await getDegreeAsync(data);
+    expect(result).toEqual(degree);
+  });
+>>>>>>> b397393... test(webworker): add unit test for degree async algorithm
 });
