@@ -85,7 +85,6 @@ const dijkstra = (
 export default dijkstra;
 
 function findAllPaths(source, target, prevs, foundPaths) {
-  debugger;
   if (source === target) {
     return [source];
   }
