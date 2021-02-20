@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.1
+
+- fix: shortestPath with wrong result;
+
 #### 0.1.0
 
 - fix: findShortestPath undefined is not interatable;
