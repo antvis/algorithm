@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.2
+
+- fix: failed to find result problem in dijkstra;
+
 #### 0.1.1
 
 - fix: shortestPath with wrong result;
