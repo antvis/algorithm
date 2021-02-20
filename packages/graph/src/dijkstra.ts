@@ -102,5 +102,5 @@ function findAllPaths(source, target, prevs, foundPaths) {
     }
   }
   foundPaths[target] = paths;
-  return;
+  return foundPaths[target];
 }
