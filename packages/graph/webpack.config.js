@@ -12,6 +12,7 @@ module.exports = {
     libraryExport: 'default',
     path: resolve(process.cwd(), 'dist/'),
     globalObject: 'this',
+    publicPath: './dist',
   },
   resolve: {
     extensions: ['.ts', '.js'],
