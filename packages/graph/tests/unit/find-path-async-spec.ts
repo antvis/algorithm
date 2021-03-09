@@ -119,7 +119,7 @@ describe('(Async) Shortest Path from source to target on graph', () => {
 
   it('find all shortest paths in weighted graph', async done => {
     const { findShortestPathAsync } = await getAlgorithm();
-    data.edges.forEach((edge, i) => {
+    data.edges.forEach((edge: any, i) => {
       edge.weight = ((i % 2) + 1) * 2;
       if (edge.source === 'F' && edge.target === 'D') edge.weight = 10;
     });

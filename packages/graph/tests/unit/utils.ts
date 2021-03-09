@@ -1,5 +1,12 @@
+import algorithm from '../../src/';
+
+type IAlgorithm = typeof algorithm;
+declare const window: Window & {
+  Algorithm: IAlgorithm;
+};
+
 export const getAlgorithm = () =>
-  new Promise(resolve => {
+  new Promise<IAlgorithm>(resolve => {
     if (window.Algorithm) {
       resolve(window.Algorithm);
     }
