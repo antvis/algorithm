@@ -30,6 +30,10 @@ export interface ClusterData {
   clusterEdges: EdgeConfig[];
 }
 
+export interface ClusterMap {
+  [key: string]: Cluster
+}
+
 // 图算法回调方法接口定义
 export interface IAlgorithmCallbacks {
   enter?: (param: { current: string; previous: string }) => void;

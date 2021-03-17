@@ -1,6 +1,5 @@
 import getAdjMatrix from './adjacent-matrix'
-import { uniqueId } from './util';
-import { NodeConfig, ClusterData, GraphData } from './types';
+import { NodeConfig, ClusterData, GraphData, ClusterMap } from './types';
 
 const getModularity = (
   nodes: NodeConfig[],
@@ -41,12 +40,13 @@ const louvain = (
 ): ClusterData => {
   // the origin data
   const { nodes = [], edges = [] } = graphData;
+  let uniqueId = 1;
 
-  const clusters = {};
+  const clusters: ClusterMap = {};
   const nodeMap = {};
   // init the clusters and nodeMap
   nodes.forEach((node, i) => {
-    const cid: string = uniqueId();
+    const cid: string = String(uniqueId++);
     node.clusterId = cid;
     clusters[cid] = {
       id: cid,
@@ -208,6 +208,18 @@ const louvain = (
     if (!cluster.nodes || !cluster.nodes.length) {
       delete clusters[clusterId];
     }
+  });
+
+  Object.keys(clusters).forEach((clusterId, index) => {
+    const cluster = clusters[clusterId];
+    const newId = String(index + 1);
+    if (newId === clusterId) {
+      return;
+    }
+    cluster.id = newId;
+    cluster.nodes = cluster.nodes.map(item => ({ id: item.id, clusterId: newId }));
+    clusters[newId] = cluster;
+    delete clusters[clusterId];
   });
 
   // get the cluster edges
