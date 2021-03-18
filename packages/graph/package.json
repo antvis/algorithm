@@ -18,6 +18,7 @@
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
+  "types": "lib/index.d.ts",
   "browser": "dist/index.min.js",
   "scripts": {
     "build": "npm run clean && father build && npm run build:umd",
