@@ -1,5 +1,4 @@
 import { getAlgorithm } from './utils';
-import { pageRank } from '../../src';
 
 const data = {
   nodes: [

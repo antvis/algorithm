@@ -1,4 +1,5 @@
 import { MESSAGE } from './constant';
+import Worker from './index.worker';
 
 interface Event {
   type: string;
@@ -11,9 +12,7 @@ interface Event {
  */
 const createWorker = <R>(type: string) => (...data) =>
   new Promise<R>((resolve, reject) => {
-    import('./index.worker').then(Worker => {
-      const worker = new Worker.default();
-
+      const worker = new Worker();
       worker.postMessage({
         type,
         data,
@@ -29,7 +28,6 @@ const createWorker = <R>(type: string) => (...data) =>
 
         worker.terminate();
       };
-    });
   });
 
 export default createWorker;

@@ -101,7 +101,7 @@ const findShortestPathAsync = (
   createWorker<{
     length: number;
     path: any;
-    allPaths: any;
+    allPath: any;
   }>(ALGORITHM.findShortestPath)(...[graphData, start, end, directed, weightPropertyName]);
 
 /**
@@ -123,7 +123,7 @@ const labelPropagationAsync = (
   graphData: GraphData,
   directed: boolean,
   weightPropertyName: string,
-  maxIteration: number,
+  maxIteration: number = 1000,
 ) =>
   createWorker<ClusterData>(ALGORITHM.labelPropagation)(
     graphData,
