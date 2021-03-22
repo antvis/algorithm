@@ -67,19 +67,19 @@ const dijkstra = (
 
   prevs[source] = [source];
   // 每个节点存可能存在多条最短路径
-  const allPaths = {};
+  const paths = {};
   for (const target in D) {
     if (D[target] !== Infinity) {
-      findAllPaths(source, target, prevs, allPaths);
+      findAllPaths(source, target, prevs, paths);
     }
   }
 
   // 兼容之前单路径
   const path = {};
-  for (const target in allPaths) {
-    path[target] = allPaths[target][0];
+  for (const target in paths) {
+    path[target] = paths[target][0];
   }
-  return { length: D, path, allPaths };
+  return { length: D, path, allPath: paths };
 };
 
 export default dijkstra;

@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.5
+
+- fix: worker async problem;
+- chore: unify allPath and allPaths;
 #### 0.1.2
 
 - fix: failed to find result problem in dijkstra;
