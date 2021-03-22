@@ -9,13 +9,13 @@ export const findShortestPath = (
   directed?: boolean,
   weightPropertyName?: string
 ) => {
-  const { length, path, allPaths } = dijkstra(
+  const { length, path, allPath } = dijkstra(
     graphData,
     start,
     directed,
     weightPropertyName
   );
-  return { length: length[end], path: path[end], allPath: allPaths[end] };
+  return { length: length[end], path: path[end], allPath: allPath[end] };
 };
 
 export const findAllPath = (
@@ -31,7 +31,7 @@ export const findAllPath = (
   const visited = [start];
   const isVisited = { [start]: true };
   const stack: string[][] = []; // 辅助栈，用于存储访问过的节点的邻居节点
-  const allPaths = [];
+  const allPath = [];
   let neighbors = directed
     ? getNeighbors(start, edges, 'target')
     : getNeighbors(start, edges);
@@ -58,7 +58,7 @@ export const findAllPath = (
 
     if (visited[visited.length - 1] === end) {
       const path = visited.map(node => node);
-      allPaths.push(path);
+      allPath.push(path);
 
       const node = visited.pop();
       isVisited[node] = false;
@@ -66,5 +66,5 @@ export const findAllPath = (
     }
   }
 
-  return allPaths;
+  return allPath;
 };

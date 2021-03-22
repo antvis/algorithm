@@ -95,18 +95,18 @@ describe('Shortest Path from source to target on graph', () => {
   });
 
   it('find all paths', () => {
-    const allPaths = findAllPath(data, 'A', 'E');
-    expect(allPaths.length).toBe(3);
-    expect(allPaths[0]).toStrictEqual(['A', 'D', 'F', 'E']);
-    expect(allPaths[1]).toStrictEqual(['A', 'D', 'E']);
-    expect(allPaths[2]).toStrictEqual(['A', 'E']);
+    const allPath = findAllPath(data, 'A', 'E');
+    expect(allPath.length).toBe(3);
+    expect(allPath[0]).toStrictEqual(['A', 'D', 'F', 'E']);
+    expect(allPath[1]).toStrictEqual(['A', 'D', 'E']);
+    expect(allPath[2]).toStrictEqual(['A', 'E']);
   });
 
   it('find all paths in directed graph', () => {
-    const allPaths = findAllPath(data, 'A', 'E', true);
-    expect(allPaths.length).toStrictEqual(2);
-    expect(allPaths[0]).toStrictEqual(['A', 'D', 'E']);
-    expect(allPaths[1]).toStrictEqual(['A', 'E']);
+    const allPath = findAllPath(data, 'A', 'E', true);
+    expect(allPath.length).toStrictEqual(2);
+    expect(allPath[0]).toStrictEqual(['A', 'D', 'E']);
+    expect(allPath[1]).toStrictEqual(['A', 'E']);
   });
 
   it('find all shortest paths in weighted graph', () => {

@@ -70,7 +70,7 @@ const dijkstraAsync = (
   createWorker<{
     length: number;
     path: any;
-    allPaths: any;
+    allPath: any;
   }>(ALGORITHM.dijkstra)(...[graphData, source, directed, weightPropertyName]);
 
 /**
