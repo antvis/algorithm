@@ -49,6 +49,7 @@ describe('louvain', () => {
       .then((res) => res.json())
       .then((data) => { // 1589 nodes, 2747 edges
         const clusteredData = louvain(data, false, 'weight');
+        console.log('clusteredData', clusteredData)
         expect(clusteredData.clusters.length).toBe(495);
         expect(clusteredData.clusterEdges.length).toBe(505);
       });

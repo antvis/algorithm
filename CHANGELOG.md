@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.6
+
+- fix: louvain with increased clusterId and node with correct new clusterId;
+
 #### 0.1.5
 
 - fix: worker async problem;
