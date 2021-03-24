@@ -202,25 +202,30 @@ const louvain = (
     });
   }
 
-  // delete the empty clusters
-  Object.keys(clusters).forEach(clusterId => {
+  // delete the empty clusters, assign increasing clusterId
+  const newClusterIdMap = {}
+  let clusterIdx = 0;
+  Object.keys(clusters).forEach((clusterId) => {
     const cluster = clusters[clusterId];
     if (!cluster.nodes || !cluster.nodes.length) {
       delete clusters[clusterId];
+      return;
     }
-  });
-
-  Object.keys(clusters).forEach((clusterId, index) => {
-    const cluster = clusters[clusterId];
-    const newId = String(index + 1);
+    const newId = String(clusterIdx + 1);
     if (newId === clusterId) {
       return;
     }
     cluster.id = newId;
     cluster.nodes = cluster.nodes.map(item => ({ id: item.id, clusterId: newId }));
     clusters[newId] = cluster;
+    newClusterIdMap[clusterId] = newId;
     delete clusters[clusterId];
+    clusterIdx ++;
   });
+
+  nodes.forEach(node => {
+    if (node.clusterId && newClusterIdMap[node.clusterId]) node.clusterId = newClusterIdMap[node.clusterId]
+  })
 
   // get the cluster edges
   const clusterEdges = [];
