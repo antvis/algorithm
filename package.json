@@ -13,9 +13,6 @@
     "bootstrap": "lerna bootstrap",
     "ls": "lerna list"
   },
-  "dependencies": {
-    "@antv/util": "^2.0.9"
-  },
   "devDependencies": {
     "lerna": "^3.20.2"
   }
