@@ -2,6 +2,7 @@
 #### 0.1.8
 
 - fix: CPU usage increases due to 0.1.3-beta ~ 0.1.3 with publicPath configuration;
+- fix: CPU usage increases due to 0.1.6 ~ 0.17 with browser output;
 
 #### 0.1.6
 
