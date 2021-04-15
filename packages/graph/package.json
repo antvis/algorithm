@@ -1,6 +1,6 @@
 {
   "name": "@antv/algorithm",
-  "version": "0.1.8-beta.5",
+  "version": "0.1.8-beta.7",
   "description": "graph algorithm",
   "keywords": [
     "graph",
@@ -19,7 +19,7 @@
   "main": "lib/index.js",
   "module": "es/index.js",
   "types": "lib/index.d.ts",
-  "browser": "dist/index.min.js",
+  "unpkg": "dist/index.min.js",
   "scripts": {
     "build": "npm run clean && father build && npm run build:umd",
     "build:umd": "webpack --config webpack.config.js --mode production",
