@@ -1,4 +1,4 @@
-import { getAlgorithm } from './utils';
+import { getDegreeAsync } from '../../src'
 
 const data = {
   nodes: [
@@ -112,7 +112,6 @@ describe('degree async algorithm', () => {
       },
     };
 
-    const { getDegreeAsync } = await getAlgorithm();
     const result = await getDegreeAsync(data);
     expect(result).toEqual(degree);
   });

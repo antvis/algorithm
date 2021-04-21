@@ -3,7 +3,10 @@ import Worker from './index.worker';
 
 interface Event {
   type: string;
-  data: any;
+  data: {
+    _algorithmType: string;
+    data: any;
+  };
 }
 
 /**
@@ -12,22 +15,22 @@ interface Event {
  */
 const createWorker = <R>(type: string) => (...data) =>
   new Promise<R>((resolve, reject) => {
-      const worker = new Worker();
-      worker.postMessage({
-        type,
-        data,
-      });
+    const worker = Worker();
+    worker.postMessage({
+      _algorithmType: type,
+      data,
+    });
 
-      worker.onmessage = (event: Event) => {
-        const { data, type } = event.data;
-        if (MESSAGE.SUCCESS === type) {
-          resolve(data);
-        } else {
-          reject();
-        }
+    worker.onmessage = (event: Event) => {
+      const { data, _algorithmType } = event.data;
+      if (MESSAGE.SUCCESS === _algorithmType) {
+        resolve(data);
+      } else {
+        reject();
+      }
 
-        worker.terminate();
-      };
+      worker.terminate();
+    };
   });
 
 export default createWorker;

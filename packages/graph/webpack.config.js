@@ -4,6 +4,7 @@ const resolve = require('path').resolve;
 module.exports = {
   entry: {
     index: './src/index.ts',
+    algorithm: './src/algorithm.ts',
   },
   output: {
     filename: '[name].min.js',
@@ -19,19 +20,6 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.worker\.ts$/,
-        exclude: /(node_modules)/,
-        use: [
-          {
-            loader: 'worker-loader',
-            options: {
-              inline: 'fallback',
-              filename: 'index.worker.js',
-            },
-          },
-        ],
-      },
       {
         test: /\.js$/,
         include: /node_modules/,

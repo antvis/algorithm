@@ -1,23 +1,36 @@
-import * as algorithm from './algorithm';
-import { MESSAGE } from './constant';
-
-const ctx: Worker = self as any;
+import WebWorker from './worker';
 
 interface Event {
   type: string;
-  data: any;
+  data: {
+    _algorithmType: string;
+    data: any;
+  };
 }
 
-ctx.onmessage = (event: Event) => {
-  const { type, data } = event.data;
-  if (typeof algorithm[type] === 'function') {
-    const result = algorithm[type](...data);
-    ctx.postMessage({ type: MESSAGE.SUCCESS, data: result });
-    return;
-  }
+const Worker = (
+  workerScriptURL: string = 'https://unpkg.com/@antv/algorithm@latest/dist/index.min.js',
+) => {
+  const workerCode = () => {
+    const MESSAGE = {
+      SUCCESS: 'SUCCESS',
+      FAILURE: 'FAILURE',
+    };
 
-  ctx.postMessage({ type: MESSAGE.FAILURE });
+    const ctx: Worker = self as any;
+    ctx.onmessage = (event: Event) => {
+      const { _algorithmType, data } = event.data;
+      if (typeof Algorithm[_algorithmType] === 'function') {
+        const result = Algorithm[_algorithmType](...data);
+        ctx.postMessage({ _algorithmType: MESSAGE.SUCCESS, data: result });
+        return;
+      }
+
+      ctx.postMessage({ _algorithmType: MESSAGE.FAILURE });
+    };
+  };
+
+  return new WebWorker(workerCode, workerScriptURL);
 };
 
-// https://stackoverflow.com/questions/50210416/webpack-worker-loader-fails-to-compile-typescript-worker
-export default null as any;
+export default Worker;
