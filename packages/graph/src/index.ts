@@ -3,7 +3,7 @@ import breadthFirstSearch from './bfs';
 import connectedComponent from './connected-component';
 import getDegree from './degree';
 import { getInDegree, getOutDegree } from './degree';
-import detectCycle from './detect-cycle';
+import detectCycle, { detectAllCycles, detectAllDirectedCycle, detectAllUndirectedCycle } from './detect-cycle';
 import depthFirstSearch from './dfs';
 import dijkstra from './dijkstra';
 import { findAllPath, findShortestPath } from './find-path';
@@ -16,6 +16,9 @@ import GADDI from './gaddi';
 import Stack from './structs/stack';
 import { getNeighbors } from './util';
 
+const detectDirectedCycle = detectCycle;
+const detectDirectedCycleAsync = detectCycleAsync;
+
 import {
   getAdjMatrixAsync,
   connectedComponentAsync,
@@ -23,6 +26,9 @@ import {
   getInDegreeAsync,
   getOutDegreeAsync,
   detectCycleAsync,
+  detectAllCyclesAsync,
+  detectAllDirectedCycleAsync,
+  detectAllUndirectedCycleAsync,
   dijkstraAsync,
   findAllPathAsync,
   findShortestPathAsync,
@@ -43,6 +49,10 @@ export {
   getInDegree,
   getOutDegree,
   detectCycle,
+  detectDirectedCycle,
+  detectAllCycles,
+  detectAllDirectedCycle,
+  detectAllUndirectedCycle,
   depthFirstSearch,
   dijkstra,
   findAllPath,
@@ -61,6 +71,10 @@ export {
   getInDegreeAsync,
   getOutDegreeAsync,
   detectCycleAsync,
+  detectDirectedCycleAsync,
+  detectAllCyclesAsync,
+  detectAllDirectedCycleAsync,
+  detectAllUndirectedCycleAsync,
   dijkstraAsync,
   findAllPathAsync,
   findShortestPathAsync,
@@ -81,6 +95,10 @@ export default {
   getInDegree,
   getOutDegree,
   detectCycle,
+  detectDirectedCycle,
+  detectAllCycles,
+  detectAllDirectedCycle,
+  detectAllUndirectedCycle,
   depthFirstSearch,
   dijkstra,
   findAllPath,
@@ -99,6 +117,10 @@ export default {
   getInDegreeAsync,
   getOutDegreeAsync,
   detectCycleAsync,
+  detectDirectedCycleAsync,
+  detectAllCyclesAsync,
+  detectAllDirectedCycleAsync,
+  detectAllUndirectedCycleAsync,
   dijkstraAsync,
   findAllPathAsync,
   findShortestPathAsync,
