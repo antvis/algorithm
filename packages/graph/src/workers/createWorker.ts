@@ -14,13 +14,13 @@ const createWorker = <R>(type: string) => (...data) =>
   new Promise<R>((resolve, reject) => {
       const worker = new Worker();
       worker.postMessage({
-        type,
+          _algorithmType:type,
         data,
       });
 
       worker.onmessage = (event: Event) => {
-        const { data, type } = event.data;
-        if (MESSAGE.SUCCESS === type) {
+        const { data, _algorithmType } = event.data;
+        if (MESSAGE.SUCCESS === _algorithmType) {
           resolve(data);
         } else {
           reject();

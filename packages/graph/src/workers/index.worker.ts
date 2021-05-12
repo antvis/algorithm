@@ -9,14 +9,18 @@ interface Event {
 }
 
 ctx.onmessage = (event: Event) => {
-  const { type, data } = event.data;
-  if (typeof algorithm[type] === 'function') {
-    const result = algorithm[type](...data);
-    ctx.postMessage({ type: MESSAGE.SUCCESS, data: result });
+  const { _algorithmType, data } = event.data;
+  // 如果发送内容没有私有类型。说明不是自己发的。不管
+  // fix: https://github.com/antvis/algorithm/issues/25
+  if(!_algorithmType){
     return;
   }
-
-  ctx.postMessage({ type: MESSAGE.FAILURE });
+  if (typeof algorithm[_algorithmType] === 'function') {
+    const result = algorithm[_algorithmType](...data);
+    ctx.postMessage({ _algorithmType: MESSAGE.SUCCESS, data: result });
+    return;
+  }
+  ctx.postMessage({ _algorithmType: MESSAGE.FAILURE });
 };
 
 // https://stackoverflow.com/questions/50210416/webpack-worker-loader-fails-to-compile-typescript-worker
