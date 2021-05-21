@@ -1,4 +1,9 @@
 # ChangeLog
+#### 0.1.8
+
+- fix: CPU usage increases due to 0.1.3-beta ~ 0.1.3 with publicPath configuration;
+- fix: CPU usage increases due to 0.1.6 ~ 0.17 with browser output;
+- feat: export fix: export detectAllCycles, detectAllDirectedCycle, detectAllUndirectedCycle;
 
 #### 0.1.6
 
@@ -8,6 +13,7 @@
 
 - fix: worker async problem;
 - chore: unify allPath and allPaths;
+
 #### 0.1.2
 
 - fix: failed to find result problem in dijkstra;

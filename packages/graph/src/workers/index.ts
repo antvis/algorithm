@@ -2,7 +2,6 @@ import {
   GraphData,
   DegreeType,
   Matrix,
-  IAlgorithmCallbacks,
   ClusterData,
   EdgeConfig,
   NodeConfig,
@@ -49,13 +48,40 @@ const getOutDegreeAsync = (graphData: GraphData, nodeId: string) =>
   createWorker<DegreeType>(ALGORITHM.getOutDegree)(graphData, nodeId);
 
 /**
- * 检测图中的 Cycle
+ * 检测图中的(有向) Cycle
  * @param graphData 图数据
  */
 const detectCycleAsync = (graphData: GraphData) =>
   createWorker<{
     [key: string]: string;
   }>(ALGORITHM.detectCycle)(graphData);
+
+/**
+ * 检测图中的(无向) Cycle
+ * @param graphData 图数据
+ */
+ const detectAllCyclesAsync = (graphData: GraphData) =>
+ createWorker<{
+   [key: string]: string;
+ }>(ALGORITHM.detectAllCycles)(graphData);
+
+/**
+ * 检测图中的所有(有向) Cycle
+ * @param graphData 图数据
+ */
+ const detectAllDirectedCycleAsync = (graphData: GraphData) =>
+ createWorker<{
+   [key: string]: string;
+ }>(ALGORITHM.detectAllDirectedCycle)(graphData);
+
+/**
+ * 检测图中的所有(无向) Cycle
+ * @param graphData 图数据
+ */
+ const detectAllUndirectedCycleAsync = (graphData: GraphData) =>
+ createWorker<{
+   [key: string]: string;
+ }>(ALGORITHM.detectAllUndirectedCycle)(graphData);
 
 /**
  * Dijkstra's algorithm, See {@link https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm}
@@ -211,6 +237,9 @@ export {
   getInDegreeAsync,
   getOutDegreeAsync,
   detectCycleAsync,
+  detectAllCyclesAsync,
+  detectAllDirectedCycleAsync,
+  detectAllUndirectedCycleAsync,
   dijkstraAsync,
   findAllPathAsync,
   findShortestPathAsync,

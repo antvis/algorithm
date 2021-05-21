@@ -15,6 +15,9 @@ module.exports = {
     globalObject: 'this',
     publicPath: './dist',
   },
+  watchOptions: {
+    ignored: /node_modules/
+  },
   resolve: {
     extensions: ['.ts', '.js'],
   },
