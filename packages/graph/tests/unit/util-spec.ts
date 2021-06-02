@@ -1,4 +1,4 @@
-import { getNeighbors, getEdgesByNodeId, getOutEdgesNodeId } from '../../src/util'
+import { getNeighbors, getEdgesByNodeId, getOutEdgesNodeId } from '../../src/util';
 
 const data = {
   nodes: [
@@ -69,15 +69,14 @@ const data = {
 
 describe('algorithm util method', () => {
   it('getNeighbors', () => {
-    
     let result = getNeighbors('A', data.edges);
     expect(result).toEqual(['B', 'C', 'D']);
 
-    result = getNeighbors('A', data.edges, 'source')
-    expect(result).toEqual(['D'])
+    result = getNeighbors('A', data.edges, 'source');
+    expect(result).toEqual(['D']);
 
-    result = getNeighbors('A', data.edges, 'target')
-    expect(result).toEqual(['B', 'C'])
+    result = getNeighbors('A', data.edges, 'target');
+    expect(result).toEqual(['B', 'C']);
   });
 
   it('getEdgesByNodeId', () => {
@@ -94,11 +93,11 @@ describe('algorithm util method', () => {
         source: 'D',
         target: 'A',
       },
-    ]
-    let result = getEdgesByNodeId('A', data.edges);
+    ];
+    const result = getEdgesByNodeId('A', data.edges);
     expect(result).toEqual(aEdges);
   });
-  
+
   it('getOutEdgesNodeId', () => {
     const aEdges = [
       {
@@ -108,9 +107,9 @@ describe('algorithm util method', () => {
       {
         source: 'A',
         target: 'C',
-      }
-    ]
-    let result = getOutEdgesNodeId('A', data.edges);
+      },
+    ];
+    const result = getOutEdgesNodeId('A', data.edges);
     expect(result).toEqual(aEdges);
   });
 });

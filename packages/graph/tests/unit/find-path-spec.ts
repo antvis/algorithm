@@ -73,13 +73,21 @@ const data = {
 
 describe('Shortest Path from source to target on graph', () => {
   it('find the shortest path', () => {
-    const { length, path } = findShortestPath(data, 'A', 'C');
+    const { length, path } = findShortestPath({
+      graphData: data,
+      start: 'A',
+      end: 'C',
+    });
     expect(length).toBe(2);
     expect(path).toStrictEqual(['A', 'B', 'C']);
   });
 
   it('find all shortest paths', () => {
-    const { length, allPath } = findShortestPath(data, 'A', 'F');
+    const { length, allPath } = findShortestPath({
+      graphData: data,
+      start: 'A',
+      end: 'F',
+    });
     expect(length).toBe(2);
     expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
     expect(allPath[1]).toStrictEqual(['A', 'D', 'F']);
@@ -88,14 +96,23 @@ describe('Shortest Path from source to target on graph', () => {
       length: directedLenght,
       path: directedPath,
       allPath: directedAllPath,
-    } = findShortestPath(data, 'A', 'F', true);
+    } = findShortestPath({
+      graphData: data,
+      start: 'A',
+      end: 'F',
+      directed: true,
+    });
     expect(directedLenght).toBe(2);
     expect(directedAllPath[0]).toStrictEqual(['A', 'E', 'F']);
     expect(directedPath).toStrictEqual(['A', 'E', 'F']);
   });
 
   it('find all paths', () => {
-    const allPath = findAllPath(data, 'A', 'E');
+    const allPath = findAllPath({
+      graphData: data,
+      start: 'A',
+      end: 'E',
+    });
     expect(allPath.length).toBe(3);
     expect(allPath[0]).toStrictEqual(['A', 'D', 'F', 'E']);
     expect(allPath[1]).toStrictEqual(['A', 'D', 'E']);
@@ -103,7 +120,12 @@ describe('Shortest Path from source to target on graph', () => {
   });
 
   it('find all paths in directed graph', () => {
-    const allPath = findAllPath(data, 'A', 'E', true);
+    const allPath = findAllPath({
+      graphData: data,
+      start: 'A',
+      end: 'E',
+      directed: true,
+    });
     expect(allPath.length).toStrictEqual(2);
     expect(allPath[0]).toStrictEqual(['A', 'D', 'E']);
     expect(allPath[1]).toStrictEqual(['A', 'E']);
@@ -114,7 +136,12 @@ describe('Shortest Path from source to target on graph', () => {
       edge.weight = ((i % 2) + 1) * 2;
       if (edge.source === 'F' && edge.target === 'D') edge.weight = 10;
     });
-    const { length, path, allPath } = findShortestPath(data, 'A', 'F', false, 'weight');
+    const { length, path, allPath } = findShortestPath({
+      graphData: data,
+      start: 'A',
+      end: 'F',
+      weightPropertyName: 'weight',
+    });
     expect(length).toBe(6);
     expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
     expect(path).toStrictEqual(['A', 'E', 'F']);

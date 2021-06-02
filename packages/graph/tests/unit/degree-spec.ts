@@ -1,4 +1,4 @@
-import { getDegree, getInDegree, getOutDegree } from '../../src'
+import { getDegree, getInDegree, getOutDegree } from '../../src';
 
 const data = {
   nodes: [
@@ -73,67 +73,67 @@ describe('degree algorithm', () => {
       A: {
         degree: 3,
         inDegree: 1,
-        outDegree: 2
+        outDegree: 2,
       },
       B: {
         degree: 2,
         inDegree: 1,
-        outDegree: 1
+        outDegree: 1,
       },
       C: {
         degree: 2,
         inDegree: 2,
-        outDegree: 0
+        outDegree: 0,
       },
       D: {
         degree: 3,
         inDegree: 1,
-        outDegree: 2
+        outDegree: 2,
       },
       E: {
         degree: 2,
         inDegree: 1,
-        outDegree: 1
+        outDegree: 1,
       },
       F: {
         degree: 2,
         inDegree: 1,
-        outDegree: 1
+        outDegree: 1,
       },
       G: {
         degree: 2,
         inDegree: 1,
-        outDegree: 1
+        outDegree: 1,
       },
       H: {
         degree: 2,
         inDegree: 1,
-        outDegree: 1
-      }
-    }
-    let result = getDegree(data);
+        outDegree: 1,
+      },
+    };
+    const result = getDegree({ graphData: data });
     expect(result).toEqual(degree);
   });
 
   it('getInDegree', () => {
-    let result = getInDegree(data, 'A');
+    let result = getInDegree({ graphData: data, nodeId: 'A' });
     expect(result).toBe(1);
 
-    result = getInDegree(data, 'C')
-    expect(result).toBe(2)
+    result = getInDegree({ graphData: data, nodeId: 'C' });
+    expect(result).toBe(2);
 
-    result = getInDegree(data, 'E')
-    expect(result).toBe(1)
+    result = getInDegree({ graphData: data, nodeId: 'E' });
+    expect(result).toBe(1);
   });
-  
+
   it('getOutDegree', () => {
-    let result = getOutDegree(data, 'A');
-    expect(result).toEqual(2);
-    
-    result = getOutDegree(data, 'D');
+    let result = getOutDegree({ graphData: data, nodeId: 'A' });
     expect(result).toEqual(2);
 
-    result = getOutDegree(data, 'F');
+    result = getOutDegree({ graphData: data, nodeId: 'D' });
+    expect(result).toEqual(2);
+
+    result = getOutDegree({ graphData: data, nodeId: 'F' });
     expect(result).toEqual(1);
   });
 });

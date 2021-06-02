@@ -1,4 +1,4 @@
-import GADDI from '../../src/gaddi';
+import { GADDI } from '../../src';
 import { nodes77, nodes202, nodes1589, nodes20 } from './data/test-data';
 
 const data3 = {
@@ -272,15 +272,10 @@ const circlePattern = {
 
 describe('gSpan', () => {
   it('gSpan match pattern 1', () => {
-    const matchedSubGraphs = GADDI(
-      data3,
-      pattern1,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const matchedSubGraphs = GADDI({
+      graphData: data3,
+      pattern: pattern1,
+    });
     console.log('test1', matchedSubGraphs);
     expect(matchedSubGraphs.length).toBe(2);
     matchedSubGraphs.forEach(graph => {
@@ -292,21 +287,21 @@ describe('gSpan', () => {
     });
   });
   it('gSpan match pattern 2', () => {
-    const matchedSubGraphs = GADDI(data3, pattern2, false, 2, 1, 'cluster', 'cluster');
+    const matchedSubGraphs = GADDI({
+      graphData: data3,
+      pattern: pattern2,
+      k: 2,
+      length: 1,
+    });
     console.log('test2', matchedSubGraphs);
     expect(matchedSubGraphs.length).toBe(1);
     // expect(matchedSubGraphs.nodes)
   });
   it('gSpan match circular', () => {
-    const matchedSubGraphs = GADDI(
-      data3,
-      circlePattern,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const matchedSubGraphs = GADDI({
+      graphData: data3,
+      pattern: circlePattern,
+    });
     expect(matchedSubGraphs.length).toBe(2);
     matchedSubGraphs.forEach(graph => {
       graph.nodes.forEach(node => {
@@ -337,15 +332,10 @@ describe('gSpan', () => {
         { source: '6', target: '1', cluster: 'e' },
       ],
     };
-    const matchedSubGraphs = GADDI(
-      data3,
-      circlePattern2,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const matchedSubGraphs = GADDI({
+      graphData: data3,
+      pattern: circlePattern2,
+    });
     console.log('circle 2', matchedSubGraphs);
     expect(matchedSubGraphs.length).toBe(1);
 
@@ -372,15 +362,10 @@ describe('gSpan', () => {
         { source: 'node1', target: 'node2', cluster: 'e' },
       ],
     };
-    const matchedSubGraphs = GADDI(
-      data3,
-      pattern3,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const matchedSubGraphs = GADDI({
+      graphData: data3,
+      pattern: pattern3,
+    });
     console.log('test3', matchedSubGraphs);
     // expect(matchedSubGraphs.length).toBe(2);
     // matchedSubGraphs.forEach((graph) => {
@@ -423,15 +408,11 @@ describe('gSpan directed', () => {
         },
       ],
     };
-    const matchedSubGraphs = GADDI(
-      data3,
-      pattern11,
-      true,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const matchedSubGraphs = GADDI({
+      graphData: data3,
+      pattern: pattern11,
+      directed: true,
+    });
     expect(matchedSubGraphs.length).toBe(1);
     expect(matchedSubGraphs[0].nodes[0].id).toBe('0');
     expect(matchedSubGraphs[0].nodes[1].id).toBe('1');
@@ -456,7 +437,13 @@ describe('GADDI switch nodes', () => {
         },
       ],
     };
-    const res1 = GADDI(nodes20, pattern1, true, undefined, undefined, 'dataType', 'dataType');
+    const res1 = GADDI({
+      graphData: nodes20,
+      pattern: pattern1,
+      directed: true,
+      nodeLabelProp: 'dataType',
+      edgeLabelProp: 'dataType',
+    });
     expect(res1.length).toBe(5);
     const pattern2 = {
       nodes: [
@@ -473,7 +460,13 @@ describe('GADDI switch nodes', () => {
         },
       ],
     };
-    const res2 = GADDI(nodes20, pattern2, true, undefined, undefined, 'dataType', 'dataType');
+    const res2 = GADDI({
+      graphData: nodes20,
+      pattern: pattern2,
+      directed: true,
+      nodeLabelProp: 'dataType',
+      edgeLabelProp: 'dataType',
+    });
     expect(res2.length).toBe(6);
   });
 });
@@ -493,15 +486,10 @@ describe('Performance: gSpan 77 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes77,
-      patternWith3Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes77,
+      pattern: patternWith3Nodes,
+    });
     console.log('77 nodes graph matching 3 nodes pattern', performance.now() - begin);
     result.forEach(re => {
       console.log(JSON.stringify(re));
@@ -536,15 +524,10 @@ describe('Performance: gSpan 77 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes77,
-      patternWith5Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes77,
+      pattern: patternWith5Nodes,
+    });
     console.log('77 nodes graph matching 5 nodes pattern', performance.now() - begin);
     result.forEach(re => {
       console.log(JSON.stringify(re));
@@ -611,15 +594,10 @@ describe('Performance: gSpan 77 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes77,
-      patternWith10Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes77,
+      pattern: patternWith10Nodes,
+    });
     console.log(
       '77 nodes graph matching 10 nodes pattern',
       performance.now() - begin,
@@ -653,15 +631,10 @@ describe('Performance: 202 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes202,
-      patternWith4Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes202,
+      pattern: patternWith4Nodes,
+    });
     console.log('202 nodes graph matching 4 nodes pattern', performance.now() - begin);
     result.forEach(re => {
       console.log(JSON.stringify(re));
@@ -693,15 +666,10 @@ describe('Performance: 202 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes202,
-      patternWith7Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes202,
+      pattern: patternWith7Nodes,
+    });
     console.log('202 nodes graph matching 7 nodes pattern', performance.now() - begin);
     result.forEach(re => {
       console.log(JSON.stringify(re));
@@ -737,15 +705,11 @@ describe('Performance: 202 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes202,
-      patternWith7Nodes,
-      true,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes202,
+      pattern: patternWith7Nodes,
+      directed: true,
+    });
     console.log('202 nodes graph matching 7 nodes pattern, directed', performance.now() - begin);
     result.forEach(re => {
       console.log(JSON.stringify(re));
@@ -789,15 +753,11 @@ describe('Performance: 202 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes202,
-      patternWith14Nodes,
-      true,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes202,
+      pattern: patternWith14Nodes,
+      directed: true,
+    });
 
     console.log(
       '202 nodes graph matching 14 nodes pattern, directed',
@@ -828,15 +788,10 @@ describe('Performance: 1589 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes1589,
-      patternWith4Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes1589,
+      pattern: patternWith4Nodes,
+    });
     console.log(
       '1589 nodes graph matching 4 nodes pattern',
       performance.now() - begin,
@@ -882,15 +837,10 @@ describe('Performance: 1589 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const result = GADDI(
-      nodes1589,
-      patternWith6Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = GADDI({
+      graphData: nodes1589,
+      pattern: patternWith6Nodes,
+    });
     console.log(
       '1589 nodes graph matching 6 nodes full-connected pattern',
       performance.now() - begin,

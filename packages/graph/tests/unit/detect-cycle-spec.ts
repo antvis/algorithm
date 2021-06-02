@@ -1,4 +1,4 @@
-import detectDirectedCycle, { detectAllCycles } from '../../src/detect-cycle';
+import { detectDirectedCycle, detectAllCycles } from '../../src';
 
 const data = {
   nodes: [
@@ -54,7 +54,7 @@ const data = {
 
 describe('detectDirectedCycle', () => {
   it('should detect directed cycle', () => {
-    let result = detectDirectedCycle(data);
+    let result = detectDirectedCycle({ graphData: data });
     // debugger
     expect(result).toBeNull();
 
@@ -65,7 +65,7 @@ describe('detectDirectedCycle', () => {
 
     // 返回格式：
     // { currentNodeId: prevNode }
-    result = detectDirectedCycle(data);
+    result = detectDirectedCycle({ graphData: data });
     expect(result).toEqual({
       D: 'F',
       F: 'E',
@@ -77,13 +77,13 @@ describe('detectDirectedCycle', () => {
       source: 'C',
       target: 'D',
     });
-  
-    const result = detectAllCycles(data, true);
+
+    const result = detectAllCycles({ graphData: data, directed: true });
     expect(result.length).toEqual(3);
-    
-    const result2 = detectAllCycles(data, true, ['B']);
+
+    const result2 = detectAllCycles({ graphData: data, directed: true, nodeIds: ['B'] });
     expect(result2.length).toEqual(1);
-    
+
     expect(result2[0]).toEqual({
       A: { id: 'B' },
       B: { id: 'C' },
@@ -92,9 +92,14 @@ describe('detectDirectedCycle', () => {
     });
   });
   it('detect cycle in undirected graph', () => {
-    const result = detectAllCycles(data);
+    const result = detectAllCycles({ graphData: data });
     expect(result.length).toEqual(3);
-    const result2 = detectAllCycles(data, false, ['B'], false);
+    const result2 = detectAllCycles({
+      graphData: data,
+      directed: false,
+      nodeIds: ['B'],
+      include: false,
+    });
     expect(Object.keys(result2[0]).sort()).toEqual(['D', 'E', 'F']);
   });
   it('test another graph', () => {
@@ -480,28 +485,32 @@ describe('detectDirectedCycle', () => {
         },
       ],
     };
-    const result = detectAllCycles(graphData, true, ['14']);
-    const result2 = detectAllCycles(graphData);
+    const result = detectAllCycles({ graphData, directed: true, nodeIds: ['14'] });
+    const result2 = detectAllCycles({ graphData });
     expect(result.length).toEqual(4);
     expect(result2.length).toEqual(27);
   });
   it('test a large graph', () => {
     fetch('https://gw.alipayobjects.com/os/basement_prod/da5a1b47-37d6-44d7-8d10-f3e046dabf82.json')
-      .then((res) => res.json())
-      .then((data) => {
-        data.nodes.forEach((node) => {
+      .then(res => res.json())
+      .then(data => {
+        data.nodes.forEach(node => {
           node.label = node.olabel;
           node.degree = 0;
-          data.edges.forEach((edge) => {
+          data.edges.forEach(edge => {
             if (edge.source === node.id || edge.target === node.id) {
               node.degree++;
             }
           });
         });
 
-        const directedCycles = detectAllCycles(data, true);
+        const directedCycles = detectAllCycles({ graphData: data, directed: true });
         expect(directedCycles.length).toEqual(0);
-        const undirectedCycles = detectAllCycles(data, false, ['1084'], false);
+        const undirectedCycles = detectAllCycles({
+          graphData: data,
+          nodeIds: ['1084'],
+          include: false,
+        });
         expect(undirectedCycles.length).toEqual(1548);
       });
   });

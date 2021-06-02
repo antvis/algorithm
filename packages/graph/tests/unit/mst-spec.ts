@@ -65,18 +65,25 @@ const data = {
 
 describe('minimumSpanningTree', () => {
   it('test kruskal algorithm', () => {
-    let result = minimumSpanningTree(data, 'weight');
+    const result = minimumSpanningTree({
+      graphData: data,
+      weight: 'weight',
+    });
     let totalWeight = 0;
-    for (let edge of result) {
+    for (const edge of result) {
       totalWeight += edge.weight;
     }
     expect(totalWeight).toEqual(10);
   });
 
   it('test prim algorithm', () => {
-    let result = minimumSpanningTree(data, 'weight', 'prim');
+    const result = minimumSpanningTree({
+      graphData: data,
+      weight: 'weight',
+      algo: 'prim',
+    });
     let totalWeight = 0;
-    for (let edge of result) {
+    for (const edge of result) {
       totalWeight += edge.weight;
     }
     expect(totalWeight).toEqual(10);

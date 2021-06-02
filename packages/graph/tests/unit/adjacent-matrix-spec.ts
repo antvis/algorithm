@@ -69,7 +69,7 @@ const data = {
 
 describe('Adjacency Matrix', () => {
   it('undirected', () => {
-    const matrix = getAdjMatrix(data);
+    const matrix = getAdjMatrix({ graphData: data });
     expect(Object.keys(matrix).length).toBe(8);
     const node0Adj = matrix[0];
     expect(node0Adj.length).toBe(5);
@@ -95,7 +95,7 @@ describe('Adjacency Matrix', () => {
   });
 
   it('directed', () => {
-    const matrix = getAdjMatrix(data, true);
+    const matrix = getAdjMatrix({ graphData: data, directed: true });
     expect(Object.keys(matrix).length).toBe(8);
     const node0Adj = matrix[0];
     expect(node0Adj.length).toBe(5);

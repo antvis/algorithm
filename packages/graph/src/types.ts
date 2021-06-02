@@ -1,4 +1,3 @@
-
 export type Matrix = number[];
 
 export interface NodeConfig {
@@ -31,7 +30,7 @@ export interface ClusterData {
 }
 
 export interface ClusterMap {
-  [key: string]: Cluster
+  [key: string]: Cluster;
 }
 
 // 图算法回调方法接口定义
@@ -46,5 +45,10 @@ export interface DegreeType {
     degree: number;
     inDegree: number;
     outDegree: number;
-  }
+  };
+}
+
+export interface OptionBase {
+  /**  是否有向图，默认为 false */
+  graphData: GraphData;
 }

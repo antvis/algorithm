@@ -69,7 +69,7 @@ const data = {
 
 describe('Adjacency Matrix by Algorithm', () => {
   it('get graph shortestpath matrix', () => {
-    const matrix = floydWarshall(data);
+    const matrix = floydWarshall({ graphData: data });
     expect(Object.keys(matrix).length).toBe(8);
     const node0 = matrix[0];
     expect(node0.length).toBe(8);
@@ -88,7 +88,7 @@ describe('Adjacency Matrix by Algorithm', () => {
 
   it('directed', () => {
     // directed
-    const matrix = floydWarshall(data, true);
+    const matrix = floydWarshall({ graphData: data, directed: true });
     expect(Object.keys(matrix).length).toBe(8);
     const node0 = matrix[0];
     expect(node0.length).toBe(8);

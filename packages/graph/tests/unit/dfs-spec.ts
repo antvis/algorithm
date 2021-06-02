@@ -62,17 +62,20 @@ const data = {
 
 describe('depthFirstSearch', () => {
   it('should perform DFS operation on graph', () => {
-
     const enterNodeCallback = jest.fn();
     const leaveNodeCallback = jest.fn();
 
     // Traverse graphs without callbacks first to check default ones.
-    depthFirstSearch(data, 'A');
+    depthFirstSearch({ graphData: data, startNodeId: 'A' });
 
     // Traverse graph with enterNode and leaveNode callbacks.
-    depthFirstSearch(data, 'A', {
-      enter: enterNodeCallback,
-      leave: leaveNodeCallback,
+    depthFirstSearch({
+      graphData: data,
+      startNodeId: 'A',
+      originalCallbacks: {
+        enter: enterNodeCallback,
+        leave: leaveNodeCallback,
+      },
     });
 
     expect(enterNodeCallback).toHaveBeenCalledTimes(data.nodes.length);
@@ -91,9 +94,7 @@ describe('depthFirstSearch', () => {
     for (let callIndex = 0; callIndex < data.nodes.length; callIndex += 1) {
       const params = enterNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(enterNodeParamsMap[callIndex].currentNode);
-      expect(params.previous).toEqual(
-        enterNodeParamsMap[callIndex].previousNode,
-      );
+      expect(params.previous).toEqual(enterNodeParamsMap[callIndex].previousNode);
     }
 
     const leaveNodeParamsMap = [
@@ -109,22 +110,23 @@ describe('depthFirstSearch', () => {
     for (let callIndex = 0; callIndex < data.nodes.length; callIndex += 1) {
       const params = leaveNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(leaveNodeParamsMap[callIndex].currentNode);
-      expect(params.previous).toEqual(
-        leaveNodeParamsMap[callIndex].previousNode,
-      );
+      expect(params.previous).toEqual(leaveNodeParamsMap[callIndex].previousNode);
     }
   });
 
   it('allow users to redefine node visiting logic', () => {
-
     const enterNodeCallback = jest.fn();
     const leaveNodeCallback = jest.fn();
 
-    depthFirstSearch(data, 'A', {
-      enter: enterNodeCallback,
-      leave: leaveNodeCallback,
-      allowTraversal: ({ current: currentNode, next: nextNode }) => {
-        return !(currentNode === 'A' && nextNode === 'B');
+    depthFirstSearch({
+      graphData: data,
+      startNodeId: 'A',
+      originalCallbacks: {
+        enter: enterNodeCallback,
+        leave: leaveNodeCallback,
+        allowTraversal: ({ current: currentNode, next: nextNode }) => {
+          return !(currentNode === 'A' && nextNode === 'B');
+        },
       },
     });
 
@@ -162,9 +164,7 @@ describe('depthFirstSearch', () => {
     for (let callIndex = 0; callIndex < data.nodes.length; callIndex += 1) {
       const params = leaveNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(leaveNodeParamsMap[callIndex].currentNode);
-      expect(params.previous).toEqual(
-        leaveNodeParamsMap[callIndex].previousNode,
-      );
+      expect(params.previous).toEqual(leaveNodeParamsMap[callIndex].previousNode);
     }
   });
 });

@@ -65,12 +65,16 @@ describe('breadthFirstSearch', () => {
     const leaveNodeCallback = jest.fn();
 
     // Traverse graphs without callbacks first.
-    breadthFirstSearch(data, 'A');
+    breadthFirstSearch({ graphData: data, startNodeId: 'A' });
 
     // Traverse graph with enterNode and leaveNode callbacks.
-    breadthFirstSearch(data, 'A', {
-      enter: enterNodeCallback,
-      leave: leaveNodeCallback,
+    breadthFirstSearch({
+      graphData: data,
+      startNodeId: 'A',
+      originalCallbacks: {
+        enter: enterNodeCallback,
+        leave: leaveNodeCallback,
+      },
     });
 
     expect(enterNodeCallback).toHaveBeenCalledTimes(7);
@@ -98,8 +102,7 @@ describe('breadthFirstSearch', () => {
       const params = enterNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(enterNodeParamsMap[callIndex].currentNode);
       expect(params.previous).toEqual(
-        enterNodeParamsMap[callIndex].previousNode &&
-          enterNodeParamsMap[callIndex].previousNode,
+        enterNodeParamsMap[callIndex].previousNode && enterNodeParamsMap[callIndex].previousNode,
       );
     }
 
@@ -117,23 +120,25 @@ describe('breadthFirstSearch', () => {
       const params = leaveNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(leaveNodeParamsMap[callIndex].currentNode);
       expect(params.previous).toEqual(
-        leaveNodeParamsMap[callIndex].previousNode &&
-          leaveNodeParamsMap[callIndex].previousNode,
+        leaveNodeParamsMap[callIndex].previousNode && leaveNodeParamsMap[callIndex].previousNode,
       );
     }
   });
 
   it('should allow to create custom node visiting logic', () => {
-
     const enterNodeCallback = jest.fn();
     const leaveNodeCallback = jest.fn();
 
     // Traverse graph with enterNode and leaveNode callbacks.
-    breadthFirstSearch(data, 'A', {
-      enter: enterNodeCallback,
-      leave: leaveNodeCallback,
-      allowTraversal: ({ current, next }) => {
-        return !(current === 'A' && next === 'B');
+    breadthFirstSearch({
+      graphData: data,
+      startNodeId: 'A',
+      originalCallbacks: {
+        enter: enterNodeCallback,
+        leave: leaveNodeCallback,
+        allowTraversal: ({ current, next }) => {
+          return !(current === 'A' && next === 'B');
+        },
       },
     });
 
@@ -151,9 +156,7 @@ describe('breadthFirstSearch', () => {
     for (let callIndex = 0; callIndex < 5; callIndex += 1) {
       const params = enterNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(enterNodeParamsMap[callIndex].currentNode);
-      expect(params.previous).toEqual(
-        enterNodeParamsMap[callIndex].previousNode,
-      );
+      expect(params.previous).toEqual(enterNodeParamsMap[callIndex].previousNode);
     }
 
     const leaveNodeParamsMap = [
@@ -167,9 +170,7 @@ describe('breadthFirstSearch', () => {
     for (let callIndex = 0; callIndex < 5; callIndex += 1) {
       const params = leaveNodeCallback.mock.calls[callIndex][0];
       expect(params.current).toEqual(leaveNodeParamsMap[callIndex].currentNode);
-      expect(params.previous).toEqual(
-        leaveNodeParamsMap[callIndex].previousNode,
-      );
+      expect(params.previous).toEqual(leaveNodeParamsMap[callIndex].previousNode);
     }
   });
 });
