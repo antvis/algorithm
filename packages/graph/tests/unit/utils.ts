@@ -1,4 +1,4 @@
-import algorithm from '../../src/';
+import algorithm from '../../src/';'
 
 type IAlgorithm = typeof algorithm;
 declare const window: Window & {

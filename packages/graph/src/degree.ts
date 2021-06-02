@@ -29,7 +29,7 @@ export default degree;
  * @param graphData 图数据
  * @param nodeId 节点ID
  */
-export const getInDegree = (graphData: GraphData, nodeId: string) => {
+export const getInDegree = (graphData: GraphData, nodeId: string): number => {
   const nodeDegree = degree(graphData)
   if (nodeDegree[nodeId]) {
     return degree(graphData)[nodeId].inDegree
@@ -42,7 +42,7 @@ export const getInDegree = (graphData: GraphData, nodeId: string) => {
  * @param graphData 图数据
  * @param nodeId 节点ID
  */
-export const getOutDegree = (graphData: GraphData, nodeId: string) => {
+export const getOutDegree = (graphData: GraphData, nodeId: string): number => {
   const nodeDegree = degree(graphData)
   if (nodeDegree[nodeId]) {
     return degree(graphData)[nodeId].outDegree

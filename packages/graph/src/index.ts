@@ -15,31 +15,9 @@ import pageRank from './pageRank';
 import GADDI from './gaddi';
 import Stack from './structs/stack';
 import { getNeighbors } from './util';
+import { IAlgorithm } from './types';
 
 const detectDirectedCycle = detectCycle;
-const detectDirectedCycleAsync = detectCycleAsync;
-
-import {
-  getAdjMatrixAsync,
-  connectedComponentAsync,
-  getDegreeAsync,
-  getInDegreeAsync,
-  getOutDegreeAsync,
-  detectCycleAsync,
-  detectAllCyclesAsync,
-  detectAllDirectedCycleAsync,
-  detectAllUndirectedCycleAsync,
-  dijkstraAsync,
-  findAllPathAsync,
-  findShortestPathAsync,
-  floydWarshallAsync,
-  labelPropagationAsync,
-  louvainAsync,
-  minimumSpanningTreeAsync,
-  pageRankAsync,
-  getNeighborsAsync,
-  GADDIAsync,
-} from './workers/index';
 
 export {
   getAdjMatrix,
@@ -65,26 +43,7 @@ export {
   getNeighbors,
   Stack,
   GADDI,
-  getAdjMatrixAsync,
-  connectedComponentAsync,
-  getDegreeAsync,
-  getInDegreeAsync,
-  getOutDegreeAsync,
-  detectCycleAsync,
-  detectDirectedCycleAsync,
-  detectAllCyclesAsync,
-  detectAllDirectedCycleAsync,
-  detectAllUndirectedCycleAsync,
-  dijkstraAsync,
-  findAllPathAsync,
-  findShortestPathAsync,
-  floydWarshallAsync,
-  labelPropagationAsync,
-  louvainAsync,
-  minimumSpanningTreeAsync,
-  pageRankAsync,
-  getNeighborsAsync,
-  GADDIAsync,
+  IAlgorithm
 };
 
 export default {
@@ -111,24 +70,4 @@ export default {
   getNeighbors,
   Stack,
   GADDI,
-  getAdjMatrixAsync,
-  connectedComponentAsync,
-  getDegreeAsync,
-  getInDegreeAsync,
-  getOutDegreeAsync,
-  detectCycleAsync,
-  detectDirectedCycleAsync,
-  detectAllCyclesAsync,
-  detectAllDirectedCycleAsync,
-  detectAllUndirectedCycleAsync,
-  dijkstraAsync,
-  findAllPathAsync,
-  findShortestPathAsync,
-  floydWarshallAsync,
-  labelPropagationAsync,
-  louvainAsync,
-  minimumSpanningTreeAsync,
-  pageRankAsync,
-  getNeighborsAsync,
-  GADDIAsync,
 };
