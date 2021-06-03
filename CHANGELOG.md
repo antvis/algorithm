@@ -1,4 +1,9 @@
 # ChangeLog
+
+#### 0.1.9
+
+- chore: separate sync and async functions into different entries;
+
 #### 0.1.8
 
 - fix: CPU usage increases due to 0.1.3-beta ~ 0.1.3 with publicPath configuration;

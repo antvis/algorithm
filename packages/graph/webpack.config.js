@@ -4,6 +4,7 @@ const resolve = require('path').resolve;
 module.exports = {
   entry: {
     index: './src/index.ts',
+    async: './src/asyncIndex.ts'
   },
   output: {
     filename: '[name].min.js',
