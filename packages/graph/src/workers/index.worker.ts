@@ -2,35 +2,38 @@ import WebWorker from './worker';
 interface Event {
   type: string;
   data: {
-    _algorithmType: string;
+    type: string;
     data: any;
   };
 }
 
 const Worker = (
   workerScriptURL: string = 'https://unpkg.com/@antv/algorithm@latest/dist/algorithm.min.js',
+  messageId = '',
 ): Worker => {
+  const context = `self.MessageID = "${messageId}";`;
   const workerCode = () => {
+    const ctx: any = self;
+    const MessageID = ctx.MessageID;
+
     const MESSAGE = {
-      SUCCESS: 'SUCCESS',
-      FAILURE: 'FAILURE',
+      SUCCESS: `SUCCESS${MessageID}`,
+      FAILURE: `FAILURE${MessageID}`,
     };
 
-    const ctx: any = self;
-
     ctx.onmessage = (event: Event) => {
-      const { _algorithmType, data } = event.data;
-      if (typeof ctx.Algorithm[_algorithmType] === 'function') {
-        const result = ctx.Algorithm[_algorithmType](data);
-        ctx.postMessage({ _algorithmType: MESSAGE.SUCCESS, data: result });
+      const { type, data } = event.data;
+      if (typeof ctx.Algorithm[type] === 'function') {
+        const result = ctx.Algorithm[type](data);
+        ctx.postMessage({ type: MESSAGE.SUCCESS, data: result });
         return;
       }
 
-      ctx.postMessage({ _algorithmType: MESSAGE.FAILURE });
+      ctx.postMessage({ type: MESSAGE.FAILURE });
     };
   };
 
-  return WebWorker(workerCode, workerScriptURL);
+  return WebWorker(workerCode, workerScriptURL, context);
 };
 
 export default Worker;

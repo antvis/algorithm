@@ -1,7 +1,7 @@
-export default (worker: any, workerScirptURL: string) => {
+export default (worker: any, workerScirptURL: string, context: string) => {
   const code = worker.toString();
 
-  const blob = new Blob([`importScripts('${workerScirptURL}');(${code})()`], {
+  const blob = new Blob([`importScripts('${workerScirptURL}');${context}(${code})()`], {
     type: 'text/javascript',
   });
 

@@ -1,10 +1,10 @@
 import { MESSAGE } from './constant';
 import Worker from './index.worker';
-
+import { uniqueId } from '../util';
 interface Event {
   type: string;
   data: {
-    _algorithmType: string;
+    type: string;
     data: any;
   };
 }
@@ -16,15 +16,16 @@ interface Event {
  */
 const createWorker = <R>(type: string, workerScirptURL?: string) => data =>
   new Promise<R>((resolve, reject) => {
-    const worker = Worker(workerScirptURL);
+    const messageId = uniqueId();
+    const worker = Worker(workerScirptURL, messageId);
     worker.postMessage({
-      _algorithmType: type,
+      type: type,
       data,
     });
 
     worker.onmessage = (event: Event) => {
-      const { data, _algorithmType } = event.data;
-      if (MESSAGE.SUCCESS === _algorithmType) {
+      const { data, type } = event.data;
+      if (MESSAGE.SUCCESS + messageId === type) {
         resolve(data);
       } else {
         reject();
