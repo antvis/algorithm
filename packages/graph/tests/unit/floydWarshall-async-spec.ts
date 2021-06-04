@@ -1,4 +1,4 @@
-import { getAlgorithm } from './utils';
+import { floydWarshallAsync } from '../../src';
 
 const data = {
   nodes: [
@@ -69,8 +69,7 @@ const data = {
 
 describe('(Async) Adjacency Matrix by Algorithm', () => {
   it('get graph shortestpath matrix', async () => {
-    const { floydWarshallAsync } = await getAlgorithm();
-    const matrix = await floydWarshallAsync(data);
+    const matrix = await floydWarshallAsync({ graphData: data });
     expect(Object.keys(matrix).length).toBe(8);
     const node0 = matrix[0];
     expect(node0.length).toBe(8);
@@ -89,8 +88,7 @@ describe('(Async) Adjacency Matrix by Algorithm', () => {
 
   it('directed', async () => {
     // directed
-    const { floydWarshallAsync } = await getAlgorithm();
-    const matrix = await floydWarshallAsync(data, true);
+    const matrix = await floydWarshallAsync({ graphData: data, directed: true });
     expect(Object.keys(matrix).length).toBe(8);
     const node0 = matrix[0];
     expect(node0.length).toBe(8);

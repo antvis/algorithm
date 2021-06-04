@@ -1,9 +1,8 @@
-import { getAlgorithm } from './utils';
+import { labelPropagationAsync } from '../../src';
 import { GraphData } from '../../src/types';
 
 describe('(Async) label propagation', () => {
   it('simple label propagation', async done => {
-    const { labelPropagationAsync } = await getAlgorithm();
     const data: GraphData = {
       nodes: [
         { id: '0' },
@@ -65,24 +64,30 @@ describe('(Async) label propagation', () => {
         { source: '10', target: '0' },
       ],
     };
-    const clusteredData = await labelPropagationAsync(data, false, 'weight');
+    const clusteredData = await labelPropagationAsync({
+      graphData: data,
+    });
     expect(clusteredData.clusters.length).not.toBe(0);
     expect(clusteredData.clusterEdges.length).not.toBe(0);
     done();
   });
-  it('label propagation with large graph', () => {
+  it('label propagation with large graph', async () => {
     // https://gw.alipayobjects.com/os/antvdemo/assets/data/relations.json
     fetch('https://gw.alipayobjects.com/os/basement_prod/da5a1b47-37d6-44d7-8d10-f3e046dabf82.json')
       .then(res => res.json())
       .then(async data => {
-        // 1589 nodes, 2747 edges
-        const { labelPropagationAsync } = await getAlgorithm();
-        const clusteredData = await labelPropagationAsync(data, false, 'weight');
+        // 1589 nodes, 2742 edges
+        const clusteredData = await labelPropagationAsync({
+          graphData: data,
+          directed: false,
+          weightPropertyName: 'weight',
+        });
+        console.log(clusteredData);
         // console.log(`Call to doSomething took ${t1 - t0} milliseconds.`);
 
         // 9037.91999999521 ms
 
-        expect(clusteredData.clusters.length).toBe(472);
+        expect(clusteredData.clusters.length).toBe(470);
         expect(clusteredData.clusterEdges.length).toBe(444);
       });
   });

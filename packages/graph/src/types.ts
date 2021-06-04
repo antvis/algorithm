@@ -52,3 +52,8 @@ export interface OptionBase {
   /**  是否有向图，默认为 false */
   graphData: GraphData;
 }
+
+export interface AsyncOptionBase {
+  /**  WebWorker 算法文件URL地址 */
+  workerScirptURL?: string;
+}

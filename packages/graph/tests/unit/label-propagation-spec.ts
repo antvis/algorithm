@@ -75,15 +75,18 @@ describe('label propagation', () => {
     fetch('https://gw.alipayobjects.com/os/basement_prod/da5a1b47-37d6-44d7-8d10-f3e046dabf82.json')
       .then(res => res.json())
       .then(data => {
-        // 1589 nodes, 2747 edges
+        console.log(data);
+        // 1589 nodes, 2742 edges
         const clusteredData = labelPropagation({
           graphData: data,
+          directed: false,
+          weightPropertyName: 'weight',
         });
         // console.log(`Call to doSomething took ${t1 - t0} milliseconds.`);
 
         // 9037.91999999521 ms
 
-        expect(clusteredData.clusters.length).toBe(472);
+        expect(clusteredData.clusters.length).toBe(470);
         expect(clusteredData.clusterEdges.length).toBe(444);
       });
   });

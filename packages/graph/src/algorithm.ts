@@ -103,7 +103,7 @@ export const breadthFirstSearch = ({
   originalCallbacks,
 }: IBreadthFirstSearch): void => breadthFirstSearchAPI(graphData, startNodeId, originalCallbacks);
 
-type IDegree = OptionBase;
+export type IDegree = OptionBase;
 /**
  * 获取节点的度
  * @param graphData 图数据
@@ -150,8 +150,7 @@ export const detectCycle = ({ graphData }: IDetectCycle): IDetectCycleResult =>
  * 检测图中的(有向) Cycle
  * @param graphData 图数据
  */
-export const detectDirectedCycle = ({ graphData }: IDetectCycle): IDetectCycleResult =>
-  detectCycleAPI(graphData);
+export const detectDirectedCycle = detectCycle;
 
 export interface IDetectAllCycles extends OptionBase {
   /** 是否有向图，默认为 false */
@@ -395,7 +394,7 @@ export interface IMinimumSpanningTree extends OptionBase {
 
 /**
  * 最小生成树，See {@link https://en.wikipedia.org/wiki/Kruskal%27s_algorithm}
- * @param graph
+ * @param graphData 图数据
  * @param weight 指定用于作为边权重的属性，若不指定，则认为所有边权重一致
  * @param algo 'prim' | 'kruskal' 算法类型
  * @return EdgeConfig[] 返回构成MST的边的数组
@@ -420,7 +419,7 @@ export interface IPagerankResult {
 /**
  * PageRank https://en.wikipedia.org/wiki/PageRank
  * refer: https://github.com/anvaka/ngraph.pagerank
- * @param graph
+ * @param graphData 图数据
  * @param epsilon 判断是否收敛的精度值，默认 0.000001
  * @param linkProb 阻尼系数（dumping factor），指任意时刻，用户访问到某节点后继续访问该节点链接的下一个节点的概率，经验值 0.85
  */

@@ -1,4 +1,4 @@
-import { getAlgorithm } from './utils';
+import { findShortestPathAsync, findAllPathAsync } from '../../src';
 
 const data = {
   nodes: [
@@ -73,16 +73,22 @@ const data = {
 
 describe('(Async) Shortest Path from source to target on graph', () => {
   it('find the shortest path', async done => {
-    const { findShortestPathAsync } = await getAlgorithm();
-    const { length, path } = await findShortestPathAsync(data, 'A', 'C');
+    const { length, path } = await findShortestPathAsync({
+      graphData: data,
+      start: 'A',
+      end: 'C',
+    });
     expect(length).toBe(2);
     expect(path).toStrictEqual(['A', 'B', 'C']);
     done();
   });
 
   it('find all shortest paths', async done => {
-    const { findShortestPathAsync } = await getAlgorithm();
-    const { length, allPath } = await findShortestPathAsync(data, 'A', 'F');
+    const { length, allPath } = await findShortestPathAsync({
+      graphData: data,
+      start: 'A',
+      end: 'F',
+    });
     expect(length).toBe(2);
     expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
     expect(allPath[1]).toStrictEqual(['A', 'D', 'F']);
@@ -91,7 +97,12 @@ describe('(Async) Shortest Path from source to target on graph', () => {
       length: directedLenght,
       path: directedPath,
       allPath: directedAllPath,
-    } = await findShortestPathAsync(data, 'A', 'F', true);
+    } = await findShortestPathAsync({
+      graphData: data,
+      start: 'A',
+      end: 'F',
+      directed: true,
+    });
     expect(directedLenght).toBe(2);
     expect(directedAllPath[0]).toStrictEqual(['A', 'E', 'F']);
     expect(directedPath).toStrictEqual(['A', 'E', 'F']);
@@ -99,8 +110,11 @@ describe('(Async) Shortest Path from source to target on graph', () => {
   });
 
   it('find all paths', async done => {
-    const { findAllPathAsync } = await getAlgorithm();
-    const allPath = await findAllPathAsync(data, 'A', 'E');
+    const allPath = await findAllPathAsync({
+      graphData: data,
+      start: 'A',
+      end: 'E',
+    });
     expect(allPath.length).toBe(3);
     expect(allPath[0]).toStrictEqual(['A', 'D', 'F', 'E']);
     expect(allPath[1]).toStrictEqual(['A', 'D', 'E']);
@@ -109,8 +123,12 @@ describe('(Async) Shortest Path from source to target on graph', () => {
   });
 
   it('find all paths in directed graph', async done => {
-    const { findAllPathAsync } = await getAlgorithm();
-    const allPath = await findAllPathAsync(data, 'A', 'E', true);
+    const allPath = await findAllPathAsync({
+      graphData: data,
+      start: 'A',
+      end: 'E',
+      directed: true,
+    });
     expect(allPath.length).toStrictEqual(2);
     expect(allPath[0]).toStrictEqual(['A', 'D', 'E']);
     expect(allPath[1]).toStrictEqual(['A', 'E']);
@@ -118,12 +136,16 @@ describe('(Async) Shortest Path from source to target on graph', () => {
   });
 
   it('find all shortest paths in weighted graph', async done => {
-    const { findShortestPathAsync } = await getAlgorithm();
     data.edges.forEach((edge: any, i) => {
       edge.weight = ((i % 2) + 1) * 2;
       if (edge.source === 'F' && edge.target === 'D') edge.weight = 10;
     });
-    const { length, path, allPath } = await findShortestPathAsync(data, 'A', 'F', false, 'weight');
+    const { length, path, allPath } = await findShortestPathAsync({
+      graphData: data,
+      start: 'A',
+      end: 'F',
+      weightPropertyName: 'weight',
+    });
     expect(length).toBe(6);
     expect(allPath[0]).toStrictEqual(['A', 'E', 'F']);
     expect(path).toStrictEqual(['A', 'E', 'F']);

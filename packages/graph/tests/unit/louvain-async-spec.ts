@@ -1,4 +1,4 @@
-import { getAlgorithm } from './utils';
+import { louvainAsync } from '../../src';
 import { GraphData } from '../../src/types';
 
 describe('(Async) louvain', () => {
@@ -64,8 +64,9 @@ describe('(Async) louvain', () => {
         { source: '10', target: '0' },
       ],
     };
-    const { louvainAsync } = await getAlgorithm();
-    const clusteredData = await louvainAsync(data, false, 'weight');
+    const clusteredData = await louvainAsync({
+      graphData: data,
+    });
 
     expect(clusteredData.clusters.length).toBe(3);
     expect(clusteredData.clusters[0].sumTot).toBe(3);
@@ -81,8 +82,9 @@ describe('(Async) louvain', () => {
       .then(res => res.json())
       .then(async data => {
         // 1589 nodes, 2747 edges
-        const { louvainAsync } = await getAlgorithm();
-        const clusteredData = await louvainAsync(data, false, 'weight');
+        const clusteredData = await louvainAsync({
+          graphData: data,
+        });
         expect(clusteredData.clusters.length).toBe(495);
         expect(clusteredData.clusterEdges.length).toBe(505);
       });

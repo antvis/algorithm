@@ -1,4 +1,5 @@
 module.exports = {
+  setupFilesAfterEnv: ['./jest.setup.js'],
   runner: 'jest-electron/runner',
   testEnvironment: 'jest-electron/environment',
   preset: 'ts-jest',

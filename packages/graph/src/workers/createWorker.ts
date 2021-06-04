@@ -12,10 +12,11 @@ interface Event {
 /**
  * 创建一个在worker中运行的算法
  * @param type 算法类型
+ * @param workerScirptURL
  */
-const createWorker = <R>(type: string) => (...data) =>
+const createWorker = <R>(type: string, workerScirptURL?: string) => data =>
   new Promise<R>((resolve, reject) => {
-    const worker = Worker();
+    const worker = Worker(workerScirptURL);
     worker.postMessage({
       _algorithmType: type,
       data,

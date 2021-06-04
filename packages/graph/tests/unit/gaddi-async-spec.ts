@@ -1,5 +1,5 @@
-import { getAlgorithm } from './utils';
-import { nodes77, nodes202 } from './data/test-data';
+import { GADDIAsync } from '../../src';
+import { nodes77, nodes202, nodes1589, nodes20 } from './data/test-data';
 
 const data3 = {
   nodes: [
@@ -222,18 +222,61 @@ const pattern1 = {
   ],
 };
 
-describe('(Async) gSpan', () => {
+const pattern2 = {
+  nodes: [
+    {
+      id: '11',
+      cluster: 'B',
+    },
+    {
+      id: '17',
+      cluster: 'C',
+    },
+    {
+      id: '18',
+      cluster: 'C',
+    },
+  ],
+  edges: [
+    {
+      source: '11',
+      target: '17',
+      cluster: 'c',
+    },
+    {
+      source: '11',
+      target: '18',
+      cluster: 'b',
+    },
+  ],
+};
+
+const circlePattern = {
+  nodes: [
+    { id: '1', cluster: 'B' },
+    { id: '2', cluster: 'B' },
+    { id: '3', cluster: 'B' },
+    { id: '4', cluster: 'B' },
+    { id: '5', cluster: 'B' },
+    { id: '6', cluster: 'B' },
+  ],
+  edges: [
+    { source: '1', target: '2', cluster: 'e' },
+    { source: '2', target: '3', cluster: 'e' },
+    { source: '3', target: '4', cluster: 'e' },
+    { source: '4', target: '5', cluster: 'e' },
+    { source: '5', target: '6', cluster: 'e' },
+    { source: '6', target: '1', cluster: 'e' },
+  ],
+};
+
+describe('(Async) GADDI', () => {
   it('gSpan match pattern 1', async () => {
-    const { GADDIAsync } = await getAlgorithm();
-    const matchedSubGraphs = await GADDIAsync(
-      data3,
-      pattern1,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const matchedSubGraphs = await GADDIAsync({
+      graphData: data3,
+      pattern: pattern1,
+    });
+    console.log('test1', matchedSubGraphs);
     expect(matchedSubGraphs.length).toBe(2);
     matchedSubGraphs.forEach(graph => {
       expect(graph.nodes[0].cluster).toBe('F');
@@ -243,9 +286,259 @@ describe('(Async) gSpan', () => {
       expect(graph.edges[1].cluster).toBe('b');
     });
   });
+  it('gSpan match pattern 2', async () => {
+    const matchedSubGraphs = await GADDIAsync({
+      graphData: data3,
+      pattern: pattern2,
+      k: 2,
+      length: 1,
+    });
+    console.log('test2', matchedSubGraphs);
+    expect(matchedSubGraphs.length).toBe(1);
+    // expect(matchedSubGraphs.nodes)
+  });
+  it('gSpan match circular', async () => {
+    const matchedSubGraphs = await GADDIAsync({
+      graphData: data3,
+      pattern: circlePattern,
+    });
+    expect(matchedSubGraphs.length).toBe(2);
+    matchedSubGraphs.forEach(graph => {
+      graph.nodes.forEach(node => {
+        expect(node.cluster).toBe('B');
+      });
+      graph.edges.forEach(edge => {
+        expect(edge.cluster).toBe('e');
+      });
+    });
+  });
+  it('gSpan match circular2 with a parallel edge', async () => {
+    const circlePattern2 = {
+      nodes: [
+        { id: '1', cluster: 'B' },
+        { id: '2', cluster: 'B' },
+        { id: '3', cluster: 'B' },
+        { id: '4', cluster: 'B' },
+        { id: '5', cluster: 'B' },
+        { id: '6', cluster: 'B' },
+      ],
+      edges: [
+        { source: '1', target: '2', cluster: 'e' },
+        { source: '2', target: '3', cluster: 'e' },
+        { source: '3', target: '4', cluster: 'e' },
+        { source: '4', target: '5', cluster: 'e' }, // 平行边
+        { source: '4', target: '5', cluster: 'b' }, // 平行边
+        { source: '5', target: '6', cluster: 'e' },
+        { source: '6', target: '1', cluster: 'e' },
+      ],
+    };
+    const matchedSubGraphs = await GADDIAsync({
+      graphData: data3,
+      pattern: circlePattern2,
+    });
+    console.log('circle 2', matchedSubGraphs);
+    expect(matchedSubGraphs.length).toBe(1);
+
+    matchedSubGraphs[0].nodes.forEach(node => {
+      expect(node.cluster).toBe('B');
+    });
+    matchedSubGraphs[0].edges.forEach((edge, i) => {
+      if (i === 2) {
+        expect(edge.cluster).toBe('b');
+        return;
+      }
+      expect(edge.cluster).toBe('e');
+    });
+  });
+  // 平行边可能被匹配成多条单独边
+  it('gSpan match two parallel edges', async () => {
+    const pattern3 = {
+      nodes: [
+        { id: 'node1', cluster: 'B' },
+        { id: 'node2', cluster: 'B' },
+      ],
+      edges: [
+        { source: 'node1', target: 'node2', cluster: 'b' },
+        { source: 'node1', target: 'node2', cluster: 'e' },
+      ],
+    };
+    const matchedSubGraphs = await GADDIAsync({
+      graphData: data3,
+      pattern: pattern3,
+    });
+    console.log('test3', matchedSubGraphs);
+    // expect(matchedSubGraphs.length).toBe(2);
+    // matchedSubGraphs.forEach((graph) => {
+    //   expect(graph.nodes[0].cluster).toBe("F");
+    //   expect(graph.nodes[1].cluster).toBe("F");
+    //   expect(graph.nodes[2].cluster).toBe("B");
+    //   expect(graph.edges[0].cluster).toBe("b");
+    //   expect(graph.edges[1].cluster).toBe("b");
+    // });
+  });
 });
 
-describe('(Async) Performance: gSpan 77 nodes G', () => {
+describe('gSpan directed', () => {
+  it('gSpan match pattern 1', async () => {
+    const pattern11 = {
+      nodes: [
+        {
+          id: '0',
+          cluster: 'F',
+        },
+        {
+          id: '1',
+          cluster: 'F',
+        },
+        {
+          id: '2',
+          cluster: 'B',
+        },
+      ],
+      edges: [
+        {
+          source: '0',
+          target: '1',
+          cluster: 'b',
+        },
+        {
+          source: '0',
+          target: '2',
+          cluster: 'b',
+        },
+      ],
+    };
+    const matchedSubGraphs = await GADDIAsync({
+      graphData: data3,
+      pattern: pattern11,
+      directed: true,
+    });
+    expect(matchedSubGraphs.length).toBe(1);
+    expect(matchedSubGraphs[0].nodes[0].id).toBe('0');
+    expect(matchedSubGraphs[0].nodes[1].id).toBe('1');
+    expect(matchedSubGraphs[0].nodes[2].id).toBe('2');
+  });
+});
+
+describe('GADDI switch nodes', () => {
+  it('gSpan match pattern 1', async () => {
+    const pattern1 = {
+      nodes: [
+        { id: 'Person', dataType: 'Person' },
+        { id: 'Enterprise', dataType: 'Enterprise' },
+      ],
+      edges: [
+        {
+          id: 'edge-1613700998017',
+          source: 'Person',
+          target: 'Enterprise',
+          dataType: 'Person2Enterprise#Guarantee',
+          rules: [],
+        },
+      ],
+    };
+    const res1 = await GADDIAsync({
+      graphData: nodes20,
+      pattern: pattern1,
+      directed: true,
+      nodeLabelProp: 'dataType',
+      edgeLabelProp: 'dataType',
+    });
+    expect(res1.length).toBe(5);
+    const pattern2 = {
+      nodes: [
+        { id: 'Enterprise', dataType: 'Enterprise' },
+        { id: 'Person', dataType: 'Person' },
+      ],
+      edges: [
+        {
+          id: 'edge-1613700998017',
+          source: 'Person',
+          target: 'Enterprise',
+          dataType: 'Person2Enterprise#Guarantee',
+          rules: [],
+        },
+      ],
+    };
+    const res2 = await GADDIAsync({
+      graphData: nodes20,
+      pattern: pattern2,
+      directed: true,
+      nodeLabelProp: 'dataType',
+      edgeLabelProp: 'dataType',
+    });
+    expect(res2.length).toBe(6);
+  });
+});
+
+describe('Performance: gSpan 77 nodes G', () => {
+  // 100ms
+  it('pattern 3 nodes', async () => {
+    const patternWith3Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'A' },
+        { id: 'pn2', cluster: 'B' },
+        { id: 'pn3', cluster: 'A' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'b' },
+        { source: 'pn1', target: 'pn3', cluster: 'a' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes77,
+      pattern: patternWith3Nodes,
+    });
+    console.log('77 nodes graph matching 3 nodes pattern', performance.now() - begin);
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
+
+    expect(result.length).toBe(5);
+    expect(result[0].nodes[0].id).toBe('33');
+    expect(result[1].nodes[0].id).toBe('43');
+    expect(result[2].nodes[0].id).toBe('55');
+    expect(result[3].nodes[0].id).toBe('57');
+    expect(result[4].nodes[0].id).toBe('65');
+
+    expect(result[3].nodes.length).toBe(4);
+    expect(result[4].nodes.length).toBe(5);
+  });
+  // 100ms
+  it('pattern 5 nodes', async () => {
+    const patternWith5Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'A' },
+        { id: 'pn2', cluster: 'C' },
+        { id: 'pn3', cluster: 'C' },
+        { id: 'pn4', cluster: 'B' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'c' },
+        { source: 'pn1', target: 'pn3', cluster: 'c' },
+        { source: 'pn3', target: 'pn2', cluster: 'c' },
+        { source: 'pn3', target: 'pn4', cluster: 'b' },
+        { source: 'pn2', target: 'pn4', cluster: 'b' },
+        { source: 'pn1', target: 'pn4', cluster: 'c' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes77,
+      pattern: patternWith5Nodes,
+    });
+    console.log('77 nodes graph matching 5 nodes pattern', performance.now() - begin);
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
+    expect(result.length).toBe(2);
+    expect(result[0].nodes[0].id).toBe('0');
+    expect(result[1].nodes[0].id).toBe('55');
+
+    expect(result[0].nodes.length).toBe(4);
+    expect(result[1].nodes.length).toBe(5);
+  });
   it('pattern 10 nodes', async () => {
     const patternWith10Nodes = {
       nodes: [
@@ -301,16 +594,10 @@ describe('(Async) Performance: gSpan 77 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const { GADDIAsync } = await getAlgorithm();
-    const result = await GADDIAsync(
-      nodes77,
-      patternWith10Nodes,
-      false,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = await GADDIAsync({
+      graphData: nodes77,
+      pattern: patternWith10Nodes,
+    });
     console.log(
       '77 nodes graph matching 10 nodes pattern',
       performance.now() - begin,
@@ -327,7 +614,110 @@ describe('(Async) Performance: gSpan 77 nodes G', () => {
   });
 });
 
-describe('(Async) Performance: 202 nodes G', () => {
+describe('Performance: 202 nodes G', () => {
+  it('pattern with 4 nodes', async () => {
+    const patternWith4Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'E' },
+        { id: 'pn2', cluster: 'D' },
+        { id: 'pn3', cluster: 'B' },
+        { id: 'pn4', cluster: 'B' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'c' },
+        { source: 'pn2', target: 'pn3', cluster: 'a' },
+        { source: 'pn3', target: 'pn4', cluster: 'a' },
+        { source: 'pn1', target: 'pn4', cluster: 'c' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes202,
+      pattern: patternWith4Nodes,
+    });
+    console.log('202 nodes graph matching 4 nodes pattern', performance.now() - begin);
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
+    expect(result.length).toBe(1);
+    expect(result[0].nodes[0].id).toBe('100');
+    expect(result[0].nodes.length).toBe(4);
+  });
+  it('pattern with 7 nodes', async () => {
+    const patternWith7Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'B' },
+        { id: 'pn2', cluster: 'C' },
+        { id: 'pn3', cluster: 'C' },
+        { id: 'pn4', cluster: 'D' },
+        { id: 'pn5', cluster: 'E' },
+        { id: 'pn6', cluster: 'C' },
+        { id: 'pn7', cluster: 'B' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'c' },
+        { source: 'pn2', target: 'pn3', cluster: 'c' },
+        { source: 'pn3', target: 'pn4', cluster: 'a' },
+        { source: 'pn4', target: 'pn5', cluster: 'c' },
+        { source: 'pn5', target: 'pn1', cluster: 'c' },
+        { source: 'pn4', target: 'pn6', cluster: 'a' },
+        { source: 'pn4', target: 'pn7', cluster: 'a' },
+        { source: 'pn6', target: 'pn7', cluster: 'c' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes202,
+      pattern: patternWith7Nodes,
+    });
+    console.log('202 nodes graph matching 7 nodes pattern', performance.now() - begin);
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
+    expect(result.length).toBe(6);
+    expect(result[0].nodes[0].id).toBe('2');
+    expect(result[1].nodes[0].id).toBe('77');
+    expect(result[2].nodes[0].id).toBe('87');
+    expect(result[3].nodes[0].id).toBe('132');
+    expect(result[4].nodes[0].id).toBe('157');
+    expect(result[5].nodes[0].id).toBe('167');
+  });
+  it('pattern with 7 nodes, directed', async () => {
+    const patternWith7Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'B' },
+        { id: 'pn2', cluster: 'C' },
+        { id: 'pn3', cluster: 'C' },
+        { id: 'pn4', cluster: 'D' },
+        { id: 'pn5', cluster: 'E' },
+        { id: 'pn6', cluster: 'C' },
+        { id: 'pn7', cluster: 'B' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'c' },
+        { source: 'pn1', target: 'pn5', cluster: 'c' },
+        { source: 'pn3', target: 'pn2', cluster: 'c' },
+        { source: 'pn4', target: 'pn3', cluster: 'a' },
+        { source: 'pn5', target: 'pn4', cluster: 'c' },
+        { source: 'pn4', target: 'pn6', cluster: 'a' },
+        { source: 'pn4', target: 'pn7', cluster: 'a' },
+        { source: 'pn7', target: 'pn6', cluster: 'c' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes202,
+      pattern: patternWith7Nodes,
+      directed: true,
+    });
+    console.log('202 nodes graph matching 7 nodes pattern, directed', performance.now() - begin);
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
+    expect(result.length).toBe(1);
+    expect(result[0].nodes[0].id).toBe('167');
+    expect(result[0].nodes.length).toBe(7);
+  });
   it('pattern with 14 nodes, directed', async () => {
     const patternWith14Nodes = {
       nodes: [
@@ -363,16 +753,11 @@ describe('(Async) Performance: 202 nodes G', () => {
       ],
     };
     const begin = performance.now();
-    const { GADDIAsync } = await getAlgorithm();
-    const result = await GADDIAsync(
-      nodes202,
-      patternWith14Nodes,
-      true,
-      undefined,
-      undefined,
-      'cluster',
-      'cluster',
-    );
+    const result = await GADDIAsync({
+      graphData: nodes202,
+      pattern: patternWith14Nodes,
+      directed: true,
+    });
 
     console.log(
       '202 nodes graph matching 14 nodes pattern, directed',
@@ -382,7 +767,87 @@ describe('(Async) Performance: 202 nodes G', () => {
     result.forEach(re => {
       console.log(JSON.stringify(re));
     });
-    expect(result.length).toBe(1);
-    expect(result[0].nodes[0].id).toBe('49');
+    // expect(result.length).toBe(8);
+    // expect(result[7].nodes[0].id).toBe("100");
+  });
+});
+describe('Performance: 1589 nodes G', () => {
+  it('pattern with 4 nodes', async () => {
+    const patternWith4Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'A' },
+        { id: 'pn2', cluster: 'B' },
+        { id: 'pn3', cluster: 'C' },
+        { id: 'pn4', cluster: 'A' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'B' },
+        { source: 'pn1', target: 'pn3', cluster: 'C' },
+        { source: 'pn2', target: 'pn3', cluster: 'A' },
+        { source: 'pn3', target: 'pn4', cluster: 'C' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes1589,
+      pattern: patternWith4Nodes,
+    });
+    console.log(
+      '1589 nodes graph matching 4 nodes pattern',
+      performance.now() - begin,
+      result.length,
+    );
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
+
+    expect(result.length).toBe(163);
+  });
+  // TODO: 爆栈
+  xit('pattern with 6 nodes full-connected', async () => {
+    const patternWith6Nodes = {
+      nodes: [
+        { id: 'pn1', cluster: 'B' },
+        { id: 'pn2', cluster: 'C' },
+        { id: 'pn3', cluster: 'A' },
+        { id: 'pn4', cluster: 'C' },
+        { id: 'pn4', cluster: 'B' },
+        { id: 'pn4', cluster: 'A' },
+      ],
+      edges: [
+        { source: 'pn1', target: 'pn2', cluster: 'A' },
+        { source: 'pn1', target: 'pn3', cluster: 'B' },
+        { source: 'pn1', target: 'pn4', cluster: 'A' },
+        { source: 'pn1', target: 'pn5', cluster: 'C' },
+        { source: 'pn1', target: 'pn6', cluster: 'B' },
+
+        { source: 'pn2', target: 'pn3', cluster: 'C' },
+        { source: 'pn2', target: 'pn4', cluster: 'B' },
+        { source: 'pn2', target: 'pn5', cluster: 'A' },
+        { source: 'pn2', target: 'pn6', cluster: 'C' },
+
+        { source: 'pn3', target: 'pn3', cluster: 'C' },
+        { source: 'pn3', target: 'pn5', cluster: 'B' },
+        { source: 'pn3', target: 'pn6', cluster: 'A' },
+
+        { source: 'pn4', target: 'pn5', cluster: 'A' },
+        { source: 'pn4', target: 'pn6', cluster: 'C' },
+
+        { source: 'pn5', target: 'pn6', cluster: 'B' },
+      ],
+    };
+    const begin = performance.now();
+    const result = await GADDIAsync({
+      graphData: nodes1589,
+      pattern: patternWith6Nodes,
+    });
+    console.log(
+      '1589 nodes graph matching 6 nodes full-connected pattern',
+      performance.now() - begin,
+      result.length,
+    );
+    result.forEach(re => {
+      console.log(JSON.stringify(re));
+    });
   });
 });

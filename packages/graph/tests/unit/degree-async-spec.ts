@@ -1,4 +1,4 @@
-import { getDegreeAsync } from '../../src'
+import { getDegreeAsync, getInDegreeAsync, getOutDegreeAsync } from '../../src';
 
 const data = {
   nodes: [
@@ -67,8 +67,8 @@ const data = {
   ],
 };
 
-describe('degree async algorithm', () => {
-  it('getDegreeAsync', async () => {
+describe('(Async) degree algorithm', () => {
+  it('getDegree', async () => {
     const degree = {
       A: {
         degree: 3,
@@ -111,8 +111,29 @@ describe('degree async algorithm', () => {
         outDegree: 1,
       },
     };
-
-    const result = await getDegreeAsync(data);
+    const result = await getDegreeAsync({ graphData: data });
     expect(result).toEqual(degree);
+  });
+
+  it('getInDegree', async () => {
+    let result = await getInDegreeAsync({ graphData: data, nodeId: 'A' });
+    expect(result).toBe(1);
+
+    result = await getInDegreeAsync({ graphData: data, nodeId: 'C' });
+    expect(result).toBe(2);
+
+    result = await getInDegreeAsync({ graphData: data, nodeId: 'E' });
+    expect(result).toBe(1);
+  });
+
+  it('getOutDegree', async () => {
+    let result = await getOutDegreeAsync({ graphData: data, nodeId: 'A' });
+    expect(result).toEqual(2);
+
+    result = await getOutDegreeAsync({ graphData: data, nodeId: 'D' });
+    expect(result).toEqual(2);
+
+    result = await getOutDegreeAsync({ graphData: data, nodeId: 'F' });
+    expect(result).toEqual(1);
   });
 });

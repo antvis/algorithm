@@ -1,4 +1,4 @@
-import { getAlgorithm } from './utils';
+import { pageRankAsync } from '../../src';
 
 const data = {
   nodes: [
@@ -45,7 +45,7 @@ const data = {
     {
       id: 'K',
       label: 'K',
-    }
+    },
   ],
   edges: [
     {
@@ -120,19 +120,17 @@ const data = {
 };
 
 describe('(Async) Calculate pagerank of graph nodes', () => {
-
   it('calculate pagerank', async () => {
-    const { pageRankAsync } = await getAlgorithm();
-    const result = await pageRankAsync(data);
+    const result = await pageRankAsync({ graphData: data });
     let maxNodeId;
     let maxVal = 0;
     for (let nodeId in result) {
       const val = result[nodeId];
       if (val >= maxVal) {
         maxNodeId = nodeId;
-        maxVal = val
+        maxVal = val;
       }
     }
-    expect(maxNodeId).toBe('B')
+    expect(maxNodeId).toBe('B');
   });
 });

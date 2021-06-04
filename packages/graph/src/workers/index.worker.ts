@@ -8,7 +8,7 @@ interface Event {
 }
 
 const Worker = (
-  workerScriptURL: string = 'https://unpkg.com/@antv/algorithm@latest/dist/index.min.js',
+  workerScriptURL: string = 'https://unpkg.com/@antv/algorithm@latest/dist/algorithm.min.js',
 ): Worker => {
   const workerCode = () => {
     const MESSAGE = {
@@ -21,7 +21,7 @@ const Worker = (
     ctx.onmessage = (event: Event) => {
       const { _algorithmType, data } = event.data;
       if (typeof ctx.Algorithm[_algorithmType] === 'function') {
-        const result = ctx.Algorithm[_algorithmType](...data);
+        const result = ctx.Algorithm[_algorithmType](data);
         ctx.postMessage({ _algorithmType: MESSAGE.SUCCESS, data: result });
         return;
       }

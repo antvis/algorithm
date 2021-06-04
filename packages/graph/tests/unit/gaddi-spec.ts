@@ -270,7 +270,7 @@ const circlePattern = {
   ],
 };
 
-describe('gSpan', () => {
+describe('GADDI', () => {
   it('gSpan match pattern 1', () => {
     const matchedSubGraphs = GADDI({
       graphData: data3,
@@ -791,6 +791,9 @@ describe('Performance: 1589 nodes G', () => {
     const result = GADDI({
       graphData: nodes1589,
       pattern: patternWith4Nodes,
+      directed: false,
+      nodeLabelProp: 'cluster',
+      edgeLabelProp: 'cluster',
     });
     console.log(
       '1589 nodes graph matching 4 nodes pattern',
