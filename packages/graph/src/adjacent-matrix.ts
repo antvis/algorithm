@@ -1,6 +1,6 @@
 import { GraphData, Matrix } from "./types";
 
-const adjMatrix = (graphData: GraphData, directed?: boolean) => {
+const adjMatrix = (graphData: GraphData, directed?: boolean): Matrix[] => {
   const { nodes, edges } = graphData;
   const matrix: Matrix[] = [];
   // map node with index in data.nodes

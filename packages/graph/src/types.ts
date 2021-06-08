@@ -1,3 +1,6 @@
+import syncAlgorithm from './syncIndex';
+import asyncAlgorithm from './asyncIndex';
+
 export type Matrix = number[];
 
 export interface NodeConfig {
@@ -57,3 +60,8 @@ export interface AsyncOptionBase {
   /**  WebWorker 算法文件URL地址 */
   workerScirptURL?: string;
 }
+
+export type IAsyncAlgorithm = typeof asyncAlgorithm;
+export type ISyncAlgorithm = typeof syncAlgorithm;
+
+export type IAlgorithm = IAsyncAlgorithm & ISyncAlgorithm;

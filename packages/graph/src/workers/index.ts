@@ -34,7 +34,7 @@ import {
   IPagerankResult,
   INeighbors,
   IGADDI,
-} from '../algorithm';
+} from '../syncIndex';
 import createWorker from './createWorker';
 import { ALGORITHM } from './constant';
 

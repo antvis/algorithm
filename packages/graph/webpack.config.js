@@ -4,7 +4,7 @@ const resolve = require('path').resolve;
 module.exports = {
   entry: {
     index: './src/index.ts',
-    algorithm: './src/algorithm.ts',
+    algorithm: './src/syncIndex.ts'
   },
   output: {
     filename: '[name].min.js',

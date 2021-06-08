@@ -3,7 +3,9 @@ import getConnectedComponents, { detectStrongConnectComponents } from './connect
 import { GraphData, IAlgorithmCallbacks, NodeConfig } from './types';
 import { getNeighbors } from './util';
 
-const detectDirectedCycle = (graphData: GraphData) => {
+const detectDirectedCycle = (graphData: GraphData): {
+  [key: string]: string;
+} => {
   let cycle: {
     [key: string]: string;
   } = null;
