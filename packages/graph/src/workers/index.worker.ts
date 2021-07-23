@@ -1,7 +1,7 @@
 import * as algorithm from './algorithm';
 import { MESSAGE } from './constant';
 
-const ctx: Worker = self as any;
+const ctx: Worker = (typeof self !== 'undefined') ? self : {} as any;
 
 interface Event {
   type: string;
