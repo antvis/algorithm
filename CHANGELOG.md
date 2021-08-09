@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.10
+
+- fix: GADDI with better accuracy;
+
 #### 0.1.9
 
 - chore: separate sync and async functions into different entries;

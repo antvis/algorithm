@@ -207,9 +207,9 @@ const getMatchedCount = (graph, structure, nodeLabelProp, edgeLabelProp) => {
   graph.edges.forEach(e => {
     const sourceLabel = nodeMap[e.source][nodeLabelProp];
     const targetLabel = nodeMap[e.target][nodeLabelProp];
-    const strNodeLabel1 = structure.nodes[0][nodeLabelProp];
-    const strNodeLabel2 = structure.nodes[1][nodeLabelProp];
-    const strEdgeLabel = structure.edges[0][edgeLabelProp];
+    const strNodeLabel1 = structure?.nodes[0][nodeLabelProp];
+    const strNodeLabel2 = structure?.nodes[1][nodeLabelProp];
+    const strEdgeLabel = structure?.edges[0][edgeLabelProp];
 
     if (e[edgeLabelProp] !== strEdgeLabel) return;
     if (
@@ -301,7 +301,7 @@ const getNodeMaps = (nodes, nodeLabelProp): { nodeMap: NodeMap; nodeLabelMap: La
   const nodeMap: NodeMap = {},
     nodeLabelMap: LabelMap = {};
   nodes.forEach((node, i) => {
-    nodeMap[node.id] = { idx: i, node, degree: 0 };
+    nodeMap[node.id] = { idx: i, node, degree: 0, inDegree: 0, outDegree: 0 };
     const label = node[nodeLabelProp];
     if (!nodeLabelMap[label]) nodeLabelMap[label] = [];
     nodeLabelMap[label].push(node);
@@ -323,9 +323,15 @@ const getEdgeMaps = (
     edgeLabelMap[label].push(edge);
 
     const sourceNode = nodeMap[edge.source];
-    if (sourceNode) sourceNode.degree++;
+    if (sourceNode) {
+      sourceNode.degree++;
+      sourceNode.outDegree++;
+    }
     const targetNode = nodeMap[edge.target];
-    if (targetNode) targetNode.degree++;
+    if (targetNode) {
+      targetNode.degree++;
+      targetNode.inDegree++;
+    }
   });
   return { edgeMap, edgeLabelMap };
 };
@@ -396,6 +402,43 @@ const getNDSDist = (
 
   return getMatchedCount(interInducedGraph, structure, nodeLabelProp, edgeLabelProp);
 };
+
+/**
+ * 计算 pattern 上绩点的度数并存储到 minPatternNodeLabelDegreeMap
+ */
+const stashPatternNodeLabelDegreeMap = (minPatternNodeLabelDegreeMap, neighborLabel, patternNodeMap, patternNodeLabelMap) => {
+  let minPatternNodeLabelDegree = minPatternNodeLabelDegreeMap[neighborLabel]?.degree;
+  let minPatternNodeLabelInDegree = minPatternNodeLabelDegreeMap[neighborLabel]?.inDegree;
+  let minPatternNodeLabelOutDegree = minPatternNodeLabelDegreeMap[neighborLabel]?.outDegree;
+
+  if (minPatternNodeLabelDegreeMap[neighborLabel] === undefined) {
+    minPatternNodeLabelDegree = Infinity;
+    minPatternNodeLabelInDegree = Infinity;
+    minPatternNodeLabelOutDegree = Infinity;
+    patternNodeLabelMap[neighborLabel].forEach(patternNodeWithLabel => {
+      const patternNodeDegree = patternNodeMap[patternNodeWithLabel.id].degree;
+      if (minPatternNodeLabelDegree > patternNodeDegree)
+        minPatternNodeLabelDegree = patternNodeDegree;
+      const patternNodeInDegree = patternNodeMap[patternNodeWithLabel.id].inDegree;
+      if (minPatternNodeLabelInDegree > patternNodeInDegree)
+        minPatternNodeLabelInDegree = patternNodeInDegree;
+      const patternNodeOutDegree = patternNodeMap[patternNodeWithLabel.id].outDegree;
+      if (minPatternNodeLabelOutDegree > patternNodeOutDegree)
+        minPatternNodeLabelOutDegree = patternNodeOutDegree;
+    });
+    minPatternNodeLabelDegreeMap[neighborLabel] = {
+      degree: minPatternNodeLabelDegree,
+      inDegree: minPatternNodeLabelInDegree,
+      outDegree: minPatternNodeLabelOutDegree
+    };
+  }
+
+  return {
+    minPatternNodeLabelDegree, 
+    minPatternNodeLabelInDegree,
+    minPatternNodeLabelOutDegree
+  }
+}
 
 /**
  * GADDI 模式匹配
@@ -557,8 +600,12 @@ const GADDI = (
     patternNDSDistMap = {}; // key 为 node.id-label2，value nds距离值数组（按从大到小排序，无需关心具体对应哪个 node2）
   // 2.2.2 对于 Q 中的另一个标签的 k 个节点，计算它们到 node 的最短路径以及 NDS 距离
   const patternSpDist = {};
+  const patternSpDistBack = {};
   Object.keys(patternNodeLabelMap).forEach((label2, j) => {
     patternSpDist[label2] = [];
+    if (directed) {
+      patternSpDistBack[label2] = [];
+    }
     let maxDist = -Infinity;
     const patternNodesWithLabel2 = patternNodeLabelMap[label2];
     const patternNodePairMap = {};
@@ -571,10 +618,15 @@ const GADDI = (
         end: patternNodeMap[nodeWithLabel2.id].idx,
         distance: dist,
       };
+      if (directed) {
+        const distBack = patternSpmMap[`${nodeWithLabel2.id}-${beginPNode.id}`];
+        distBack && patternSpDistBack[label2].push(distBack);
+      }
     });
 
     // spDist[label2] 按照从小到大排序
     patternSpDist[label2] = patternSpDist[label2].sort((a, b) => a - b);
+    if (directed) patternSpDistBack[label2] = patternSpDistBack[label2].sort((a, b) => a - b);
 
     // 计算 Q 中所有 label2 节点到 beginPNode 的 NDS 距离
     // 所有 label2 节点到 beginPNode 的邻居相交诱导子图：
@@ -712,22 +764,35 @@ const GADDI = (
         continue;
       }
 
-      const key = `${candidate.id}-${neighborNode.id}`;
-
       // prune2: 若该邻居点到 candidate 的最短路径比和它有相同 label 的节点到 beginPNode 的最大最短路径长度长，移除这个点
       // prune2.1: 如果没有这个标签到 beginPNode 的距离记录，说明 pattern 上（可能 beginPNode 是这个 label）没有其他这个 label 的节点
       if (!patternSpDist[neighborLabel] || !patternSpDist[neighborLabel].length) {
         neighborNodes.splice(i, 1);
         continue;
       }
+
+      const key = `${candidate.id}-${neighborNode.id}`;
+
       // prune2.2
       const distToCandidate = spmMap[key];
-      const maxDistWithLabelInPattern =
-        patternSpDist[neighborLabel][patternSpDist[neighborLabel].length - 1]; // patternSpDist[neighborLabel] 已经按照从小到大排序
+      let idx = patternSpDist[neighborLabel].length - 1;
+      let maxDistWithLabelInPattern = patternSpDist[neighborLabel][idx]; // patternSpDist[neighborLabel] 已经按照从小到大排序
       if (distToCandidate > maxDistWithLabelInPattern) {
         neighborNodes.splice(i, 1);
         continue;
       }
+
+    if (directed) {
+      const keyBack = `${neighborNode.id}-${candidate.id}`;
+      const distFromCandidate = spmMap[keyBack];
+      idx = patternSpDistBack[neighborLabel].length - 1;
+      let maxBackDistWithLabelInPattern = patternSpDistBack[neighborLabel][idx];
+      if (distFromCandidate > maxBackDistWithLabelInPattern) {
+        neighborNodes.splice(i, 1);
+        continue;
+      }
+    }
+
 
       // prune3: 若该邻居点到 candidate 的 NDS 距离比和它有相同 label 的节点到 beginPNode 的最小 NDS 距离小，移除这个点
       const ndsToCandidate = ndsDist[key]
@@ -754,16 +819,12 @@ const GADDI = (
       }
 
       // prune4: 若该邻居点的度数小于 pattern 同 label 节点最小度数，删去该点
-      let minPatternNodeLabelDegree = minPatternNodeLabelDegreeMap[neighborLabel];
-      if (minPatternNodeLabelDegree === undefined) {
-        minPatternNodeLabelDegree = Infinity;
-        patternNodeLabelMap[neighborLabel].forEach(patternNodeWithLabel => {
-          const patternNodeDegree = patternNodeMap[patternNodeWithLabel.id].degree;
-          if (minPatternNodeLabelDegree > patternNodeDegree)
-            minPatternNodeLabelDegree = patternNodeDegree;
-        });
-        minPatternNodeLabelDegreeMap[neighborLabel] = minPatternNodeLabelDegree;
-      }
+      const {
+        minPatternNodeLabelDegree,
+        minPatternNodeLabelInDegree,
+        minPatternNodeLabelOutDegree
+      } = stashPatternNodeLabelDegreeMap(minPatternNodeLabelDegreeMap, neighborLabel, patternNodeMap,patternNodeLabelMap);
+
       if (nodeMap[neighborNode.id].degree < minPatternNodeLabelDegree) {
         neighborNodes.splice(i, 1);
         continue;
@@ -803,7 +864,7 @@ const GADDI = (
   }
 
   // 现在 candidateGraphs 里面只有节点，进行边的筛选
-  const candidateGraphNum = candidateGraphs.length;
+  let candidateGraphNum = candidateGraphs.length;
   for (let i = candidateGraphNum - 1; i >= 0; i--) {
     const candidateGraph = candidateGraphs[i];
     const candidate = candidateGraph.nodes[0];
@@ -815,6 +876,8 @@ const GADDI = (
         idx: q,
         node,
         degree: 0,
+        inDegree: 0,
+        outDegree: 0
       };
       const cNodeLabel = node[nodeLabelProp];
       if (!candidateNodeLabelCountMap[cNodeLabel]) candidateNodeLabelCountMap[cNodeLabel] = 1;
@@ -832,6 +895,8 @@ const GADDI = (
         else edgeLabelCountMap[edge[edgeLabelProp]]++;
         candidateNodeMap[edge.source].degree++;
         candidateNodeMap[edge.target].degree++;
+        candidateNodeMap[edge.source].outDegree++;
+        candidateNodeMap[edge.target].inDegree++;
       }
     });
 
@@ -878,6 +943,8 @@ const GADDI = (
         candidateEdges.splice(e, 1);
         candidateNodeMap[edge.source].degree--;
         candidateNodeMap[edge.target].degree--;
+        candidateNodeMap[edge.source].outDegree--;
+        candidateNodeMap[edge.target].inDegree--;
         continue;
       }
 
@@ -911,6 +978,8 @@ const GADDI = (
         candidateEdges.splice(e, 1);
         candidateNodeMap[edge.source].degree--;
         candidateNodeMap[edge.target].degree--;
+        candidateNodeMap[edge.source].outDegree--;
+        candidateNodeMap[edge.target].inDegree--;
         continue;
       }
     }
@@ -984,7 +1053,11 @@ const GADDI = (
       degreeChanged = false;
 
       // candidate 度数不足，删去该图
-      if (candidateNodeMap[candidate.id].degree < patternNodeMap[beginPNode.id].degree) {
+      const condition = directed ? (candidateNodeMap[candidate.id].degree < patternNodeMap[beginPNode.id].degree || 
+        candidateNodeMap[candidate.id].inDegree < patternNodeMap[beginPNode.id].inDegree ||
+        candidateNodeMap[candidate.id].outDegree < patternNodeMap[beginPNode.id].outDegree) :
+        candidateNodeMap[candidate.id].degree < patternNodeMap[beginPNode.id].degree;
+      if (condition) {
         candidateGraphInvalid = true;
         break;
       }
@@ -1002,8 +1075,21 @@ const GADDI = (
       for (let o = currentCandidateNodeNum - 1; o >= 0; o--) {
         const cgNode = candidateGraph.nodes[o];
         const nodeDegree = candidateNodeMap[cgNode.id].degree;
+        const nodeInDegree = candidateNodeMap[cgNode.id].inDegree;
+        const nodeOutDegree = candidateNodeMap[cgNode.id].outDegree;
         const cNodeLabel = cgNode[nodeLabelProp];
-        if (nodeDegree < minPatternNodeLabelDegreeMap[cNodeLabel]) {
+        
+        const {
+          minPatternNodeLabelDegree,
+          minPatternNodeLabelInDegree,
+          minPatternNodeLabelOutDegree
+        } = stashPatternNodeLabelDegreeMap(minPatternNodeLabelDegreeMap, cNodeLabel, patternNodeMap,patternNodeLabelMap);
+        
+        const deleteCondition = directed ? (nodeDegree < minPatternNodeLabelDegree || 
+          nodeInDegree < minPatternNodeLabelInDegree ||
+          nodeOutDegree < minPatternNodeLabelOutDegree) :
+          nodeDegree < minPatternNodeLabelDegree;
+        if (deleteCondition) {
           candidateNodeLabelCountMap[cgNode[nodeLabelProp]]--;
           // 节点 label 个数不足
           if (
@@ -1027,8 +1113,14 @@ const GADDI = (
           candidateEdges.splice(y, 1);
           const edgeLabel = cedge[edgeLabelProp];
           edgeLabelCountMap[edgeLabel]--;
-          candidateNodeMap[cedge.source] && candidateNodeMap[cedge.source].degree--;
-          candidateNodeMap[cedge.target] && candidateNodeMap[cedge.target].degree--;
+          if (candidateNodeMap[cedge.source]) {
+            candidateNodeMap[cedge.source].degree--;
+            candidateNodeMap[cedge.source].outDegree--;
+          }
+          if (candidateNodeMap[cedge.target]) {
+            candidateNodeMap[cedge.target].degree--;
+            candidateNodeMap[cedge.target].inDegree--;
+          }
           // 边 label 数量不足
           if (
             patternEdgeLabelMap[edgeLabel] &&
