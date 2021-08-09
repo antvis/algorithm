@@ -23,6 +23,8 @@ export interface NodeMap {
     idx: number; // 该j客店在原图 graphData.nodes 的序号
     node: any;
     degree: number;
+    inDegree: number;
+    outDegree: number;
   };
 }
 

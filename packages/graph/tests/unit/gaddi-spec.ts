@@ -901,3 +901,210 @@ describe('Performance: 1589 nodes G', () => {
     });
   });
 });
+
+describe('Prune', () => {
+  it('Prune', () => {
+    const dataPrune = {
+      "nodes":[
+        {
+          "id":"0",
+          "cluster":"B"
+        },
+        {
+          "id":"1",
+          "cluster":"B"
+        },
+        {
+          "id":"2",
+          "cluster":"B"
+        },
+        {
+          "id":"3",
+          "cluster":"C"
+        },
+      ],
+      "edges":[
+        {
+          "source":"0",
+          "target":"1",
+          "cluster":"b"
+        },
+        {
+          "source":"1",
+          "target":"2",
+          "cluster":"b"
+        },
+        {
+          "source":"1",
+          "target":"3",
+          "cluster":"b"
+        },
+      ]
+    }
+    
+    const dataPrune2 = {
+      "nodes":[
+        {
+          "id":"0",
+          "cluster":"B"
+        },
+        {
+          "id":"1",
+          "cluster":"B"
+        },
+        {
+          "id":"2",
+          "cluster":"B"
+        },
+        {
+          "id":"3",
+          "cluster":"B"
+        },
+        {
+          "id":"4",
+          "cluster":"B"
+        },
+        {
+          "id":"5",
+          "cluster":"B"
+        },
+        {
+          "id":"6",
+          "cluster":"B"
+        },
+        {
+          "id":"7",
+          "cluster":"B"
+        },
+        {
+          "id":"8",
+          "cluster":"B"
+        },
+        {
+          "id":"9",
+          "cluster":"B"
+        },
+        {
+          "id":"10",
+          "cluster":"B"
+        },
+        {
+          "id":"11",
+          "cluster":"C"
+        },
+      ],
+      "edges":[
+        {
+          "source":"0",
+          "target":"6",
+          "cluster":"b"
+        },
+        {
+          "source":"1",
+          "target":"6",
+          "cluster":"b"
+        },
+        {
+          "source":"2",
+          "target":"6",
+          "cluster":"b"
+        },
+        {
+          "source":"3",
+          "target":"6",
+          "cluster":"b"
+        },
+        {
+          "source":"4",
+          "target":"6",
+          "cluster":"b"
+        },
+        {
+          "source":"5",
+          "target":"6",
+          "cluster":"b"
+        },
+        {
+          "source":"6",
+          "target":"7",
+          "cluster":"b"
+        },
+        {
+          "source":"6",
+          "target":"8",
+          "cluster":"b"
+        },
+        {
+          "source":"6",
+          "target":"9",
+          "cluster":"b"
+        },
+        {
+          "source":"6",
+          "target":"10",
+          "cluster":"b"
+        },
+        {
+          "source":"6",
+          "target":"11",
+          "cluster":"b"
+        },
+      ]
+    }
+    const p = {
+      nodes: [
+        {
+          id: '0',
+          cluster: 'B',
+        },
+        {
+          id: '1',
+          cluster: 'B',
+        },
+        {
+          id: '2',
+          cluster: 'B',
+        },
+        {
+          id: '3',
+          cluster: 'C',
+        },
+      ],
+      edges: [
+        {
+          source: '0',
+          target: '1',
+          cluster: 'b',
+        },
+        {
+          source: '2',
+          target: '1',
+          cluster: 'b',
+        },
+        {
+          source: '1',
+          target: '3',
+          cluster: 'b',
+        },
+      ],
+    };
+
+    const result = GADDI(
+      dataPrune2,
+      p,
+      true,
+      undefined,
+      undefined,
+      'cluster',
+      'cluster',
+    );
+
+    // console.log('res', result);
+    // // console.log(JSON.stringify(data3));
+
+    // result.forEach(re => {
+    //   console.log(JSON.stringify(re));
+    // });
+    expect(result.length).toBe(1);
+  })
+})
