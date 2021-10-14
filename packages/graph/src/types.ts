@@ -56,6 +56,7 @@ export interface IAlgorithm {
     graphData: GraphData,
     startNodeId: string,
     originalCallbacks?: IAlgorithmCallbacks,
+    directed?: boolean
   ) => void,
   connectedComponent: (graphData: GraphData, directed?: boolean) => NodeConfig[][],
   getDegree: (graphData: GraphData) => DegreeType,
