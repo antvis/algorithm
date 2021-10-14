@@ -43,6 +43,7 @@ const breadthFirstSearch = (
   graphData: GraphData,
   startNodeId: string,
   originalCallbacks?: IAlgorithmCallbacks,
+  directed: boolean = true
 ) => {
   const callbacks = initCallbacks(originalCallbacks);
   const nodeQueue = new Queue();
@@ -63,7 +64,7 @@ const breadthFirstSearch = (
     });
 
     // 将所有邻居添加到队列中以便遍历
-    getNeighbors(currentNode, edges, 'target').forEach((nextNode) => {
+    getNeighbors(currentNode, edges, directed ? 'target' : undefined).forEach((nextNode) => {
       if (
         callbacks.allowTraversal({
           previous: previousNode,

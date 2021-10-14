@@ -503,7 +503,11 @@ const GADDI = (
   );
 
   // 若未指定 length，自动计算 pattern 半径（最短路径最大值）
-  if (!length) length = Math.max(...patternSpm[0], 2);
+  let patternSpmSpread = [];
+  patternSpm?.forEach(row => {
+    patternSpmSpread = patternSpmSpread.concat(row);
+  })
+  if (!length) length = Math.max(...patternSpmSpread, 2);
   if (!k) k = length;
 
   // console.log("params", directed, length, k);
@@ -735,7 +739,7 @@ const GADDI = (
 
   // candidates 经过筛选后，以每个 candidate 为中心，生成 Length-neighbor 的邻居诱导子图
   // 并在诱导子图中去除不可能在 Q 上找到匹配的点：在 Q 上不存在的 label，其他 label 到 candidate 的最大最短距离符合 Q、NDS 距离符合 Q
-  candidates.forEach(candidate => {
+  candidates?.forEach(candidate => {
     const nodeIdx = nodeMap[candidate.id].idx;
     const lengthNeighborUnit = findKNeighborUnit(
       graphData.nodes,
