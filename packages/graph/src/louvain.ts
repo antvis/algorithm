@@ -1,5 +1,8 @@
+import { clone } from '@antv/util';
 import getAdjMatrix from './adjacent-matrix'
 import { NodeConfig, ClusterData, GraphData, ClusterMap } from './types';
+import Vector from './utils/vector';
+import { secondReg, dateReg } from './constants/time';
 
 const getModularity = (
   nodes: NodeConfig[],
@@ -25,21 +28,154 @@ const getModularity = (
   return modularity;
 }
 
+// 获取所有属性并排序
+const getAllSortProperties = (nodes: NodeConfig[] = []) => {
+  const propertyKeyInfo = {};
+  nodes.forEach(node => {
+    Object.keys(node.properties).forEach(propertyKey => {
+      // 目前过滤只保留可以转成数值型的或日期型的, todo: 统一转成one-hot特征向量
+      if (!`${node.properties[propertyKey]}`.match(secondReg) && 
+        !`${node.properties[propertyKey]}`.match(dateReg) && 
+        isNaN(Number(node.properties[propertyKey])) || propertyKey === 'id') {
+        if (propertyKeyInfo.hasOwnProperty(propertyKey)) {
+          delete propertyKeyInfo[propertyKey];
+        }
+        return;
+      }
+      if (propertyKeyInfo.hasOwnProperty(propertyKey)) {
+        propertyKeyInfo[propertyKey] += 1;
+      } else {
+        propertyKeyInfo[propertyKey] = 1;
+      }
+    })
+  })
+
+  // 取top50的属性
+  const sortKeys = Object.keys(propertyKeyInfo).sort((a,b)=>{
+    return propertyKeyInfo[b] - propertyKeyInfo[a];
+  });
+  return sortKeys.length < 100 ? sortKeys : sortKeys.slice(0, 100);
+}
+
+const processProperty = (properties, propertyKeys) => propertyKeys.map(key => {
+  if (properties.hasOwnProperty(key)) {
+    // 可以转成数值的直接转成数值
+    if (!isNaN(Number(properties[key]))) {
+      return Number(properties[key]);
+    }
+    // 时间型的转成时间戳
+    if (properties[key].match(secondReg) || properties[key].match(dateReg)) {
+      // @ts-ignore
+      return Number(Date.parse(new Date(properties[key]))) / 1000;
+    }
+  }
+  return 0;
+})
+
+// 获取属性特征权重
+const getPropertyWeight = (propertyKeys, nodes) => {
+  let allPropertiesWeight = [];
+  for (let i = 0; i < nodes.length; i++) {
+    allPropertiesWeight[i] = processProperty(nodes[i].properties, propertyKeys);
+  }
+  return allPropertiesWeight;
+}
+
+// 模块惯性度，衡量属性相似度
+const getInertialModularity = (
+  nodes: NodeConfig[] = [],
+  allPropertiesWeight: number[][],
+) => {
+  const length = nodes.length;
+  let totalProperties = new Vector([]);
+  for (let i = 0; i < length; i++) {
+    totalProperties = totalProperties.add(new Vector(allPropertiesWeight[i]));
+  }
+  // 均值向量
+  const avgProperties = totalProperties.avg(length);
+
+  avgProperties.normalize();
+  // 节点集合的方差: 节点v与均值向量的平方欧式距离之和
+  let variance: number = 0;
+  for (let i = 0; i < length; i++) {
+    const propertiesi = new Vector(allPropertiesWeight[i]);
+    const squareEuclideanDistance = propertiesi.squareEuclideanDistance(avgProperties);
+    variance += squareEuclideanDistance;
+  }
+
+  // 任意两点间的欧式平方距离
+  let squareEuclideanDistanceInfo = [];
+  nodes.forEach(() => {
+    squareEuclideanDistanceInfo.push([]);
+  });
+  for (let i = 0; i < length; i++) {
+    const propertiesi = new Vector(allPropertiesWeight[i]);
+    nodes[i]['clusterInertial'] = 0;
+    for (let j = 0; j < length; j++) {
+      if ( i === j) {
+        squareEuclideanDistanceInfo[i][j] = 0;
+        continue;
+      }
+      const propertiesj = new Vector(allPropertiesWeight[j]);
+      squareEuclideanDistanceInfo[i][j] = propertiesi.squareEuclideanDistance(propertiesj);
+      nodes[i]['clusterInertial'] += squareEuclideanDistanceInfo[i][j];
+    }
+  }
+
+  // 计算模块惯性度
+  let inertialModularity: number = 0;
+  const param = 2 * length * variance;
+  for (let i = 0; i < length; i++) {
+    const clusteri = nodes[i].clusterId;
+    for (let j = 0; j < length; j++) {
+      const clusterj = nodes[j].clusterId;
+      if ( i === j || clusteri !== clusterj) continue;
+      const inertial = (nodes[i].clusterInertial * nodes[j].clusterInertial) / Math.pow(param, 2) - squareEuclideanDistanceInfo[i][j] / param;
+      inertialModularity += inertial;
+    }
+  }
+  return Number(inertialModularity.toFixed(4));
+}
+
+
 /**
  * 社区发现 louvain 算法
  * @param graphData 图数据
  * @param directed 是否有向图，默认为 false
  * @param weightPropertyName 权重的属性字段
- * @param threshold 
+ * @param threshold 差值阈值
+ * @param inertialModularity 是否使用惯性模块度（即节点属性相似性）
  */
 const louvain = (
   graphData: GraphData,
   directed: boolean = false,
   weightPropertyName: string = 'weight',
-  threshold: number = 0.0001
+  threshold: number = 0.0001,
+  inertialModularity: boolean = false,
+  inertialWeight: number = 1,
 ): ClusterData => {
   // the origin data
   const { nodes = [], edges = [] } = graphData;
+
+  let allPropertiesWeight = [];
+  if (inertialModularity) {
+    nodes.forEach((node, index) => {
+      node.properties = node.properties || {};
+      node.originIndex = index;
+    })
+  
+    let nodeTypeInfo = [];
+    if (nodes.every(node => node.hasOwnProperty('nodeType'))) {
+      nodeTypeInfo = Array.from(new Set(nodes.map(node => node.nodeType)));
+      nodes.forEach(node => {
+        node.properties.nodeType = nodeTypeInfo.findIndex(nodeType => nodeType === node.nodeType);
+      })
+    }
+    const propertyKeys = getAllSortProperties(nodes);
+    // 所有节点属性特征向量集合
+    allPropertiesWeight = getPropertyWeight(propertyKeys, nodes);
+  }
+ 
   let uniqueId = 1;
 
   const clusters: ClusterMap = {};
@@ -57,7 +193,6 @@ const louvain = (
       idx: i
     };
   });
-
   // the adjacent matrix of calNodes inside clusters
   const adjMatrix = getAdjMatrix(graphData, directed);
   // the sum of each row in adjacent matrix
@@ -92,13 +227,38 @@ const louvain = (
   let previousModularity = Infinity;
   let iter = 0;
 
+  let finalNodes = [];
+  let finalClusters = {};
   while (true) {
-    // whether to terminate the iterations
-    totalModularity = getModularity(nodes, adjMatrix, ks, m);
-    if (Math.abs(totalModularity - previousModularity) < threshold || iter > 100) break;
-    previousModularity = totalModularity;
-    iter++;
+    if (inertialModularity && nodes.every(node => node.hasOwnProperty('properties'))) {
+      totalModularity = getModularity(nodes, adjMatrix, ks, m) + getInertialModularity(nodes, allPropertiesWeight) * inertialWeight;
+    } else {
+      totalModularity = getModularity(nodes, adjMatrix, ks, m);
+    }
+   
+    // 第一次迭代previousModularity直接赋值
+    if (iter === 0) {
+      previousModularity = totalModularity;
+      finalNodes = nodes;
+      finalClusters = clusters;
+    }
 
+    const increaseWithinThreshold = totalModularity > 0 && totalModularity > previousModularity && totalModularity - previousModularity < threshold;
+    // 总模块度增加才更新最优解
+    if (totalModularity > previousModularity) {
+      finalNodes = nodes.map(node => ({
+        node,
+        clusterId: node.clusterId
+      }));
+      finalClusters = clone(clusters);
+      previousModularity = totalModularity;
+    }
+
+    // whether to terminate the iterations
+    if ( increaseWithinThreshold || iter > 100) {
+      break;
+    };
+    iter++;
     // pre compute some values for current clusters
     Object.keys(clusters).forEach(clusterId => {
       // sum of weights of edges to nodes in cluster
@@ -133,11 +293,19 @@ const louvain = (
       });
       // the modurarity for **removing** the node i from the origin cluster of node i
       const removeModurarity = kiin - selfCluster.sumTot * commonParam;
+      // nodes for **removing** node i into this neighbor cluster
+      const selfClusterNodesAfterRemove = selfClusterNodes.filter(scNode => scNode.id !== node.id);
+      let propertiesWeightRemove = [];
+      selfClusterNodesAfterRemove.forEach((nodeRemove, index) => {
+        propertiesWeightRemove[index] = allPropertiesWeight[nodeRemove.originIndex];
+      })
+      // the inertialModularity for **removing** the node i from the origin cluster of node i
+      const removeInertialModularity = getInertialModularity(selfClusterNodesAfterRemove, allPropertiesWeight) * inertialWeight;
 
       // the neightbors of the node
       const nodeNeighborIds = neighbors[node.id];
       Object.keys(nodeNeighborIds).forEach(neighborNodeId => {
-        const neighborNode = nodeMap[neighborNodeId].node
+        const neighborNode = nodeMap[neighborNodeId].node;
         const neighborClusterId = neighborNode.clusterId;
 
         // if the node and the neighbor of node are in the same cluster, reutrn
@@ -155,11 +323,22 @@ const louvain = (
           neighborClusterKiin += adjMatrix[i][cNodeIdx] || 0;
         });
 
-        // modurarity for **adding** node i into this neighbor cluster
+        // the modurarity for **adding** node i into this neighbor cluster
         const addModurarity = neighborClusterKiin - neighborCluster.sumTot * commonParam;
+        // nodes for **adding** node i into this neighbor cluster
+        const clusterNodesAfterAdd= clusterNodes.concat([node]);
+        let propertiesWeightAdd = [];
+        clusterNodesAfterAdd.forEach((nodeAdd, index) => {
+          propertiesWeightAdd[index] = allPropertiesWeight[nodeAdd.originIndex];
+        })
+        // the inertialModularity for **adding** node i into this neighbor cluster
+        const addInertialModularity = getInertialModularity(clusterNodesAfterAdd, allPropertiesWeight) * inertialWeight;
 
         // the increase modurarity is the difference between addModurarity and removeModurarity
-        const increase = addModurarity - removeModurarity;
+        let increase = addModurarity - removeModurarity;
+        if (inertialModularity) {
+          increase = (addModurarity + addInertialModularity) - (removeModurarity + removeInertialModularity);
+        }
 
         // find the best cluster to move node i into
         if (increase > bestIncrease) {
@@ -205,10 +384,10 @@ const louvain = (
   // delete the empty clusters, assign increasing clusterId
   const newClusterIdMap = {}
   let clusterIdx = 0;
-  Object.keys(clusters).forEach((clusterId) => {
-    const cluster = clusters[clusterId];
+  Object.keys(finalClusters).forEach((clusterId) => {
+    const cluster = finalClusters[clusterId];
     if (!cluster.nodes || !cluster.nodes.length) {
-      delete clusters[clusterId];
+      delete finalClusters[clusterId];
       return;
     }
     const newId = String(clusterIdx + 1);
@@ -217,16 +396,17 @@ const louvain = (
     }
     cluster.id = newId;
     cluster.nodes = cluster.nodes.map(item => ({ id: item.id, clusterId: newId }));
-    clusters[newId] = cluster;
+    finalClusters[newId] = cluster;
     newClusterIdMap[clusterId] = newId;
-    delete clusters[clusterId];
+    delete finalClusters[clusterId];
     clusterIdx ++;
   });
-
-  nodes.forEach(node => {
+  // restore node clusterId
+  finalNodes.forEach(nodeInfo => {
+    const { node, clusterId } = nodeInfo;
+    node.clusterId = clusterId;
     if (node.clusterId && newClusterIdMap[node.clusterId]) node.clusterId = newClusterIdMap[node.clusterId]
   })
-
   // get the cluster edges
   const clusterEdges = [];
   const clusterEdgeMap = {};
@@ -250,10 +430,9 @@ const louvain = (
       clusterEdges.push(newEdge);
     }
   });
-
   const clustersArray = [];
-  Object.keys(clusters).forEach(clusterId => {
-    clustersArray.push(clusters[clusterId]);
+  Object.keys(finalClusters).forEach(clusterId => {
+    clustersArray.push(finalClusters[clusterId]);
   });
   return {
     clusters: clustersArray,
