@@ -112,11 +112,9 @@ class DFScode {
       const toNodeId = dfsEdge.toNode;
       const { nodeLabel1, edgeLabel, nodeLabel2 } = dfsEdge.nodeEdgeNodeLabel;
 
-      if (nodeLabel1 !== VACANT_NODE_LABEL)
-        graph.addNode(fromNodeId, nodeLabel1);
+      if (nodeLabel1 !== VACANT_NODE_LABEL) graph.addNode(fromNodeId, nodeLabel1);
       if (nodeLabel2 !== VACANT_NODE_LABEL) graph.addNode(toNodeId, nodeLabel2);
-
-      graph.addEdge(undefined, fromNodeId, toNodeId, edgeLabel);
+      if (nodeLabel1 !== VACANT_NODE_LABEL && nodeLabel2 !== nodeLabel1)  graph.addEdge(undefined, fromNodeId, toNodeId, edgeLabel);
     });
     return graph;
   }
@@ -429,6 +427,7 @@ class GSpan {
 
     // 比较 root 中每一项的 nodeEdgeNodeLabel 大小，按照 nodeLabel1、edgeLabe、nodeLabel2 的顺序比较
     let minLabel = this.findMinLabel(root); // line 419
+    if (!minLabel) return;
     dfsCodeMin.dfsEdgeList.push(
       new DFSedge(
         0,
