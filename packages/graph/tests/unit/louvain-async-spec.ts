@@ -1,5 +1,6 @@
 import { louvain } from '../../src';
 import { GraphData } from '../../src/types';
+import propertiesGraphData from './data/cluster-origin-properties-data.json';
 
 describe('(Async) louvain', () => {
 
@@ -44,6 +45,7 @@ describe('(Async) louvain', () => {
     expect(clusteredData.clusterEdges[1].count).toBe(10);
     expect(clusteredData.clusterEdges[1].weight).toBe(14);
   });
+
   it('louvain with large graph', () => { // https://gw.alipayobjects.com/os/antvdemo/assets/data/relations.json
     fetch('https://gw.alipayobjects.com/os/basement_prod/da5a1b47-37d6-44d7-8d10-f3e046dabf82.json')
       .then((res) => res.json())
@@ -52,5 +54,14 @@ describe('(Async) louvain', () => {
         expect(clusteredData.clusters.length).toBe(495);
         expect(clusteredData.clusterEdges.length).toBe(505);
       });
+  });
+
+  it('louvain: add inertialModularity', () => {
+    const clusteredData = louvain(propertiesGraphData as GraphData, false, 'weight', 0.01, true, 1);
+    expect(clusteredData.clusters.length).toBe(3);
+    expect(clusteredData.clusters[0].sumTot).toBe(3);
+    expect(clusteredData.clusters[1].sumTot).toBe(3);
+    expect(clusteredData.clusters[2].sumTot).toBe(4);
+    expect(clusteredData.clusterEdges.length).toBe(7);
   });
 });
