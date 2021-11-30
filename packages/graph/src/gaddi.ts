@@ -204,6 +204,7 @@ const getMatchedCount = (graph, structure, nodeLabelProp, edgeLabelProp) => {
     nodeMap[node.id] = node;
   });
   let count = 0;
+  if (!structure?.edges?.length || structure?.nodes?.length < 2) return 0;
   graph.edges.forEach(e => {
     const sourceLabel = nodeMap[e.source][nodeLabelProp];
     const targetLabel = nodeMap[e.target][nodeLabelProp];
@@ -540,7 +541,6 @@ const GADDI = (
   // );
   // 1.2. 生成上面节点对的相应相交邻居诱导子图。格式为 {'beginNodeIdx-endNodeIdx': {nodes: [], edges: []}}
   let intGMap = getIntersectNeighborInducedGraph(nodePairsMap, kNeighborUnits, graphData);
-
   // 1.3. 使用 gSpan 算法（frequent graph mining）计算 ISIntG 的前 10 个频率最高的子结构（3-4条边）
   const top = 10,
     minSupport = 1,
@@ -796,7 +796,6 @@ const GADDI = (
         continue;
       }
     }
-
 
       // prune3: 若该邻居点到 candidate 的 NDS 距离比和它有相同 label 的节点到 beginPNode 的最小 NDS 距离小，移除这个点
       const ndsToCandidate = ndsDist[key]
