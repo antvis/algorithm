@@ -589,11 +589,21 @@ const GADDI = (
   );
 
   // -------- 第二步，匹配-------
-  // 2.1 从 Q 中的第一个标签的第一个节点开始，寻找 G 中的匹配
-  const beginPNode = pattern.nodes[0];
-  const label = beginPNode[nodeLabelProp];
-  // 2.1.1 找到 G 中标签与之相同的节点
-  let candidates = nodeLabelMap[label];
+  // 2.1 找到从 Q 中的一个节点作为起始节点，寻找 G 中的匹配。这个其实节点的标签可以在 G 中找到最多的节点
+  let beginPNode = pattern.nodes[0],
+    candidates = [],
+    label = pattern.nodes[0]?.[nodeLabelProp],
+    maxNodeNumWithSameLabel = -Infinity;
+  pattern.nodes.forEach(node => {
+    const pLabel = node[nodeLabelProp];
+    const nodesWithSameLabel = nodeLabelMap[pLabel]
+    if (nodesWithSameLabel?.length > maxNodeNumWithSameLabel) {
+      maxNodeNumWithSameLabel = nodesWithSameLabel.length;
+      candidates = nodesWithSameLabel;
+      label = pLabel;
+      beginPNode = node;
+    }
+  });
 
   // console.log("----- stage2: going to find candidates -------");
 
@@ -659,7 +669,7 @@ const GADDI = (
 
     if (label2 === label) return;
 
-    const candidatesNum = candidates.length;
+    const candidatesNum = candidates?.length || 0;
     for (let m = candidatesNum - 1; m >= 0; m--) {
       const cNode = candidates[m];
 

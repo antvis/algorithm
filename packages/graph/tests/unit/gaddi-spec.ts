@@ -284,9 +284,9 @@ describe('gSpan', () => {
     console.log('test1', matchedSubGraphs);
     expect(matchedSubGraphs.length).toBe(2);
     matchedSubGraphs.forEach(graph => {
-      expect(graph.nodes[0].cluster).toBe('F');
+      expect(graph.nodes[0].cluster).toBe('B');
       expect(graph.nodes[1].cluster).toBe('F');
-      expect(graph.nodes[2].cluster).toBe('B');
+      expect(graph.nodes[2].cluster).toBe('F');
       expect(graph.edges[0].cluster).toBe('b');
       expect(graph.edges[1].cluster).toBe('b');
     });
@@ -432,10 +432,10 @@ describe('gSpan directed', () => {
       'cluster',
       'cluster',
     );
-    expect(matchedSubGraphs.length).toBe(1);
-    expect(matchedSubGraphs[0].nodes[0].id).toBe('0');
-    expect(matchedSubGraphs[0].nodes[1].id).toBe('1');
-    expect(matchedSubGraphs[0].nodes[2].id).toBe('2');
+    expect(matchedSubGraphs.length).toBe(2);
+    expect(matchedSubGraphs[0].nodes[0].id).toBe('2');
+    expect(matchedSubGraphs[0].nodes[1].id).toBe('0');
+    expect(matchedSubGraphs[0].nodes[2].id).toBe('1');
   });
 });
 
@@ -457,7 +457,7 @@ describe('GADDI switch nodes', () => {
       ],
     };
     const res1 = GADDI(nodes20, pattern1, true, undefined, undefined, 'dataType', 'dataType');
-    expect(res1.length).toBe(5);
+    expect(res1.length).toBe(6);
     const pattern2 = {
       nodes: [
         { id: 'Enterprise', dataType: 'Enterprise' },
@@ -508,14 +508,14 @@ describe('Performance: gSpan 77 nodes G', () => {
     });
 
     expect(result.length).toBe(5);
-    expect(result[0].nodes[0].id).toBe('33');
-    expect(result[1].nodes[0].id).toBe('43');
-    expect(result[2].nodes[0].id).toBe('55');
-    expect(result[3].nodes[0].id).toBe('57');
-    expect(result[4].nodes[0].id).toBe('65');
+    expect(result[0].nodes[0].id).toBe('11');
+    expect(result[1].nodes[0].id).toBe('48');
+    expect(result[2].nodes[0].id).toBe('60');
+    expect(result[3].nodes[0].id).toBe('63');
+    expect(result[4].nodes[0].id).toBe('66');
 
     expect(result[3].nodes.length).toBe(4);
-    expect(result[4].nodes.length).toBe(5);
+    expect(result[4].nodes.length).toBe(3);
   });
   // 100ms
   it('pattern 5 nodes', () => {
@@ -550,11 +550,11 @@ describe('Performance: gSpan 77 nodes G', () => {
       console.log(JSON.stringify(re));
     });
     expect(result.length).toBe(2);
-    expect(result[0].nodes[0].id).toBe('0');
-    expect(result[1].nodes[0].id).toBe('55');
+    expect(result[0].nodes[0].id).toBe('11');
+    expect(result[1].nodes[0].id).toBe('26');
 
-    expect(result[0].nodes.length).toBe(4);
-    expect(result[1].nodes.length).toBe(5);
+    expect(result[0].nodes.length).toBe(7);
+    expect(result[1].nodes.length).toBe(4);
   });
   it('pattern 10 nodes', () => {
     const patternWith10Nodes = {
@@ -667,7 +667,7 @@ describe('Performance: 202 nodes G', () => {
       console.log(JSON.stringify(re));
     });
     expect(result.length).toBe(1);
-    expect(result[0].nodes[0].id).toBe('100');
+    expect(result[0].nodes[0].id).toBe('67');
     expect(result[0].nodes.length).toBe(4);
   });
   it('pattern with 7 nodes', () => {
@@ -1107,4 +1107,4 @@ describe('Prune', () => {
     // });
     expect(result.length).toBe(1);
   })
-})
+})；
