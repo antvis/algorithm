@@ -1,5 +1,14 @@
 # ChangeLog
 
+#### 0.1.15
+
+- feat: k-core algorithm;
+
+#### 0.1.14
+
+- fix: GADDI with proper begin p node;
+- feat: louvain with property similarity measure
+
 #### 0.1.10
 
 - fix: GADDI with better accuracy;
