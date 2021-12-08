@@ -1,5 +1,5 @@
 import { clone } from '@antv/util';
-import getAdjMatrix from './adjacent-matrix'
+import getAdjMatrix from './adjacent-matrix';
 import { NodeConfig, ClusterData, GraphData, ClusterMap } from './types';
 import Vector from './utils/vector';
 import { secondReg, dateReg } from './constants/time';
