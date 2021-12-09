@@ -10,6 +10,7 @@ import { findAllPath, findShortestPath } from './find-path';
 import floydWarshall from './floydWarshall';
 import labelPropagation from './label-propagation';
 import louvain from './louvain';
+import iLouvain from './i-louvain';
 import kCore from './k-core';
 import minimumSpanningTree from './mts';
 import pageRank from './pageRank';
@@ -39,6 +40,7 @@ export {
   floydWarshall,
   labelPropagation,
   louvain,
+  iLouvain,
   kCore,
   minimumSpanningTree,
   pageRank,
@@ -66,6 +68,7 @@ export default {
   findShortestPath,
   floydWarshall,
   labelPropagation,
+  iLouvain,
   louvain,
   kCore,
   minimumSpanningTree,
