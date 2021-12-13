@@ -1,5 +1,9 @@
 # ChangeLog
 
+#### 0.1.16
+
+- feat: add i-louvain based on louvain according to academic;
+
 #### 0.1.15
 
 - feat: k-core algorithm;
