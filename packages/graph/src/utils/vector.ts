@@ -21,7 +21,7 @@ class Vector {
     }
     if (this.arr.length === otherArr.length) {
       let res = [];
-      for(let key in this.arr) {
+      for (let key in this.arr) {
         res[key] = this.arr[key] + otherArr[key];
       }
       return new Vector(res);
@@ -38,7 +38,7 @@ class Vector {
     }
     if (this.arr.length === otherArr.length) {
       let res = [];
-      for(let key in this.arr) {
+      for (let key in this.arr) {
         res[key] = this.arr[key] - otherArr[key];
       }
       return new Vector(res);
@@ -47,7 +47,7 @@ class Vector {
 
   avg(length) {
     let res = [];
-    for(let key in this.arr) {
+    for (let key in this.arr) {
       res[key] = this.arr[key] / length;
     }
     return new Vector(res);
@@ -55,7 +55,7 @@ class Vector {
 
   negate() {
     let res = [];
-    for(let key in this.arr) {
+    for (let key in this.arr) {
       res[key] = - this.arr[key];
     }
     return new Vector(res);
@@ -69,7 +69,7 @@ class Vector {
     }
     if (this.arr.length === otherArr.length) {
       let res = 0;
-      for(let key in this.arr) {
+      for (let key in this.arr) {
         res += Math.pow(this.arr[key] - otherVector.arr[key], 2);
       }
       return res;
@@ -83,11 +83,38 @@ class Vector {
     cloneArr.sort((a, b) => a - b);
     const max = cloneArr[cloneArr.length - 1];
     const min = cloneArr[0];
-    for(let key in this.arr) {
+    for (let key in this.arr) {
       res[key] = (this.arr[key] - min) / (max - min);
     }
     return new Vector(res);
   }
+
+  // 2范数 or 模长
+  norm2() {
+    if (!this.arr?.length) {
+      return 0;
+    }
+    let res = 0;
+      for (let key in this.arr) {
+        res += Math.pow(this.arr[key], 2);
+      }
+    return Math.sqrt(res);
+  }
+
+  // 两个向量的点积
+  dot(otherVector) {
+    const otherArr = otherVector.arr;
+      if (!this.arr?.length || !otherArr?.length) {
+        return 0;
+      }
+      if (this.arr.length === otherArr.length) {
+        let res = 0;
+        for (let key in this.arr) {
+          res += this.arr[key] * otherVector.arr[key];
+        }
+        return res;
+      }
+    }
 }
 
 export default Vector;

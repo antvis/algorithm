@@ -1,4 +1,7 @@
 # ChangeLog
+#### 0.1.17
+
+- feat: add consine-similarity algorithm and nodes-consine-similarity algorithm;
 
 #### 0.1.16
 
