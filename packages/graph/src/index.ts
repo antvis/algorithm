@@ -12,6 +12,8 @@ import labelPropagation from './label-propagation';
 import louvain from './louvain';
 import iLouvain from './i-louvain';
 import kCore from './k-core';
+import cosineSimilarity from './cosine-similarity';
+import nodesCosineSimilarity from './nodes-cosine-similarity';
 import minimumSpanningTree from './mts';
 import pageRank from './pageRank';
 import GADDI from './gaddi';
@@ -42,6 +44,8 @@ export {
   louvain,
   iLouvain,
   kCore,
+  cosineSimilarity,
+  nodesCosineSimilarity,
   minimumSpanningTree,
   pageRank,
   getNeighbors,
@@ -71,6 +75,8 @@ export default {
   louvain,
   iLouvain,
   kCore,
+  cosineSimilarity,
+  nodesCosineSimilarity,
   minimumSpanningTree,
   pageRank,
   getNeighbors,
