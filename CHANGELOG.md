@@ -1,4 +1,9 @@
 # ChangeLog
+
+#### 0.1.18
+
+- feat: add one-hot data preprocessing
+
 #### 0.1.17
 
 - feat: add consine-similarity algorithm and nodes-consine-similarity algorithm;
