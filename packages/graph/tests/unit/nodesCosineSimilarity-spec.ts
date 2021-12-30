@@ -74,4 +74,33 @@ describe('nodesCosineSimilarity normal demo', () => {
       expect(data).toBeLessThanOrEqual(1);
     })
   });
+
+
+  it('demo use involvedKeys: ', () => {
+    const involvedKeys = ['amount', 'city'];
+    const { nodes } = propertiesGraphData;
+    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], involvedKeys);
+    expect(allCosineSimilarity.length).toBe(16);
+    expect(similarNodes.length).toBe(16);
+    allCosineSimilarity.forEach(data => {
+      expect(data).toBeGreaterThanOrEqual(0);
+      expect(data).toBeLessThanOrEqual(1);
+    })
+    expect(Number(Math.max.apply(null, allCosineSimilarity).toString().match(/^\d+(?:\.\d{0,2})?/))).toBe(0.99);
+    expect(similarNodes[0].id).toBe('node-11');
+  });
+
+  it('demo use uninvolvedKeys: ', () => {
+    const uninvolvedKeys = ['amount'];
+    const { nodes } = propertiesGraphData;
+    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], [], uninvolvedKeys);
+    expect(allCosineSimilarity.length).toBe(16);
+    expect(similarNodes.length).toBe(16);
+    allCosineSimilarity.forEach(data => {
+      expect(data).toBeGreaterThanOrEqual(0);
+      expect(data).toBeLessThanOrEqual(1);
+    })
+    expect(Number(Math.max.apply(null, allCosineSimilarity).toString().match(/^\d+(?:\.\d{0,2})?/))).toBe(0.66);
+    expect(similarNodes[0].id).toBe('node-11');
+  });
 });

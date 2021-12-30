@@ -56,7 +56,20 @@ export const getPropertyWeight = (nodes: NodeConfig[]) => {
   return allPropertiesWeight;
 }
 
+// 获取所有节点的属性集合
+export const getAllProperties = (nodes, key='properties') => {
+  const allProperties = [];
+  nodes.forEach(node => {
+    if (!node.properties) {
+      return;
+    }
+    allProperties.push(node[key]);
+  })
+  return allProperties;
+}
+
 export default {
   getAllSortProperties,
   getPropertyWeight,
+  getAllProperties
 }

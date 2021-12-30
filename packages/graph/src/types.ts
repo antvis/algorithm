@@ -49,6 +49,9 @@ export interface DegreeType {
   }
 }
 
+export interface PlainObject {
+  [key: string]: any;
+}
 
 export interface IAlgorithm {
   getAdjMatrix: (graphData: GraphData, directed?: boolean) => Matrix[],

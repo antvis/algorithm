@@ -2,7 +2,8 @@ import { clone } from '@antv/util';
 import getAdjMatrix from './adjacent-matrix';
 import { NodeConfig, ClusterData, GraphData, ClusterMap } from './types';
 import Vector from './utils/vector';
-import { getPropertyWeight } from './utils/node-properties';
+import { getAllProperties } from './utils/node-properties';
+import { oneHot } from './utils/data-preprocessing';
 
 const getModularity = (
   nodes: NodeConfig[],
@@ -118,8 +119,10 @@ const louvain = (
         node.properties.nodeType = nodeTypeInfo.findIndex(nodeType => nodeType === node.nodeType);
       })
     }
-    // 所有节点属性特征向量集合
-    allPropertiesWeight = getPropertyWeight(nodes);
+    // 所有节点属性集合
+    const properties = getAllProperties(nodes);
+    // 所有节点属性one-hot特征向量集合
+    allPropertiesWeight = oneHot(properties);
   }
  
   let uniqueId = 1;
