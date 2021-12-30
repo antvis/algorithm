@@ -1,21 +1,32 @@
 ### AntV Algorithm
 
 It is an algorithm package of AntV, mainly includes graph related algorithms:
+- **Community Discovery**
+  - k-core: K-Core community discovery algorithm -- Find the closely related subgraph structure that conforms to the specified core degree K
+  - louvain: LOUVAIN clustering algorithm -- Based on modularity
+  - i-louvain: I-LOUVAIN clustering algorithm -- Based on modularity and inertial modularity (properties similarity)
+  - labelPropagation: Label Propagation(LP) clustering algorithm
+  - minimumSpanningTree: generate the minimum spanning tree for a grpah
 
-- adjacentMatrix: calculate the adjacency matrix for graph data
-- connectedComponent: calculate the connected components for graph data
-- degree: calculate the in degree, out degree, and total degree for nodes
-- detectCycle: detect the cycles of the graph data
-- dfs: depth-first search algorithm
-- dijkstra: Dijkstra shortest path algorithm
-- findPath: find the shortest paths and all paths for two nodes by Dijkstra
-- floydWarshall: Floyd Warshall shortest path algorithm
-- labelPropagation 标签传播自动聚类
-- louvain: LOUVAIN clustering algorithm
-- labelPropagation: Label Propagation(LP) clustering algorithm
-- pageRank: page rank algorithm for nodes ranking
-- neighbors: find the neighbors for a node in the graph
-- minimumSpanningTree: generate the minimum spanning tree for a grpah
-- GADDI: graph structural and semantic pattern matching algorithm
+- **Similarity**
+  - cosineSimilarity: Cosine Similarity algorithm -- Calculate cosine similarity
+  - nodesCosineSimilarity: Nodes Cosine Similarity algorithm -- Calculate the cosine similarity between other nodes and seed nodes
+
+- **Centrality**
+  - pageRank: page rank algorithm for nodes ranking
+  - degree: calculate the in degree, out degree, and total degree for nodes
+
+- **Path**
+  - dijkstra: Dijkstra shortest path algorithm
+  - findPath: find the shortest paths and all paths for two nodes by Dijkstra
+  - floydWarshall: Floyd Warshall shortest path algorithm
+
+- **Other**
+  - neighbors: find the neighbors for a node in the graph
+  - GADDI: graph structural and semantic pattern matching algorithm
+  - detectCycle: detect the cycles of the graph data
+  - dfs: depth-first search algorithm
+  - adjacentMatrix: calculate the adjacency matrix for graph data
+  - connectedComponent: calculate the connected components for graph data
 
 All the algorithms above supports to be calculated with web-worker.
