@@ -8,6 +8,9 @@ It is an algorithm package of AntV, mainly includes graph related algorithms:
   - labelPropagation: Label Propagation(LP) clustering algorithm
   - minimumSpanningTree: generate the minimum spanning tree for a grpah
 
+- **clustering**
+  - k-means: K-Means algorithm - Cluster nodes into K clusters according to the Euclidean distance between node attributes
+
 - **Similarity**
   - cosineSimilarity: Cosine Similarity algorithm -- Calculate cosine similarity
   - nodesCosineSimilarity: Nodes Cosine Similarity algorithm -- Calculate the cosine similarity between other nodes and seed nodes

@@ -1,4 +1,7 @@
 # ChangeLog
+#### 0.1.19
+
+- feat: add k-means algorithm for nodes clustering
 
 #### 0.1.18
 
