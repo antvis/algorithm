@@ -1,8 +1,12 @@
 # ChangeLog
 
+#### 0.1.19
+
+- fix: GADDI matched failed problem;
+
 #### 0.1.18
 
-- feat: add one-hot data preprocessing
+- feat: add one-hot data preprocessing;
 
 #### 0.1.17
 
