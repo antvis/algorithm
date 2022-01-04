@@ -1107,4 +1107,4 @@ describe('Prune', () => {
     // });
     expect(result.length).toBe(1);
   })
-})；
+});
