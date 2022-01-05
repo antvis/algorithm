@@ -12,6 +12,7 @@ import labelPropagation from './label-propagation';
 import louvain from './louvain';
 import iLouvain from './i-louvain';
 import kCore from './k-core';
+import kMeans from './k-means';
 import cosineSimilarity from './cosine-similarity';
 import nodesCosineSimilarity from './nodes-cosine-similarity';
 import minimumSpanningTree from './mts';
@@ -44,6 +45,7 @@ export {
   louvain,
   iLouvain,
   kCore,
+  kMeans,
   cosineSimilarity,
   nodesCosineSimilarity,
   minimumSpanningTree,
@@ -75,6 +77,7 @@ export default {
   louvain,
   iLouvain,
   kCore,
+  kMeans,
   cosineSimilarity,
   nodesCosineSimilarity,
   minimumSpanningTree,

@@ -9,12 +9,14 @@ import cosineSimilarity from './cosine-similarity';
  * @param seedNode 种子节点
  * @param involvedKeys 参与计算的key集合
  * @param uninvolvedKeys 不参与计算的key集合
+ * @param propertyKey 属性的字段名
  */
 const nodesCosineSimilarity = (
   nodes: NodeConfig[] = [],
   seedNode: NodeConfig,
   involvedKeys: string[] = [],
   uninvolvedKeys: string[] = [],
+  propertyKey: string = 'properties',
 ): {
   allCosineSimilarity: number[],
   similarNodes: NodeConfig[],
@@ -22,7 +24,7 @@ const nodesCosineSimilarity = (
   const similarNodes = clone(nodes.filter(node => node.id !== seedNode.id));
   const seedNodeIndex = nodes.findIndex(node => node.id === seedNode.id);
   // 所有节点属性集合
-  const properties = getAllProperties(nodes);
+  const properties = getAllProperties(nodes, propertyKey);
   // 所有节点属性one-hot特征向量集合s
   const allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
   // 种子节点属性
