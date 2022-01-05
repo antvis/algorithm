@@ -3,17 +3,17 @@
 It is an algorithm package of AntV, mainly includes graph related algorithms:
 - **Community Discovery**
   - k-core: K-Core community discovery algorithm -- Find the closely related subgraph structure that conforms to the specified core degree K
-  - louvain: LOUVAIN clustering algorithm -- Based on modularity
-  - i-louvain: I-LOUVAIN clustering algorithm -- Based on modularity and inertial modularity (properties similarity)
+  - louvain: LOUVAIN algorithm -- Divide communities according to Modularity
+  - i-louvain: I-LOUVAIN algorithm -- Divide communities according to Modularity and Inertial Modularity (properties similarity)
   - labelPropagation: Label Propagation(LP) clustering algorithm
-  - minimumSpanningTree: generate the minimum spanning tree for a grpah
+  - minimumSpanningTree: generate the minimum spanning tree for a graph
 
-- **clustering**
-  - k-means: K-Means algorithm - Cluster nodes into K clusters according to the Euclidean distance between node attributes
+- **nodes clustering**
+  - k-means: K-Means algorithm - Cluster nodes into K clusters according to the Euclidean distance between node properties
 
 - **Similarity**
   - cosineSimilarity: Cosine Similarity algorithm -- Calculate cosine similarity
-  - nodesCosineSimilarity: Nodes Cosine Similarity algorithm -- Calculate the cosine similarity between other nodes and seed nodes
+  - nodesCosineSimilarity: Nodes Cosine Similarity algorithm -- Calculate the cosine similarity between other nodes and seed node
 
 - **Centrality**
   - pageRank: page rank algorithm for nodes ranking
