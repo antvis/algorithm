@@ -1,5 +1,5 @@
 
-import { clone, isObjectLike } from '@antv/util';
+import { clone } from '@antv/util';
 import { getAllProperties } from './utils/node-properties';
 import { oneHot } from './utils/data-preprocessing';
 import Vector from './utils/vector';
@@ -51,7 +51,7 @@ const kMeans = (
             }
             // 节点到各质心的平均欧式距离
             const avgEuclideanDistance = totalEuclideanDistance / centroids.length;
-            // 记录节点到已有质心最远的的距离
+            // 记录到已有质心最远的的距离和节点索引
             if (avgEuclideanDistance > maxEuclideanDistance) {
               maxEuclideanDistance = avgEuclideanDistance;
               maxEuclideanDistanceIndex = m;
