@@ -532,7 +532,7 @@ const GADDI = (
     k,
     nodeNum,
     maxNodePairNum,
-    patternKNeighborUnits,
+    kNeighborUnits,
     spm,
   );
 
