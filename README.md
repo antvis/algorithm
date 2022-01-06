@@ -1,15 +1,15 @@
 ### AntV Algorithm
 
 It is an algorithm package of AntV, mainly includes graph related algorithms:
-- **Community Discovery**
-  - k-core: K-Core community discovery algorithm -- Find the closely related subgraph structure that conforms to the specified core degree K
+- **Community Detection**
+  - k-core: K-Core community detection algorithm -- Find the closely related subgraph structure that conforms to the specified core degree K
   - louvain: LOUVAIN algorithm -- Divide communities according to Modularity
   - i-louvain: I-LOUVAIN algorithm -- Divide communities according to Modularity and Inertial Modularity (properties similarity)
   - labelPropagation: Label Propagation(LP) clustering algorithm
-  - minimumSpanningTree: generate the minimum spanning tree for a graph
+  - minimumSpanningTree: Generate the minimum spanning tree for a graph
 
 - **nodes clustering**
-  - k-means: K-Means algorithm - Cluster nodes into K clusters according to the Euclidean distance between node properties
+  - k-means: K-Means algorithm - Cluster nodes into K clusters according to the distance between node
 
 - **Similarity**
   - cosineSimilarity: Cosine Similarity algorithm -- Calculate cosine similarity
@@ -21,15 +21,15 @@ It is an algorithm package of AntV, mainly includes graph related algorithms:
 
 - **Path**
   - dijkstra: Dijkstra shortest path algorithm
-  - findPath: find the shortest paths and all paths for two nodes by Dijkstra
+  - findPath: Find the shortest paths and all paths for two nodes by Dijkstra
   - floydWarshall: Floyd Warshall shortest path algorithm
 
 - **Other**
-  - neighbors: find the neighbors for a node in the graph
+  - neighbors: Find the neighbors for a node in the graph
   - GADDI: graph structural and semantic pattern matching algorithm
-  - detectCycle: detect the cycles of the graph data
-  - dfs: depth-first search algorithm
+  - detectCycle: Detect the cycles of the graph data
+  - dfs: Depth-First search algorithm
   - adjacentMatrix: calculate the adjacency matrix for graph data
-  - connectedComponent: calculate the connected components for graph data
+  - connectedComponent: Calculate the connected components for graph data
 
 All the algorithms above supports to be calculated with web-worker.

@@ -1,5 +1,6 @@
-import { isEmpty, uniq } from '@antv/util';
-import { PlainObject } from '../types';
+import { uniq } from '@antv/util';
+import { PlainObject, DistanceType, GraphData } from '../types';
+import Vector from './vector';
 
 /**
  * 获取数据中所有的属性及其对应的值
@@ -68,7 +69,27 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   return oneHotCode;
 }
 
+/**
+ * getDistance：获取两个元素之间的距离
+ * @param item
+ * @param otherItem
+ * @param distanceType 距离类型
+ * @param graphData 图数据
+ */
+export const getDistance = (item, otherItem, distanceType: DistanceType = DistanceType.EuclideanDistance, graphData?: GraphData) => {
+  let distance = 0;
+  switch (distanceType) {
+    case DistanceType.EuclideanDistance:
+      distance = new Vector(item).euclideanDistance(new Vector(otherItem));
+      break;
+    default:
+      break;
+  }
+  return distance;
+}
+
 export default {
   getAllKeyValueMap,
   oneHot,
+  getDistance,
 }

@@ -49,6 +49,10 @@ export interface DegreeType {
   }
 }
 
+export enum DistanceType {
+  EuclideanDistance = 'euclideanDistance',
+}
+
 export interface PlainObject {
   [key: string]: any;
 }
