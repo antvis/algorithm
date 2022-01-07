@@ -3,15 +3,16 @@ import { getAllProperties } from './utils/node-properties';
 import { oneHot, getDistance } from './utils/data-preprocessing';
 import Vector from './utils/vector';
 import { GraphData, ClusterData, DistanceType } from './types';
+
 /**
- *  k-means算法 根据节点属性之间的欧氏距离将节点聚类为K个簇
+ *  k-means算法 根据节点之间的距离将节点聚类为K个簇
  * @param data 图数据 
  * @param k 质心（聚类中心）个数
  * @param seedNode 种子节点
  * @param involvedKeys 参与计算的key集合
  * @param uninvolvedKeys 不参与计算的key集合
  * @param propertyKey 属性的字段名
- * @param distanceType 距离类型
+ * @param distanceType 距离类型 默认节点属性的欧式距离
  */
 const kMeans = (
   data: GraphData,
@@ -23,9 +24,13 @@ const kMeans = (
 ) : ClusterData => {
   const { nodes, edges } = data;
   // 所有节点属性集合
-  const properties = getAllProperties(nodes, propertyKey);
-  // 所有节点属性one-hot特征向量集合s
-  const allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
+  let properties = [];
+  // 所有节点属性one-hot特征向量集合
+  let allPropertiesWeight = [];
+  if (distanceType === DistanceType.EuclideanDistance) {
+    properties = getAllProperties(nodes, propertyKey);
+    allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
+  }
   // 记录节点的原始index，与allPropertiesWeight对应
   for (let i = 0; i < nodes.length; i++) {
     nodes[i].originIndex = i;
@@ -38,7 +43,14 @@ const kMeans = (
     if (i === 0) {
       // 随机选取质心（聚类中心）
       const randomIndex = Math.floor(Math.random() * nodes.length);
-      centroids[i] = allPropertiesWeight[randomIndex];
+      switch (distanceType) {
+        case DistanceType.EuclideanDistance:
+          centroids[i] = allPropertiesWeight[randomIndex];
+          break;
+        default:
+          centroids[i] = [];
+          break;
+      }
       centroidIndexList.push(randomIndex);
       clusters[i] = [nodes[randomIndex]];
       nodes[randomIndex].clusterId = String(i);
@@ -50,8 +62,15 @@ const kMeans = (
         if (!centroidIndexList.includes(m)) {
           let totalDistance = 0;
           for (let j = 0; j < centroids.length; j++) {
-            // 求节点到质心距离（默认欧式距离）
-            const distance = getDistance(allPropertiesWeight[nodes[m].originIndex], centroids[j], distanceType);
+            // 求节点到质心的距离（默认节点属性的欧式距离）
+            let distance = 0;
+            switch (distanceType) {
+              case DistanceType.EuclideanDistance:
+                distance = getDistance(allPropertiesWeight[nodes[m].originIndex], centroids[j], distanceType);
+                break;
+              default:
+                break;
+            }
             totalDistance += distance;
           }
           // 节点到各质心的平均距离（默认欧式距离）
@@ -63,7 +82,14 @@ const kMeans = (
           }
         }
       }
-      centroids[i] = allPropertiesWeight[maxDistanceIndex];
+      switch (distanceType) {
+        case DistanceType.EuclideanDistance:
+          centroids[i] = allPropertiesWeight[maxDistanceIndex];
+          break;
+        default:
+          centroids[i] = [];
+          break;
+      }
       centroidIndexList.push(maxDistanceIndex);
       clusters[i] = [nodes[maxDistanceIndex]];
       nodes[maxDistanceIndex].clusterId = String(i);
@@ -77,8 +103,15 @@ const kMeans = (
       let minDistance = Infinity;
       if (!(iterations === 0 && centroidIndexList.includes(i))) {
         for (let j = 0; j < centroids.length; j++) {
-          // 求节点到质心的距离（默认欧式距离）
-          const distance = getDistance(allPropertiesWeight[i], centroids[j], distanceType);
+          // 求节点到质心的距离（默认节点属性的欧式距离）
+          let distance = 0;
+          switch (distanceType) {
+            case DistanceType.EuclideanDistance:
+              distance = getDistance(allPropertiesWeight[i], centroids[j], distanceType);
+              break;
+            default:
+              break;
+          }
           // 记录节点最近的质心的索引
           if (distance < minDistance) {
             minDistance = distance;
