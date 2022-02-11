@@ -21,8 +21,9 @@ describe('kMeans abnormal demo', () => {
       ],
       edges: [],
     }
-    const { clusters } = kMeans(noPropertiesData, 2);
-    expect(clusters.length).toBe(2);
+    const { clusters, clusterEdges } = kMeans(noPropertiesData, 2);
+    expect(clusters.length).toBe(1);
+    expect(clusterEdges.length).toBe(0);
   });
 });
 
@@ -40,7 +41,7 @@ describe('kMeans normal demo', () => {
         id: 'node-1',
         properties: {
           amount: 100,
-          age: 20,
+          age: 21,
         }
       },
       {
@@ -54,7 +55,7 @@ describe('kMeans normal demo', () => {
         id: 'node-3',
         properties: {
           amount: 10,
-          age: 20,
+          age: 22,
         }
       },
       {
@@ -95,7 +96,7 @@ describe('kMeans normal demo', () => {
   }
   it('simple data demo: ', () => {
     const nodes = simpleGraphData.nodes as NodeConfig[];
-    const { clusters, clusterEdges } = kMeans(simpleGraphData, 3);
+    const { clusters, clusterEdges } = kMeans(simpleGraphData, 3, 'properties');
     expect(clusters.length).toBe(3);
     expect(nodes[0].clusterId).toEqual(nodes[3].clusterId);
     expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
@@ -104,7 +105,7 @@ describe('kMeans normal demo', () => {
 
   it('complex data demo: ', () => {
     const nodes = propertiesGraphData.nodes as NodeConfig[];
-    const { clusters } = kMeans(propertiesGraphData as GraphData, 3);
+    const { clusters } = kMeans(propertiesGraphData as GraphData, 3, 'properties');
     expect(clusters.length).toBe(3);
     expect(nodes[0].clusterId).toEqual(nodes[1].clusterId);
     expect(nodes[0].clusterId).toEqual(nodes[2].clusterId);
@@ -126,18 +127,18 @@ describe('kMeans normal demo', () => {
   it('demo use involvedKeys: ', () => {
     const involvedKeys = ['amount'];
     const nodes = simpleGraphData.nodes as NodeConfig[];
-    const { clusters } = kMeans(simpleGraphData, 3, involvedKeys);
+    const { clusters } = kMeans(simpleGraphData, 3, 'properties', involvedKeys);
     expect(clusters.length).toBe(3);
     expect(nodes[0].clusterId).toEqual(nodes[3].clusterId);
     expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
   });
 
   it('demo use uninvolvedKeys: ', () => {
-    const uninvolvedKeys = ['amount'];
+    const uninvolvedKeys = ['id', 'age'];
     const nodes = simpleGraphData.nodes as NodeConfig[];
-    const { clusters } = kMeans(simpleGraphData, 3, [], uninvolvedKeys);
+    const { clusters } = kMeans(simpleGraphData, 3, 'properties', [], uninvolvedKeys);
     expect(clusters.length).toBe(3);
     expect(nodes[0].clusterId).toEqual(nodes[3].clusterId);
-    expect(nodes[0].clusterId).toEqual(nodes[1].clusterId);
+    expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
   });
 });
