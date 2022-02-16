@@ -55,7 +55,7 @@ describe('nodesCosineSimilarity normal demo', () => {
         }
       }
     ];
-    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[0]);
+    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[0], 'properties');
     expect(allCosineSimilarity.length).toBe(3);
     expect(similarNodes.length).toBe(3);
     allCosineSimilarity.forEach(data => {
@@ -66,7 +66,7 @@ describe('nodesCosineSimilarity normal demo', () => {
 
   it('complex demo: ', () => {
     const { nodes } = propertiesGraphData;
-    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16]);
+    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], 'properties');
     expect(allCosineSimilarity.length).toBe(16);
     expect(similarNodes.length).toBe(16);
     allCosineSimilarity.forEach(data => {
@@ -79,7 +79,7 @@ describe('nodesCosineSimilarity normal demo', () => {
   it('demo use involvedKeys: ', () => {
     const involvedKeys = ['amount', 'city'];
     const { nodes } = propertiesGraphData;
-    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], involvedKeys);
+    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], 'properties', involvedKeys);
     expect(allCosineSimilarity.length).toBe(16);
     expect(similarNodes.length).toBe(16);
     allCosineSimilarity.forEach(data => {
@@ -93,7 +93,7 @@ describe('nodesCosineSimilarity normal demo', () => {
   it('demo use uninvolvedKeys: ', () => {
     const uninvolvedKeys = ['amount'];
     const { nodes } = propertiesGraphData;
-    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], [], uninvolvedKeys);
+    const { allCosineSimilarity, similarNodes } = nodesCosineSimilarity(nodes as NodeConfig[], nodes[16], 'properties', [], uninvolvedKeys);
     expect(allCosineSimilarity.length).toBe(16);
     expect(similarNodes.length).toBe(16);
     allCosineSimilarity.forEach(data => {

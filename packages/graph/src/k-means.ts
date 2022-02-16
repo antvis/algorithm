@@ -1,28 +1,55 @@
-
+import { isEqual } from '@antv/util';
 import { getAllProperties } from './utils/node-properties';
 import { oneHot, getDistance } from './utils/data-preprocessing';
 import Vector from './utils/vector';
 import { GraphData, ClusterData, DistanceType } from './types';
 
+// 获取质心
+const getCentroid = (distanceType, allPropertiesWeight, index) => {
+  let centroid = [];
+  switch (distanceType) {
+    case DistanceType.EuclideanDistance:
+      centroid = allPropertiesWeight[index];
+      break;
+    default:
+      centroid = [];
+      break;
+  }
+  return centroid;
+}
+
 /**
  *  k-means算法 根据节点之间的距离将节点聚类为K个簇
  * @param data 图数据 
  * @param k 质心（聚类中心）个数
- * @param seedNode 种子节点
+ * @param propertyKey 属性的字段名
  * @param involvedKeys 参与计算的key集合
  * @param uninvolvedKeys 不参与计算的key集合
- * @param propertyKey 属性的字段名
  * @param distanceType 距离类型 默认节点属性的欧式距离
  */
 const kMeans = (
   data: GraphData,
   k: number = 3,
+  propertyKey: string = undefined,
   involvedKeys: string[] = [],
-  uninvolvedKeys: string[] = [],
-  propertyKey: string = 'properties',
+  uninvolvedKeys: string[] = ['id'],
   distanceType: DistanceType = DistanceType.EuclideanDistance,
 ) : ClusterData => {
   const { nodes, edges } = data;
+
+  // 距离类型为欧式距离且没有属性时，直接return
+  if (distanceType === DistanceType.EuclideanDistance && !nodes.every(node => node.hasOwnProperty(propertyKey))){
+    return {
+      clusters: [
+        {
+          id: "0",
+          nodes,
+        }
+      ],
+      clusterEdges: []
+    }
+  }
+
   // 所有节点属性集合
   let properties = [];
   // 所有节点属性one-hot特征向量集合
@@ -39,7 +66,7 @@ const kMeans = (
   const centroids = [];
   const centroidIndexList = [];
   const clusters = [];
-  for (let i = 0; i < k; i ++) {
+  for (let i = 0; i < k; i++) {
     if (i === 0) {
       // 随机选取质心（聚类中心）
       const randomIndex = Math.floor(Math.random() * nodes.length);
@@ -56,7 +83,7 @@ const kMeans = (
       nodes[randomIndex].clusterId = String(i);
     } else {
       let maxDistance = -Infinity;
-      let maxDistanceIndex = 0;
+      let maxDistanceNodeIndex = 0;
       // 选取与已有质心平均距离最远的点做为新的质心
       for (let m = 0; m < nodes.length; m++) {
         if (!centroidIndexList.includes(m)) {
@@ -76,25 +103,21 @@ const kMeans = (
           // 节点到各质心的平均距离（默认欧式距离）
           const avgDistance = totalDistance / centroids.length;
           // 记录到已有质心最远的的距离和节点索引
-          if (avgDistance > maxDistance) {
+          if (avgDistance > maxDistance && 
+            !centroids.find(centroid => isEqual(centroid, getCentroid(distanceType, allPropertiesWeight, nodes[m].originIndex)))) {
             maxDistance = avgDistance;
-            maxDistanceIndex = m;
+            maxDistanceNodeIndex = m;
           }
         }
       }
-      switch (distanceType) {
-        case DistanceType.EuclideanDistance:
-          centroids[i] = allPropertiesWeight[maxDistanceIndex];
-          break;
-        default:
-          centroids[i] = [];
-          break;
-      }
-      centroidIndexList.push(maxDistanceIndex);
-      clusters[i] = [nodes[maxDistanceIndex]];
-      nodes[maxDistanceIndex].clusterId = String(i);
+      
+      centroids[i] = getCentroid(distanceType, allPropertiesWeight, maxDistanceNodeIndex);
+      centroidIndexList.push(maxDistanceNodeIndex);
+      clusters[i] = [nodes[maxDistanceNodeIndex]];
+      nodes[maxDistanceNodeIndex].clusterId = String(i);
     }
   }
+
 
   let iterations = 0;
   while (true) {
@@ -120,16 +143,16 @@ const kMeans = (
         }
       
         // 从原来的类别删除节点
-        if (nodes[i].clusterId !== String(minDistanceIndex)) {
-          for (let n = 0; n < clusters[minDistanceIndex].length; n++) {
-            if (clusters[minDistanceIndex][n].id === nodes[i].id) {
-              clusters[minDistanceIndex].splice(n, 1);
+        if (nodes[i].clusterId !== undefined) {
+          for (let n = clusters[Number(nodes[i].clusterId)].length - 1; n >= 0 ; n--) {
+            if (clusters[Number(nodes[i].clusterId)][n].id === nodes[i].id) {
+              clusters[Number(nodes[i].clusterId)].splice(n, 1);
             }
           }
-          // 将节点划分到距离最小的质心（聚类中心）所对应的类中
-          clusters[minDistanceIndex].push(nodes[i]);
-          nodes[i].clusterId = String(minDistanceIndex);
         }
+        // 将节点划分到距离最小的质心（聚类中心）所对应的类中
+        nodes[i].clusterId = String(minDistanceIndex);
+        clusters[minDistanceIndex].push(nodes[i]);
       }
     }
 
@@ -151,8 +174,8 @@ const kMeans = (
       }
     }
     iterations++;
-    // 如果不存在质心（聚类中心）移动或者迭代次数超过1000，则停止
-    if (centroidsEqualAvg || iterations >= 1000) {
+    // 如果每个节点都归属了类别，且不存在质心（聚类中心）移动或者迭代次数超过1000，则停止
+    if (nodes.every(node => node.clusterId !== undefined) && centroidsEqualAvg || iterations >= 1000) {
       break;
     }
   }

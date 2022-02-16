@@ -93,6 +93,10 @@ const getInertialModularity = (
  * @param weightPropertyName 权重的属性字段
  * @param threshold 差值阈值
  * @param inertialModularity 是否使用惯性模块度（即节点属性相似性）
+ * @param propertyKey 属性的字段名
+ * @param involvedKeys 参与计算的key集合
+ * @param uninvolvedKeys 不参与计算的key集合
+ * @param inertialWeight 惯性模块度权重
  */
 const louvain = (
   graphData: GraphData,
@@ -100,6 +104,9 @@ const louvain = (
   weightPropertyName: string = 'weight',
   threshold: number = 0.0001,
   inertialModularity: boolean = false,
+  propertyKey: string = undefined,
+  involvedKeys: string[] = [],
+  uninvolvedKeys: string[] = ['id'],
   inertialWeight: number = 1,
 ): ClusterData => {
   // the origin data
@@ -120,9 +127,9 @@ const louvain = (
       })
     }
     // 所有节点属性集合
-    const properties = getAllProperties(nodes);
+    const properties = getAllProperties(nodes, propertyKey);
     // 所有节点属性one-hot特征向量集合
-    allPropertiesWeight = oneHot(properties);
+    allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
   }
  
   let uniqueId = 1;

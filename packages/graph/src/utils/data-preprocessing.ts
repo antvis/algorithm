@@ -47,23 +47,36 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   // 获取数据中所有的属性及其对应的值
   const allKeyValueMap = getAllKeyValueMap(dataList, involvedKeys, uninvolvedKeys);
   const oneHotCode = [];
+  if (!Object.keys(allKeyValueMap).length) {
+    return;
+  }
+
   // 对数据进行one-hot编码
   dataList.forEach((data, index) => {
     let code = [];
-    Object.keys(allKeyValueMap).forEach(key => {
-      const keyValue = data[key];
-      const allKeyValue = allKeyValueMap[key];
-      const valueIndex = allKeyValue.findIndex(value => keyValue === value);
-      let subCode = [];
-      for(let i = 0; i < allKeyValue.length; i++) {
-        if (i === valueIndex) {
-          subCode.push(1);
-        } else {
-          subCode.push(0);
-        }
+    if (Object.keys(allKeyValueMap).length === 1) {
+      // 如果只有一个属性且所有的属性值都能转成数值型，则直接用属性值
+      const key = Object.keys(allKeyValueMap)[0];
+      const keyValue = allKeyValueMap[key];
+      if (keyValue.every(value => !isNaN(Number(value)))) {
+        code = [data[key]];
       }
-      code = code.concat(subCode);
-    })
+    } else {
+      Object.keys(allKeyValueMap).forEach(key => {
+        const keyValue = data[key];
+        const allKeyValue = allKeyValueMap[key];
+        const valueIndex = allKeyValue.findIndex(value => keyValue === value);
+        let subCode = [];
+        for(let i = 0; i < allKeyValue.length; i++) {
+          if (i === valueIndex) {
+            subCode.push(1);
+          } else {
+            subCode.push(0);
+          }
+        }
+        code = code.concat(subCode);
+      })
+    }
     oneHotCode[index] = code;
   })
   return oneHotCode;

@@ -1,4 +1,7 @@
 # ChangeLog
+#### 0.1.22
+
+- fix: k-means algorithm, perf: louvain -- support specified parameters such as propertyKey,involvedKeys and uninvolvedKeys
 #### 0.1.21
 
 - perf: k-means algorithm -- Optimize parameters and return

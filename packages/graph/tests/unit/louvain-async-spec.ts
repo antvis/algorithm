@@ -57,7 +57,7 @@ describe('(Async) louvain', () => {
   });
 
   it('louvain: add inertialModularity', () => {
-    const clusteredData = louvain(propertiesGraphData as GraphData, false, 'weight', 0.01, true, 1);
+    const clusteredData = louvain(propertiesGraphData as GraphData, false, 'weight', 0.01, true, 'properties');
     expect(clusteredData.clusters.length).toBe(3);
     expect(clusteredData.clusters[0].sumTot).toBe(3);
     expect(clusteredData.clusters[1].sumTot).toBe(3);

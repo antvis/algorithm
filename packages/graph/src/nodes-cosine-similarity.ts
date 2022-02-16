@@ -7,16 +7,16 @@ import cosineSimilarity from './cosine-similarity';
  *  nodes-cosine-similarity算法 基于节点属性计算余弦相似度(基于种子节点寻找相似节点)
  * @param nodes 图节点数据
  * @param seedNode 种子节点
+ * @param propertyKey 属性的字段名
  * @param involvedKeys 参与计算的key集合
  * @param uninvolvedKeys 不参与计算的key集合
- * @param propertyKey 属性的字段名
  */
 const nodesCosineSimilarity = (
   nodes: NodeConfig[] = [],
   seedNode: NodeConfig,
+  propertyKey: string = undefined,
   involvedKeys: string[] = [],
   uninvolvedKeys: string[] = [],
-  propertyKey: string = 'properties',
 ): {
   allCosineSimilarity: number[],
   similarNodes: NodeConfig[],
@@ -25,7 +25,7 @@ const nodesCosineSimilarity = (
   const seedNodeIndex = nodes.findIndex(node => node.id === seedNode.id);
   // 所有节点属性集合
   const properties = getAllProperties(nodes, propertyKey);
-  // 所有节点属性one-hot特征向量集合s
+  // 所有节点属性one-hot特征向量集合
   const allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
   // 种子节点属性
   const seedNodeProperties = allPropertiesWeight[seedNodeIndex];
