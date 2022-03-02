@@ -60,7 +60,6 @@ const kMeans = (
     properties = getAllProperties(nodes, propertyKey);
     allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
   }
- 
   if (!allPropertiesWeight.length) {
     return defaultClusterInfo;
   }
@@ -210,7 +209,7 @@ const kMeans = (
       clusterEdges.push(newEdge);
     }
   });
-  
+
   return { clusters, clusterEdges };
 }
 
