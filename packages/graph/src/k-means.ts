@@ -1,4 +1,4 @@
-import { isEqual } from '@antv/util';
+import { isEqual, uniq } from '@antv/util';
 import { getAllProperties } from './utils/node-properties';
 import { oneHot, getDistance } from './utils/data-preprocessing';
 import Vector from './utils/vector';
@@ -35,19 +35,21 @@ const kMeans = (
   uninvolvedKeys: string[] = ['id'],
   distanceType: DistanceType = DistanceType.EuclideanDistance,
 ) : ClusterData => {
-  const { nodes, edges } = data;
+  const { nodes = [], edges = [] } = data;
+
+  const defaultClusterInfo = {
+    clusters: [
+      {
+        id: "0",
+        nodes,
+      }
+    ],
+    clusterEdges: []
+  };
 
   // 距离类型为欧式距离且没有属性时，直接return
   if (distanceType === DistanceType.EuclideanDistance && !nodes.every(node => node.hasOwnProperty(propertyKey))){
-    return {
-      clusters: [
-        {
-          id: "0",
-          nodes,
-        }
-      ],
-      clusterEdges: []
-    }
+    return defaultClusterInfo;
   }
 
   // 所有节点属性集合
@@ -58,6 +60,13 @@ const kMeans = (
     properties = getAllProperties(nodes, propertyKey);
     allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
   }
+  if (!allPropertiesWeight.length) {
+    return defaultClusterInfo;
+  }
+  const allPropertiesWeightUniq = uniq(allPropertiesWeight.map(item => item.join('')));
+  // 当输入节点数量或者属性集合的长度小于k时，k调整为其中最小的值
+  const finalK = Math.min(k, nodes.length, allPropertiesWeightUniq.length);
+
   // 记录节点的原始index，与allPropertiesWeight对应
   for (let i = 0; i < nodes.length; i++) {
     nodes[i].originIndex = i;
@@ -66,7 +75,7 @@ const kMeans = (
   const centroids = [];
   const centroidIndexList = [];
   const clusters = [];
-  for (let i = 0; i < k; i++) {
+  for (let i = 0; i < finalK; i++) {
     if (i === 0) {
       // 随机选取质心（聚类中心）
       const randomIndex = Math.floor(Math.random() * nodes.length);

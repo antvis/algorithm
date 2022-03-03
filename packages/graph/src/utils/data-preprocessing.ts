@@ -48,9 +48,9 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   const allKeyValueMap = getAllKeyValueMap(dataList, involvedKeys, uninvolvedKeys);
   const oneHotCode = [];
   if (!Object.keys(allKeyValueMap).length) {
-    return;
+    return oneHotCode;
   }
-
+  
   // 对数据进行one-hot编码
   dataList.forEach((data, index) => {
     let code = [];
