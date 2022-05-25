@@ -360,6 +360,7 @@ const louvain = (
   // restore node clusterId
   finalNodes.forEach(nodeInfo => {
     const { node, clusterId } = nodeInfo;
+    if (!node) return;
     node.clusterId = clusterId;
     if (node.clusterId && newClusterIdMap[node.clusterId]) node.clusterId = newClusterIdMap[node.clusterId]
   })
@@ -371,6 +372,7 @@ const louvain = (
     const weight = edge[weightPropertyName] || 1;
     const sourceClusterId = nodeMap[source].node.clusterId;
     const targetClusterId = nodeMap[target].node.clusterId;
+    if (!sourceClusterId || !targetClusterId) return;
     const newEdgeId = `${sourceClusterId}---${targetClusterId}`;
     if (clusterEdgeMap[newEdgeId]) {
       clusterEdgeMap[newEdgeId].weight += weight;

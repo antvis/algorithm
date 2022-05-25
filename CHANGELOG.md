@@ -1,4 +1,7 @@
 # ChangeLog
+#### 0.1.24
+
+- fix: i-louvain without cluster problem; 
 #### 0.1.23
 
 - perf: k-means algorithm: set K to minimum
