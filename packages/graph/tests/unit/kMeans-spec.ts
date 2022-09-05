@@ -34,35 +34,35 @@ describe('kMeans normal demo', () => {
         id: 'node-0',
         properties: {
           amount: 10,
-          age: 20,
+          city: '10001',
         }
       },
       {
         id: 'node-1',
         properties: {
-          amount: 100,
-          age: 21,
+          amount: 10000,
+          city: '10002',
         }
       },
       {
         id: 'node-2',
         properties: {
-          amount: 1000,
-          age: 40,
+          amount: 3000,
+          city: '10003',
         }
       },
       {
         id: 'node-3',
         properties: {
-          amount: 10,
-          age: 22,
+          amount: 3200,
+          city: '10003',
         }
       },
       {
         id: 'node-4',
         properties: {
-          amount: 1000,
-          age: 30,
+          amount: 2000,
+          city: '10003',
         }
       }
     ],
@@ -96,11 +96,10 @@ describe('kMeans normal demo', () => {
   }
   it('simple data demo: ', () => {
     const nodes = simpleGraphData.nodes as NodeConfig[];
-    const { clusters, clusterEdges } = kMeans(simpleGraphData, 3, 'properties');
+    const { clusters } = kMeans(simpleGraphData, 3, 'properties');
     expect(clusters.length).toBe(3);
-    expect(nodes[0].clusterId).toEqual(nodes[3].clusterId);
+    expect(nodes[2].clusterId).toEqual(nodes[3].clusterId);
     expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
-    expect(clusterEdges.length).toBe(3);
   });
 
   it('complex data demo: ', () => {
@@ -129,16 +128,16 @@ describe('kMeans normal demo', () => {
     const nodes = simpleGraphData.nodes as NodeConfig[];
     const { clusters } = kMeans(simpleGraphData, 3, 'properties', involvedKeys);
     expect(clusters.length).toBe(3);
-    expect(nodes[0].clusterId).toEqual(nodes[3].clusterId);
+    expect(nodes[2].clusterId).toEqual(nodes[3].clusterId);
     expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
   });
 
   it('demo use uninvolvedKeys: ', () => {
-    const uninvolvedKeys = ['id', 'age'];
+    const uninvolvedKeys = ['id', 'city'];
     const nodes = simpleGraphData.nodes as NodeConfig[];
     const { clusters } = kMeans(simpleGraphData, 3, 'properties', [], uninvolvedKeys);
     expect(clusters.length).toBe(3);
-    expect(nodes[0].clusterId).toEqual(nodes[3].clusterId);
+    expect(nodes[2].clusterId).toEqual(nodes[3].clusterId);
     expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
   });
 });
@@ -182,10 +181,56 @@ describe('kMeans All properties values are numeric demo', () => {
       ],
       edges: [],
     }
-    const { clusters, clusterEdges } = kMeans(allPropertiesValuesNumericData, 2);
+    const { clusters, clusterEdges } = kMeans(allPropertiesValuesNumericData, 2, 'properties');
     expect(clusters.length).toBe(2);
     expect(clusterEdges.length).toBe(0);
+    const nodes = allPropertiesValuesNumericData.nodes as NodeConfig[];
     expect(nodes[0].clusterId).toEqual(nodes[1].clusterId);
     expect(nodes[2].clusterId).toEqual(nodes[3].clusterId);
+  });
+
+  it('only one property and the value are numeric demo: ', () => {
+    const allPropertiesValuesNumericData = {
+      nodes: [
+        {
+          id: 'node-0',
+          properties: {
+            num: 10,
+          }
+        },
+        {
+          id: 'node-1',
+          properties: {
+            num: 12,
+          }
+        },
+        {
+          id: 'node-2',
+          properties: {
+            num: 56,
+          }
+        },
+        {
+          id: 'node-3',
+          properties: {
+            num: 300,
+          }
+        },
+        {
+          id: 'node-4',
+          properties: {
+            num: 350,
+          }
+        }
+      ],
+      edges: [],
+    }
+    const { clusters, clusterEdges } = kMeans(allPropertiesValuesNumericData, 2, 'properties');
+    expect(clusters.length).toBe(2);
+    expect(clusterEdges.length).toBe(0);
+    const nodes = allPropertiesValuesNumericData.nodes as NodeConfig[];
+    expect(nodes[0].clusterId).toEqual(nodes[1].clusterId);
+    expect(nodes[0].clusterId).toEqual(nodes[2].clusterId);
+    expect(nodes[3].clusterId).toEqual(nodes[4].clusterId);
   });
 });

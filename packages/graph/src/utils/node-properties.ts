@@ -33,15 +33,16 @@ export const getAllSortProperties = (nodes: NodeConfig[] = [], n: number = 100) 
   
 const processProperty = (properties, propertyKeys) => propertyKeys.map(key => {
   if (properties.hasOwnProperty(key)) {
-    // 可以转成数值的直接转成数值
-    if (!isNaN(Number(properties[key]))) {
-      return Number(properties[key]);
-    }
-    // 时间型的转成时间戳
-    if (properties[key].match(secondReg) || properties[key].match(dateReg)) {
-      // @ts-ignore
-      return Number(Date.parse(new Date(properties[key]))) / 1000;
-    }
+    // // 可以转成数值的直接转成数值
+    // if (!isNaN(Number(properties[key]))) {
+    //   return Number(properties[key]);
+    // }
+    // // 时间型的转成时间戳
+    // if (properties[key].match(secondReg) || properties[key].match(dateReg)) {
+    //   // @ts-ignore
+    //   return Number(Date.parse(new Date(properties[key]))) / 1000;
+    // }
+    return properties[key];
   }
   return 0;
 })

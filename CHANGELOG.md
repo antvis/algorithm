@@ -1,4 +1,7 @@
 # ChangeLog
+#### 0.1.25
+
+- feat: Optimized data preprocessing coding - when the feature values are all numerical, use the original values (plus normalization), and do not use one-hot coding
 #### 0.1.24
 
 - fix: i-louvain without cluster problem; 
