@@ -53,6 +53,7 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   
   // 对数据进行one-hot编码
   dataList.forEach((data, index) => {
+    console.log('===allKeyValueMap===', allKeyValueMap)
     let code = [];
     if (Object.keys(allKeyValueMap).length === 1) {
       // 如果只有一个属性且所有的属性值都能转成数值型，则直接用属性值

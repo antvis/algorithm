@@ -142,3 +142,50 @@ describe('kMeans normal demo', () => {
     expect(nodes[2].clusterId).toEqual(nodes[4].clusterId);
   });
 });
+
+describe('kMeans All properties values are numeric demo', () => {
+  it('all properties values are numeric demo: ', () => {
+    const allPropertiesValuesNumericData = {
+      nodes: [
+        {
+          id: 'node-0',
+          properties: {
+            max: 1000000,
+            mean: 900000,
+            min: 800000,
+          }
+        },
+        {
+          id: 'node-1',
+          properties: {
+            max: 1600000,
+            mean: 1100000,
+            min: 600000,
+          }
+        },
+        {
+          id: 'node-2',
+          properties: {
+            max: 5000,
+            mean: 3500,
+            min: 2000,
+          }
+        },
+        {
+          id: 'node-3',
+          properties: {
+            max: 9000,
+            mean: 7500,
+            min: 6000,
+          }
+        }
+      ],
+      edges: [],
+    }
+    const { clusters, clusterEdges } = kMeans(allPropertiesValuesNumericData, 2);
+    expect(clusters.length).toBe(2);
+    expect(clusterEdges.length).toBe(0);
+    expect(nodes[0].clusterId).toEqual(nodes[1].clusterId);
+    expect(nodes[2].clusterId).toEqual(nodes[3].clusterId);
+  });
+});
