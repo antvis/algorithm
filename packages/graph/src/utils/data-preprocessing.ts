@@ -44,29 +44,31 @@ export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string
  * @param uninvolvedKeys 不参与计算的key集合
  */
 export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvolvedKeys?: string[]) => {
-  // 获取数据中所有的属性及其对应的值
+  // 获取数据中所有的属性/特征及其对应的值
   const allKeyValueMap = getAllKeyValueMap(dataList, involvedKeys, uninvolvedKeys);
   const oneHotCode = [];
   if (!Object.keys(allKeyValueMap).length) {
     return oneHotCode;
   }
-  
+
+  // 获取所有的属性/特征值
+  const allValue = Object.values(allKeyValueMap);
+  // 是否所有属性/特征的值都是数值型
+  const isAllNumber = allValue.every(value => value.every(item => (typeof(item) === 'number')));
+
   // 对数据进行one-hot编码
   dataList.forEach((data, index) => {
     let code = [];
-    if (Object.keys(allKeyValueMap).length === 1) {
-      // 如果只有一个属性且所有的属性值都能转成数值型，则直接用属性值
-      const key = Object.keys(allKeyValueMap)[0];
-      const keyValue = allKeyValueMap[key];
-      if (keyValue.every(value => !isNaN(Number(value)))) {
-        code = [data[key]];
-      }
-    } else {
-      Object.keys(allKeyValueMap).forEach(key => {
-        const keyValue = data[key];
-        const allKeyValue = allKeyValueMap[key];
-        const valueIndex = allKeyValue.findIndex(value => keyValue === value);
-        let subCode = [];
+    Object.keys(allKeyValueMap).forEach(key => {
+      const keyValue = data[key];
+      const allKeyValue = allKeyValueMap[key];
+      const valueIndex = allKeyValue.findIndex(value => keyValue === value);
+      let subCode = [];
+      // 如果属性/特征所有的值都能转成数值型，不满足分箱，则直接用值（todo: 为了收敛更快，需做归一化处理）
+      if (isAllNumber) {
+        subCode.push(keyValue);
+      } else {
+        // 进行one-hot编码
         for(let i = 0; i < allKeyValue.length; i++) {
           if (i === valueIndex) {
             subCode.push(1);
@@ -74,9 +76,9 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
             subCode.push(0);
           }
         }
-        code = code.concat(subCode);
-      })
-    }
+      }
+      code = code.concat(subCode);
+    })
     oneHotCode[index] = code;
   })
   return oneHotCode;
