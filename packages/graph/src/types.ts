@@ -57,6 +57,11 @@ export interface PlainObject {
   [key: string]: any;
 }
 
+// 数据集中属性/特征值分布的map
+export interface KeyValueMap {
+  [key:string]: any[];
+}
+
 export interface IAlgorithm {
   getAdjMatrix: (graphData: GraphData, directed?: boolean) => Matrix[],
   breadthFirstSearch: (

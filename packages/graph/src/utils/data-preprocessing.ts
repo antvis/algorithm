@@ -1,5 +1,5 @@
 import { uniq } from '@antv/util';
-import { PlainObject, DistanceType, GraphData } from '../types';
+import { PlainObject, DistanceType, GraphData, KeyValueMap } from '../types';
 import Vector from './vector';
 
 /**
@@ -21,7 +21,7 @@ export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string
     keys = uniq(keys);
   }
   // 获取所有值非空的key的value数组
-  const allKeyValueMap = {};
+  const allKeyValueMap: KeyValueMap = {};
   keys.forEach(key => {
     let value = [];
     dataList.forEach(data => {
