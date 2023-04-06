@@ -1,16 +1,25 @@
 # ChangeLog
+
+#### 0.1.26-beta.0
+
+- feat: add edgePath and allEdgePaths to the output of dijkstra;
+
 #### 0.1.25
 
 - feat: Optimized data preprocessing coding - when the feature values are all numerical, use the original values (plus normalization), and do not use one-hot coding
+
 #### 0.1.24
 
-- fix: i-louvain without cluster problem; 
+- fix: i-louvain without cluster problem;
+
 #### 0.1.23
 
 - perf: k-means algorithm: set K to minimum
+
 #### 0.1.22
 
 - fix: k-means algorithm, perf: louvain -- support specified parameters such as propertyKey,involvedKeys and uninvolvedKeys
+
 #### 0.1.21
 
 - perf: k-means algorithm -- Optimize parameters and return
