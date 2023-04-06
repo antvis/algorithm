@@ -51,55 +51,83 @@ const dijkstra = (
     if (directed) relatedEdges = getOutEdgesNodeId(minNodeId, edges);
     else relatedEdges = getEdgesByNodeId(minNodeId, edges);
 
-    relatedEdges.forEach(edge => {
+    relatedEdges.forEach((edge) => {
       const edgeTarget = edge.target;
       const edgeSource = edge.source;
       const w = edgeTarget === minNodeId ? edgeSource : edgeTarget;
       const weight = weightPropertyName && edge[weightPropertyName] ? edge[weightPropertyName] : 1;
-      if (D[w] > D[minNode.id] + weight) {
-        D[w] = D[minNode.id] + weight;
-        prevs[w] = [minNode.id];
-      } else if (D[w] === D[minNode.id] + weight) {
-        prevs[w].push(minNode.id);
+      if (D[w] > D[minNodeId] + weight) {
+        D[w] = D[minNodeId] + weight;
+        prevs[w] = [
+          {
+            node: minNodeId,
+            edge: edge.id,
+          },
+        ];
+      } else if (D[w] === D[minNodeId] + weight) {
+        prevs[w].push({
+          node: minNodeId,
+          edge: edge.id,
+        });
       }
     });
   }
 
-  prevs[source] = [source];
+  prevs[source] = [
+    {
+      node: source,
+      edge: undefined,
+    },
+  ];
+
   // 每个节点存可能存在多条最短路径
   const paths = {};
   for (const target in D) {
     if (D[target] !== Infinity) {
-      findAllPaths(source, target, prevs, paths);
+      findAllPaths(source, { node: target }, prevs, paths);
     }
   }
 
+  const nodePaths = {};
+  const edgePaths = {};
+  Object.keys(paths).forEach((nodeId) => {
+    const pathsFromNode = paths[nodeId];
+    nodePaths[nodeId] = pathsFromNode.map((path) => path.map((item) => item.node));
+    edgePaths[nodeId] = pathsFromNode.map((path) => path.map((item) => item.edge).filter(Boolean));
+  });
+
   // 兼容之前单路径
   const path = {};
+  const edgePath = {};
   for (const target in paths) {
-    path[target] = paths[target][0];
+    path[target] = nodePaths[target][0];
+    edgePath[target] = edgePaths[target][0];
   }
-  return { length: D, path, allPath: paths };
+  return { length: D, path, edgePath: edgePath, allPath: nodePaths, allEdgePath: edgePaths };
 };
 
 export default dijkstra;
 
 function findAllPaths(source, target, prevs, foundPaths) {
-  if (source === target) {
-    return [source];
+  if (source === target.node) {
+    return [target];
   }
-  if (foundPaths[target]) {
-    return foundPaths[target];
+  if (foundPaths[target.node]) {
+    return foundPaths[target.node];
   }
   const paths = [];
-  for (let prev of prevs[target]) {
+  for (let prev of prevs[target.node]) {
     const prevPaths = findAllPaths(source, prev, prevs, foundPaths);
     if (!prevPaths) return;
     for (let prePath of prevPaths) {
-      if (isArray(prePath)) paths.push([...prePath, target]);
-      else paths.push([prePath, target]);
+      if (isArray(prePath)) {
+        const frontItems = [...prePath].splice(0, prePath.length - 1);
+        paths.push([...frontItems, prev, { node: target.node }]);
+      } else {
+        paths.push([prePath, { node: target.node }]);
+      }
     }
   }
-  foundPaths[target] = paths;
-  return foundPaths[target];
+  foundPaths[target.node] = paths;
+  return foundPaths[target.node];
 }
