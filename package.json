@@ -2,18 +2,25 @@
   "name": "@antv/algorithm",
   "private": true,
   "scripts": {
-    "build": "lerna build",
-    "lint": "lerna run lint",
-    "test": "lerna run test --no-private",
+    "dev": "vite",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test --no-private",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "pretty-quick": "pretty-quick",
-    "clean": "lerna clean",
-    "clear": "lerna clean && lerna clean -y",
+    "clean": "pnpm -r run clean",
     "clean:modules": "rimraf node_modules",
-    "bootstrap": "lerna bootstrap",
-    "ls": "lerna list"
+    "ls": "pnpm -r list",
+    "build:site": "vite build",
+    "deploy": "gh-pages -d site/dist"
   },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "@antv/graphlib": "^2.0.0",
+    "graphology": "^0.25.1",
+    "graphology-generators": "^0.11.2",
+    "graphology-types": "^0.24.7",
+    "graphology-metrics": "^2.1.0",
+    "graphology-shortest-path": "^2.0.2",
+    "vite": "^4.3.8"
   }
 }

@@ -1,20 +1,12 @@
-export interface NodeConfig {
-  id: string;
-  clusterId?: string;
-  [key: string]: any;
-}
+import { Edge, Graph as IGraph, PlainObject } from '@antv/graphlib';
 
-export interface EdgeConfig {
-  source: string;
-  target: string;
+export interface NodeData extends PlainObject {}
+
+export interface EdgeData extends PlainObject {
   weight?: number;
-  [key: string]: any;
 }
 
-export interface GraphData {
-  nodes?: NodeConfig[];
-  edges?: EdgeConfig[];
-}
+export type Graph = IGraph<NodeData, EdgeData>;
 
 export interface CSC {
   V: number[];
@@ -23,5 +15,5 @@ export interface CSC {
   From: number[];
   To: number[];
   nodeId2IndexMap: Record<string, number>;
-  edges: EdgeConfig[];
+  edges: Edge<EdgeData>[];
 }

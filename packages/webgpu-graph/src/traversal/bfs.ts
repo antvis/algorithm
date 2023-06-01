@@ -1,7 +1,5 @@
-import type { WebGLRenderer } from '@antv/g-webgl';
-import { Kernel, BufferUsage } from '@antv/g-plugin-gpgpu';
-import { GraphData } from '../types';
-import { convertGraphData2CSC } from '../util';
+import { DeviceRenderer } from '@antv/g-webgpu';
+import { Graph } from '../types';
 
 /**
  * Scalable GPU Graph Traversal
@@ -9,6 +7,4 @@ import { convertGraphData2CSC } from '../util';
  * @see https://github.com/rafalk342/bfs-cuda
  * @see https://github.com/kaletap/bfs-cuda-gpu
  */
-export async function bfs(device: WebGLRenderer.Device, graphData: GraphData) {
-
-}
+export async function bfs(device: DeviceRenderer.Device, graphData: Graph) {}

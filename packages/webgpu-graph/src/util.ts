@@ -1,22 +1,23 @@
-import type { GraphData, CSC, EdgeConfig } from './types';
+import { Edge, ID } from '@antv/graphlib';
+import type { CSC, EdgeData, Graph } from './types';
 
-export function convertGraphData2CSC(graphData: GraphData): CSC {
+export function convertGraphData2CSC(graphData: Graph): CSC {
   const V: number[] = [];
   const E: number[] = [];
   const From: number[] = [];
   const To: number[] = [];
   const I: number[] = [];
   const nodeId2IndexMap: Record<string, number> = {};
-  const edges: EdgeConfig[] = []
-  graphData.nodes.forEach((node, i) => {
+  const edges: Edge<EdgeData>[] = []
+  graphData.getAllNodes().forEach((node, i) => {
     nodeId2IndexMap[node.id] = i;
     V.push(i);
   });
 
-  let lastSource = '';
+  let lastSource: ID = '';
   let counter = 0;
   // sort by source
-  [...graphData.edges]
+  [...graphData.getAllEdges()]
     .sort((a, b) => nodeId2IndexMap[a.source] - nodeId2IndexMap[b.source])
     .forEach((edgeConfig) => {
       const { source, target } = edgeConfig;
