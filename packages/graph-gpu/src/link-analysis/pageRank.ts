@@ -1,19 +1,27 @@
-import type { WebGLRenderer } from '@antv/g-webgl';
-import { Kernel, BufferUsage } from '@antv/g-plugin-gpgpu';
-import type { GraphData } from '../types';
+import { DeviceRenderer } from '@antv/g-webgpu';
+import { Kernel } from '@antv/g-plugin-gpgpu';
 import { convertGraphData2CSC } from '../util';
+import { Graph } from '../types';
+
+const { BufferUsage } = DeviceRenderer;
 
 /**
  * Pagerank using power method, ported from CUDA
- * 
+ *
  * @param graphData
  * @param eps Set the tolerance the approximation, this parameter should be a small magnitude value. The lower the tolerance the better the approximation.
  * @param alpha The damping factor alpha represents the probability to follow an outgoing edge, standard value is 0.85.
  * @param maxIteration Set the maximum number of iterations.
- * 
+ *
  * @see https://github.com/princeofpython/PageRank-with-CUDA/blob/main/parallel.cu
  */
-export async function pageRank(device: WebGLRenderer.Device, graphData: GraphData, eps = 1e-05, alpha = 0.85, maxIteration = 1000) {
+export async function pageRank(
+  device: DeviceRenderer.Device,
+  graphData: Graph,
+  eps = 1e-5,
+  alpha = 0.85,
+  maxIteration = 1000,
+) {
   const BLOCK_SIZE = 1;
   const BLOCKS = 256;
 
@@ -46,13 +54,13 @@ export async function pageRank(device: WebGLRenderer.Device, graphData: GraphDat
   const storeKernel = new Kernel(device, {
     computeShader: `
 struct Buffer {
-  data: array<f32>;
+  data: array<f32>,
 };
 
 @group(0) @binding(0) var<storage, read> r : Buffer;
-@group(0) @binding(1) var<storage, write> r_last : Buffer;
+@group(0) @binding(1) var<storage, read_write> r_last : Buffer;
 
-@stage(compute) @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
+@compute @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
 fn main(
   @builtin(global_invocation_id) global_id : vec3<u32>
 ) {
@@ -66,14 +74,14 @@ fn main(
   const matmulKernel = new Kernel(device, {
     computeShader: `
 struct Buffer {
-  data: array<f32>;
+  data: array<f32>,
 };
 
 @group(0) @binding(0) var<storage, read> graph : Buffer;
 @group(0) @binding(1) var<storage, read_write> r : Buffer;
 @group(0) @binding(2) var<storage, read> r_last : Buffer;
 
-@stage(compute) @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
+@compute @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
 fn main(
   @builtin(global_invocation_id) global_id : vec3<u32>
 ) {
@@ -92,13 +100,13 @@ fn main(
   const rankDiffKernel = new Kernel(device, {
     computeShader: `
 struct Buffer {
-  data: array<f32>;
+  data: array<f32>,
 };
 
 @group(0) @binding(0) var<storage, read> r : Buffer;
 @group(0) @binding(1) var<storage, read_write> r_last : Buffer;
 
-@stage(compute) @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
+@compute @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
 fn main(
   @builtin(global_invocation_id) global_id : vec3<u32>
 ) {
@@ -142,15 +150,15 @@ fn main(
     matmulKernel.dispatch(grids, 1);
     rankDiffKernel.dispatch(grids, 1);
 
-    const last = await readback.readBuffer(rLastBuffer) as Float32Array;
+    const last = (await readback.readBuffer(rLastBuffer)) as Float32Array;
     const result = last.reduce((prev, cur) => prev + cur, 0);
     if (result < eps) {
       break;
     }
   }
 
-  const out = await readback.readBuffer(rBuffer) as Float32Array;
+  const out = (await readback.readBuffer(rBuffer)) as Float32Array;
   return Array.from(out)
-    .map((score, index) => ({ id: graphData.nodes[index].id, score }))
+    .map((score, index) => ({ id: graphData.getAllNodes()[index].id, score }))
     .sort((a, b) => b.score - a.score);
 }

@@ -7,7 +7,7 @@ module.exports = {
   },
   output: {
     filename: '[name].min.js',
-    library: 'WebGPUGraph',
+    library: 'GraphGPU',
     libraryTarget: 'umd',
     libraryExport: 'default',
     path: resolve(process.cwd(), 'dist/'),
@@ -15,26 +15,13 @@ module.exports = {
     publicPath: './dist',
   },
   watchOptions: {
-    ignored: /node_modules/
+    ignored: /node_modules/,
   },
   resolve: {
     extensions: ['.ts', '.js'],
   },
   module: {
     rules: [
-      {
-        test: /\.worker\.ts$/,
-        exclude: /(node_modules)/,
-        use: [
-          {
-            loader: 'worker-loader',
-            options: {
-              inline: 'fallback',
-              filename: 'index.worker.js',
-            },
-          },
-        ],
-      },
       {
         test: /\.js$/,
         include: /node_modules/,

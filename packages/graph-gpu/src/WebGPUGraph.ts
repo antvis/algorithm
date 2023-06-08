@@ -1,9 +1,9 @@
 import { Canvas } from '@antv/g';
-import { Renderer } from '@antv/g-webgl';
+import { Renderer } from '@antv/g-webgpu';
 import { Plugin } from '@antv/g-plugin-gpgpu';
 import { pageRank } from './link-analysis';
 import { sssp } from './traversal';
-import type { GraphData } from './types';
+import { Graph } from './types';
 
 export interface WebGPUGraphOptions {
   canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -17,14 +17,15 @@ export class WebGPUGraph {
     const { canvas } = options;
 
     // FIXME: use OffscreenCanvas instead of a real <canvas> DOM
-    const $canvas = canvas || window.document.createElement('canvas');
+    const $canvas = (canvas || window.document.createElement('canvas')) as HTMLCanvasElement;
 
     // use WebGPU
-    this.renderer = new Renderer({ targets: ['webgpu'] });
+    this.renderer = new Renderer();
     this.renderer.registerPlugin(new Plugin());
 
     // create a canvas
     this.canvas = new Canvas({
+      // @ts-ignore
       canvas: $canvas,
       width: 1,
       height: 1,
@@ -36,15 +37,16 @@ export class WebGPUGraph {
     // wait for canvas' services ready
     await this.canvas.ready;
     // get GPU Device
-    return this.renderer.getDevice();
+    const plugin = this.renderer.getPlugin('device-renderer') as any;
+    return plugin.getDevice();
   }
 
-  async pageRank(graphData: GraphData, eps = 1e-5, alpha = 0.85, maxIteration = 1000) {
+  async pageRank(graphData: Graph, eps = 1e-5, alpha = 0.85, maxIteration = 1000) {
     const device = await this.getDevice();
     return pageRank(device, graphData, eps, alpha, maxIteration);
   }
 
-  async sssp(graphData: GraphData, sourceId: string, weightPropertyName: string = '') {
+  async sssp(graphData: Graph, sourceId: string, weightPropertyName: string = 'weight') {
     const device = await this.getDevice();
     return sssp(device, graphData, sourceId, weightPropertyName);
   }

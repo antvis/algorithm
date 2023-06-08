@@ -1,0 +1,23 @@
+[package]
+name = "antv-graph"
+version = "0.0.1"
+authors = ["antv"]
+edition = "2018"
+license = "MIT"
+description = "A library of high-performant graph algorithms."
+repository = "https://github.com/antvis/algorithm"
+documentation = "https://observablehq.com/d/2db6b0cc5e97d8d6"
+keywords = ["graph", "algorithm", "viz"]
+categories = ["visualization"]
+readme = "README.md"
+
+[profile.release]
+panic = 'abort'
+lto = true
+opt-level = 's'
+
+[dependencies]
+graph_builder = "0.3.1"
+rayon = "1.5.1"
+
+

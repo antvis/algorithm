@@ -1,18 +1,26 @@
-import type { WebGLRenderer } from '@antv/g-webgl';
-import { Kernel, BufferUsage } from '@antv/g-plugin-gpgpu';
-import { GraphData } from '../types';
+import { DeviceRenderer } from '@antv/g-webgpu';
+import { Kernel } from '@antv/g-plugin-gpgpu';
+import { Graph } from '../types';
 import { convertGraphData2CSC } from '../util';
+
+const { BufferUsage } = DeviceRenderer;
 
 /**
  * SSSP(Bellman-Ford) ported from CUDA
- * 
+ *
  * @see https://www.lewuathe.com/illustration-of-distributed-bellman-ford-algorithm.html
  * @see https://github.com/sengorajkumar/gpu_graph_algorithms
  * @see https://docs.rapids.ai/api/cugraph/stable/api_docs/api/cugraph.traversal.sssp.sssp.html
  * compared with G6:
  * @see https://g6.antv.vision/zh/docs/api/Algorithm#findshortestpathgraphdata-start-end-directed-weightpropertyname
  */
-export async function sssp(device: WebGLRenderer.Device, graphData: GraphData, sourceId: string, weightPropertyName: string = '', maxDistance = 1000000) {
+export async function sssp(
+  device: DeviceRenderer.Device,
+  graphData: Graph,
+  sourceId: string,
+  weightPropertyName: string = '',
+  maxDistance = 1000000,
+) {
   // The total number of workgroup invocations (4096) exceeds the maximum allowed (256).
   const BLOCK_SIZE = 1;
   const BLOCKS = 256;
@@ -22,7 +30,7 @@ export async function sssp(device: WebGLRenderer.Device, graphData: GraphData, s
   let W: number[];
   const sourceIdx = nodeId2IndexMap[sourceId];
   if (weightPropertyName) {
-    W = edges.map((edgeConfig) => Number(edgeConfig[weightPropertyName]));
+    W = edges.map(edgeConfig => Number(edgeConfig.data[weightPropertyName]));
   } else {
     // all the vertex has the same weight
     W = new Array(E.length).fill(1);
@@ -31,10 +39,10 @@ export async function sssp(device: WebGLRenderer.Device, graphData: GraphData, s
   const relaxKernel = new Kernel(device, {
     computeShader: `
 struct Buffer {
-  data: array<i32>;
+  data: array<i32>,
 };
 struct AtomicBuffer {
-  data: array<atomic<i32>>;
+  data: array<atomic<i32>>,
 };
 
 @group(0) @binding(0) var<storage, read> d_in_E : Buffer;
@@ -43,7 +51,7 @@ struct AtomicBuffer {
 @group(0) @binding(3) var<storage, read> d_out_D : Buffer;
 @group(0) @binding(4) var<storage, read_write> d_out_Di : AtomicBuffer;
 
-@stage(compute) @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
+@compute @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
 fn main(
   @builtin(global_invocation_id) global_id : vec3<u32>
 ) {
@@ -69,13 +77,13 @@ fn main(
   const updateDistanceKernel = new Kernel(device, {
     computeShader: `
 struct Buffer {
-  data: array<i32>;
+  data: array<i32>,
 };
 
 @group(0) @binding(0) var<storage, read_write> d_out_D : Buffer;
 @group(0) @binding(1) var<storage, read_write> d_out_Di : Buffer;
 
-@stage(compute) @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
+@compute @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
 fn main(
   @builtin(global_invocation_id) global_id : vec3<u32>
 ) {
@@ -93,10 +101,10 @@ fn main(
   const updatePredKernel = new Kernel(device, {
     computeShader: `
 struct Buffer {
-  data: array<i32>;
+  data: array<i32>,
 };
 struct AtomicBuffer {
-  data: array<atomic<i32>>;
+  data: array<atomic<i32>>,
 };
 
 @group(0) @binding(0) var<storage, read> d_in_V : Buffer;
@@ -106,7 +114,7 @@ struct AtomicBuffer {
 @group(0) @binding(4) var<storage, read> d_out_D : Buffer;
 @group(0) @binding(5) var<storage, read_write> d_out_P : AtomicBuffer;
 
-@stage(compute) @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
+@compute @workgroup_size(${BLOCKS}, ${BLOCK_SIZE})
 fn main(
   @builtin(global_invocation_id) global_id : vec3<u32>
 ) {
@@ -187,12 +195,12 @@ fn main(
   }
   updatePredKernel.dispatch(grids, 1);
 
-  const out = await readback.readBuffer(DiOutBuffer) as Float32Array;
+  const out = (await readback.readBuffer(DiOutBuffer)) as Float32Array;
   const predecessor = await readback.readBuffer(POutBuffer);
 
   return Array.from(out).map((distance, i) => ({
-    target: graphData.nodes[V[i]].id,
+    target: graphData.getAllNodes()[V[i]].id,
     distance,
-    predecessor: graphData.nodes[V[predecessor[i]]].id,
+    predecessor: graphData.getAllNodes()[V[predecessor[i]]]?.id,
   }));
 }

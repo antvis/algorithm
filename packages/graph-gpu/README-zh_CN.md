@@ -28,7 +28,7 @@ document.head.appendChild(tokenElement);
 均为异步调用，以 pageRank 为例：
 
 ```js
-import { pageRank, WebGPUGraph } from '@antv/webgpu-graph';
+import { pageRank, WebGPUGraph } from '@antv/graph-gpu';
 
 // 初始化
 const graph = new WebGPUGraph();

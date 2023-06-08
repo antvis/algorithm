@@ -11,3 +11,5 @@ es
 dist
 *.pem
 !mock-cert.pem
+pnpm-lock.yaml
+tsconfig.tsbuildinfo

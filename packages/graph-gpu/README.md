@@ -1,6 +1,6 @@
 # AntV Graph Algorithm based on WebGPU
 
-`webgpu-graph` is a GPU accelerated graph analytics library, with functionality like [WebGPU](https://www.w3.org/TR/webgpu/) which provides modern features such as compute shader(in [WGSL](https://www.w3.org/TR/WGSL/)). Compared with CPU version, we almost gain ~100x speed up with big datasets.
+`graph-gpu` is a GPU accelerated graph analytics library, with functionality like [WebGPU](https://www.w3.org/TR/webgpu/) which provides modern features such as compute shader(in [WGSL](https://www.w3.org/TR/WGSL/)). Compared with CPU version, we almost gain ~100x speed up with big datasets.
 
 It's inspired by [cuGraph](https://github.com/rapidsai/cugraph) and other implementations based on CUDA.
 
@@ -22,7 +22,7 @@ Since we are using latest syntax of WGSL, you'd better update your Chrome to the
 ## Usage
 
 ```js
-import { pageRank, WebGPUGraph } from '@antv/webgpu-graph';
+import { pageRank, WebGPUGraph } from '@antv/graph-gpu';
 
 // initialize WebGPU context
 const graph = new WebGPUGraph();
