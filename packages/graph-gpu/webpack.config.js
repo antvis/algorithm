@@ -7,7 +7,7 @@ module.exports = {
   },
   output: {
     filename: '[name].min.js',
-    library: 'WebGPUGraph',
+    library: 'GraphGPU',
     libraryTarget: 'umd',
     libraryExport: 'default',
     path: resolve(process.cwd(), 'dist/'),

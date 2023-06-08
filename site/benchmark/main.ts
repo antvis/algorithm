@@ -1,4 +1,4 @@
-import { WebGPUGraph } from "../../packages/webgpu-graph/src";
+import { WebGPUGraph } from "../../packages/graph-gpu/src";
 import { loadDatasets } from "../datasets";
 import { TestName } from "../types";
 import {
@@ -13,6 +13,9 @@ const TestsConfig = [
   },
   {
     name: TestName.ANTV_ALGORITHM,
+  },
+  {
+    name: TestName.ANTV_WEBGPU_GRAPH,
   },
   {
     name: TestName.ANTV_WEBGPU_GRAPH,
@@ -64,6 +67,13 @@ const $results = TestsConfig.map(({ name }) => {
       methods: {
         pageRank: webgpuPageRank,
         sssp: webgpuSSSP,
+      },
+    },
+    {
+      name: TestName.ANTV_GRAPH_WASM,
+      methods: {
+        // pageRank: webgpuPageRank,
+        // sssp: webgpuSSSP,
       },
     },
   ];

@@ -1,5 +1,5 @@
 {
-  "name": "@antv/webgpu-graph",
+  "name": "@antv/graph-gpu",
   "version": "1.0.0",
   "description": "provide common graph algorithms implemented with WebGPU",
   "keywords": [

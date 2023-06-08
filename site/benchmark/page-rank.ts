@@ -1,5 +1,5 @@
 import pagerank from "graphology-metrics/centrality/pagerank";
-import { WebGPUGraph } from "../../packages/webgpu-graph/src";
+import { WebGPUGraph } from "../../packages/graph-gpu/src";
 
 interface Options {
   alpha: number;
