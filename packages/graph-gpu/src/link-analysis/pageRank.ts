@@ -1,7 +1,7 @@
-import { DeviceRenderer } from '@antv/g-webgpu';
-import { Kernel } from '@antv/g-plugin-gpgpu';
-import { convertGraphData2CSC } from '../util';
-import { Graph } from '../types';
+import { DeviceRenderer } from "@antv/g-webgpu";
+import { Kernel } from "@antv/g-plugin-gpgpu";
+import { convertGraphData2CSC } from "../util";
+import { Graph } from "../types";
 
 const { BufferUsage } = DeviceRenderer;
 
@@ -18,9 +18,9 @@ const { BufferUsage } = DeviceRenderer;
 export async function pageRank(
   device: DeviceRenderer.Device,
   graphData: Graph,
-  eps = 1e-5,
+  tolerance = 1e-5,
   alpha = 0.85,
-  maxIteration = 1000,
+  maxIteration = 1000
 ) {
   const BLOCK_SIZE = 1;
   const BLOCKS = 256;
@@ -152,7 +152,7 @@ fn main(
 
     const last = (await readback.readBuffer(rLastBuffer)) as Float32Array;
     const result = last.reduce((prev, cur) => prev + cur, 0);
-    if (result < eps) {
+    if (result < tolerance) {
       break;
     }
   }

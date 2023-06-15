@@ -1,5 +1,7 @@
+import { Graph } from "@antv/graphlib";
 import pagerank from "graphology-metrics/centrality/pagerank";
-import { WebGPUGraph } from "../../packages/graph-gpu/src";
+import { WebGPUGraph } from "../../packages/graph-gpu";
+import { Threads } from "../../packages/graph-wasm";
 
 interface Options {
   alpha: number;
@@ -29,7 +31,7 @@ export async function graphology(graph: any, options: Partial<Options>) {
 }
 
 export async function webgpu(
-  graph: any,
+  graph: Graph<any, any>,
   options: Partial<Options>,
   webgpuGraph: WebGPUGraph
 ) {

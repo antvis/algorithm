@@ -13,3 +13,8 @@ dist
 !mock-cert.pem
 pnpm-lock.yaml
 tsconfig.tsbuildinfo
+target
+Cargo.lock
+pkg
+pkg-node
+pkg-parallel

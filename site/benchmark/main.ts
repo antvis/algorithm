@@ -15,10 +15,10 @@ const TestsConfig = [
     name: TestName.ANTV_ALGORITHM,
   },
   {
-    name: TestName.ANTV_WEBGPU_GRAPH,
+    name: TestName.ANTV_GRAPH_GPU,
   },
   {
-    name: TestName.ANTV_WEBGPU_GRAPH,
+    name: TestName.ANTV_GRAPH_WASM,
   },
 ];
 
@@ -63,7 +63,7 @@ const $results = TestsConfig.map(({ name }) => {
       },
     },
     {
-      name: TestName.ANTV_WEBGPU_GRAPH,
+      name: TestName.ANTV_GRAPH_GPU,
       methods: {
         pageRank: webgpuPageRank,
         sssp: webgpuSSSP,
@@ -72,7 +72,7 @@ const $results = TestsConfig.map(({ name }) => {
     {
       name: TestName.ANTV_GRAPH_WASM,
       methods: {
-        // pageRank: webgpuPageRank,
+        // pageRank: wasmPageRank,
         // sssp: webgpuSSSP,
       },
     },
@@ -82,10 +82,10 @@ const $results = TestsConfig.map(({ name }) => {
     const dataset = datasets[$dataset.value];
     const algorithmName = $algorithm.value;
     let options = null;
-    if (algorithmName === "sssp") {
-      const graph = dataset[TestName.ANTV_WEBGPU_GRAPH];
-      options = graph.getAllNodes()[1].id;
-    }
+    // if (algorithmName === "sssp") {
+    //   const graph = dataset[TestName.ANTV_WEBGPU_GRAPH];
+    //   options = graph.getAllNodes()[1].id;
+    // }
 
     await Promise.all(
       layoutConfig.map(async ({ name, methods }: any, i: number) => {

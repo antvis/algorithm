@@ -1,4 +1,4 @@
-use graph::prelude::*;
+use antv_graph::prelude::*;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
 
@@ -42,7 +42,7 @@ pub fn page_rank(val: JsValue) -> Array {
         ])
         .build();
 
-    let (ranks, iterations, _) = graph::prelude::page_rank(
+    let (ranks, iterations, _) = antv_graph::prelude::page_rank(
         &graph,
         PageRankConfig::new(
             options.max_iterations,
