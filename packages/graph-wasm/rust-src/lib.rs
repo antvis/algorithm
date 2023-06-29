@@ -1,3 +1,4 @@
+use std::sync::atomic::Ordering;
 use antv_graph::prelude::*;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
@@ -12,6 +13,16 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen(start)]
 pub fn start() {
     console_error_panic_hook::set_once();
+}
+
+#[wasm_bindgen(js_name = "sssp")]
+pub fn sssp(val: JsValue) -> Array {
+    let graph: DirectedCsrGraph<usize, (), f32> = GraphBuilder::new().edges_with_values(vec![]).build();
+    let config = DeltaSteppingConfig::new(0, 3.0);
+    let result: Vec<f32> = antv_graph::prelude::delta_stepping(&graph, config).into_iter()
+        .map(|d| d.load(Ordering::Relaxed))
+        .collect();
+    result.into_iter().map(JsValue::from).collect()
 }
 
 #[wasm_bindgen(js_name = "pageRank")]

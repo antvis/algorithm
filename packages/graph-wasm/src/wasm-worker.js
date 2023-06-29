@@ -1,4 +1,4 @@
-import * as Comlink from "comlink";
+import * as Comlink from 'comlink';
 
 const DEFAULT_PAGE_RANK_OPTIONS = {
   max_iterations: 10,
@@ -6,8 +6,8 @@ const DEFAULT_PAGE_RANK_OPTIONS = {
   damping_factor: 0.85,
 };
 
-const wrapTransfer = (page_rank) => {
-  return (options) => {
+const wrapTransfer = page_rank => {
+  return options => {
     const ranks = page_rank({
       ...DEFAULT_PAGE_RANK_OPTIONS,
       ...options,
@@ -23,20 +23,20 @@ const wrapTransfer = (page_rank) => {
 // Wrap wasm-bindgen exports (the `generate` function) to add time measurement.
 function wrapExports({ page_rank }) {
   return {
-    page_rank: wrapTransfer(page_rank),
+    pageRank: wrapTransfer(page_rank),
   };
 }
 
 async function initHandlers(useMultiThread) {
   if (useMultiThread) {
     // @ts-ignore
-    const multiThread = await import("../pkg-parallel/antv_graph_wasm.js");
+    const multiThread = await import('../pkg-parallel/antv_graph_wasm.js');
     await multiThread.default();
     await multiThread.initThreadPool(navigator.hardwareConcurrency);
     return Comlink.proxy(wrapExports(multiThread));
   } else {
     // @ts-ignore
-    const singleThread = await import("../pkg/antv_graph_wasm.js");
+    const singleThread = await import('../pkg/antv_graph_wasm.js');
     await singleThread.default();
     return Comlink.proxy(wrapExports(singleThread));
   }
