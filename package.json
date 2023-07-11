@@ -1,5 +1,4 @@
 {
-  "name": "@antv/algorithm",
   "private": true,
   "homepage": "https://github.com/antvis/algorithm",
   "bugs": {
@@ -13,13 +12,13 @@
   "scripts": {
     "dev": "vite",
     "lint:es": "eslint --ext .js --fix",
-    "lint:ts": "tslint -c tslint.json -p packages/layout/tsconfig.json --fix",
+    "lint:ts": "tslint -c tslint.json -p packages/graph/tsconfig.json --fix",
     "lint": "npm run lint:ts && npm run lint:es",
     "lint-staged": "lint-staged",
     "build": "pnpm -r run build",
     "build:ci": "pnpm -r run build:ci",
     "prepare": "husky install",
-    "test": "pnpm -r run test --no-private",
+    "test": "jest",
     "coverage": "jest --coverage",
     "build:site": "vite build",
     "deploy": "gh-pages -d site/dist",
@@ -36,6 +35,7 @@
   "devDependencies": {
     "@antv/graphlib": "^2.0.0",
     "@changesets/cli": "^2.26.1",
+    "@types/jest": "latest",
     "cross-env": "^7.0.3",
     "eslint": "^7.32.0",
     "eslint-config-airbnb-base": "^14.2.1",
@@ -60,7 +60,9 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^4.9.5",
-    "vite": "^4.3.8"
+    "vite": "^4.3.8",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^5.0.2"
   },
   "publishConfig": {
     "access": "public",

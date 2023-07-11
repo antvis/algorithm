@@ -85,7 +85,7 @@ export const loadDatasets = async () => {
       return {
         desc,
         [TestName.GRAPHOLOGY]: graphlibModel,
-        [TestName.ANTV_ALGORITHM]: oldG6GraphFormat,
+        [TestName.ANTV_ALGORITHM]: antvGraphModel,
         [TestName.ANTV_GRAPH_GPU]: antvGraphModel,
         [TestName.ANTV_GRAPH_WASM]: antvGraphModel,
       };

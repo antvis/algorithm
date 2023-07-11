@@ -1,7 +1,7 @@
 import { Canvas } from '@antv/g';
 import { Renderer } from '@antv/g-webgpu';
 import { Plugin } from '@antv/g-plugin-gpgpu';
-import { pageRank } from './link-analysis';
+import { PageRankParams, pageRank } from './link-analysis';
 import { sssp } from './traversal';
 import { Graph } from './types';
 
@@ -41,9 +41,9 @@ export class WebGPUGraph {
     return plugin.getDevice();
   }
 
-  async pageRank(graphData: Graph, eps = 1e-5, alpha = 0.85, maxIteration = 1000) {
+  async pageRank(graphData: Graph, params?: PageRankParams) {
     const device = await this.getDevice();
-    return pageRank(device, graphData, eps, alpha, maxIteration);
+    return pageRank(device, graphData, params);
   }
 
   async sssp(graphData: Graph, sourceId: string, weightPropertyName: string = 'weight') {

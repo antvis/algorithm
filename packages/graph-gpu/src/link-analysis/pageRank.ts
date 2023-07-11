@@ -5,6 +5,12 @@ import { Graph } from "../types";
 
 const { BufferUsage } = DeviceRenderer;
 
+export interface PageRankParams {
+  alpha: number;
+  maxIterations: number;
+  tolerance: number;
+}
+
 /**
  * Pagerank using power method, ported from CUDA
  *
@@ -18,10 +24,14 @@ const { BufferUsage } = DeviceRenderer;
 export async function pageRank(
   device: DeviceRenderer.Device,
   graphData: Graph,
-  tolerance = 1e-5,
-  alpha = 0.85,
-  maxIteration = 1000
+  params?: PageRankParams
 ) {
+  let {
+    tolerance = 1e-5,
+    alpha = 0.85,
+    maxIterations = 1000
+  } = params || {};
+
   const BLOCK_SIZE = 1;
   const BLOCKS = 256;
 
@@ -145,7 +155,7 @@ fn main(
 
   const grids = Math.ceil(V.length / (BLOCKS * BLOCK_SIZE));
 
-  while (maxIteration--) {
+  while (maxIterations--) {
     storeKernel.dispatch(grids, 1);
     matmulKernel.dispatch(grids, 1);
     rankDiffKernel.dispatch(grids, 1);

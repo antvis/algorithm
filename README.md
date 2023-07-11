@@ -4,8 +4,8 @@
 
 [![Build Status](https://github.com/antvis/algorithm/workflows/build/badge.svg?branch=next)](https://github.com/antvis//actions)
 [![Coverage Status](https://img.shields.io/coveralls/github/antvis/algorithm/next.svg)](https://coveralls.io/github/antvis/algorithm?branch=next)
-[![npm Download](https://img.shields.io/npm/dm/@antv/algorithm.svg)](https://www.npmjs.com/package/@antv/algorithm)
-[![npm License](https://img.shields.io/npm/l/@antv/algorithm.svg)](https://www.npmjs.com/package/@antv/algorithm)
+[![npm Download](https://img.shields.io/npm/dm/@antv/graph.svg)](https://www.npmjs.com/package/@antv/graph)
+[![npm License](https://img.shields.io/npm/l/@antv/graph.svg)](https://www.npmjs.com/package/@antv/graph)
 
 - [@antv/graph](./packages/graph/README.md) [![npm Version](https://img.shields.io/npm/v/@antv/graph/alpha)](https://www.npmjs.com/package/@antv/graph) Implemented with TypeScript. [Online Demo](https://observablehq.com/d/2db6b0cc5e97d8d6)
 - [@antv/graph-rust](./packages/graph-rust/README.md) Implemented with Rust.

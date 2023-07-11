@@ -1,29 +1,39 @@
 import * as Comlink from 'comlink';
 
-const DEFAULT_PAGE_RANK_OPTIONS = {
-  max_iterations: 10,
-  tolerance: 0.0001,
-  damping_factor: 0.85,
+const wrapTransferPageRank = pageRank => {
+  return options => {
+    const params = {
+      max_iterations: options.maxIterations || 1000,
+      tolerance: options.tolerance || 0.0001,
+      damping_factor: options.alpha || 0.85,
+      edgelist: options.edgelist
+    };
+
+    const ranks = pageRank(params);
+
+    return Comlink.transfer(ranks, []);
+  };
 };
 
-const wrapTransfer = page_rank => {
+const wrapTransferSSSP = sssp => {
   return options => {
-    const ranks = page_rank({
-      ...DEFAULT_PAGE_RANK_OPTIONS,
-      ...options,
-    });
-
-    return {
-      // Little perf boost to transfer data to the main thread w/o copying.
-      ranks: Comlink.transfer(ranks, [ranks]),
+    const params = {
+      start_node: options.startNode || 0,
+      delta: options.delta || 3,
+      edgelist: options.edgelist
     };
+
+    const ranks = sssp(params);
+
+    return Comlink.transfer(ranks, []);
   };
 };
 
 // Wrap wasm-bindgen exports (the `generate` function) to add time measurement.
-function wrapExports({ page_rank }) {
+function wrapExports({ pageRank, sssp }) {
   return {
-    pageRank: wrapTransfer(page_rank),
+    pageRank: wrapTransferPageRank(pageRank),
+    sssp: wrapTransferSSSP(sssp),
   };
 }
 

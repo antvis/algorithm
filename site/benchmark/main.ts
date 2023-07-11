@@ -3,9 +3,12 @@ import { loadDatasets } from "../datasets";
 import { TestName } from "../types";
 import {
   graphology as graphologyPageRank,
+  antv as antvPageRank,
   webgpu as webgpuPageRank,
+  wasm as wasmPageRank
 } from "./page-rank";
 import { graphology as graphologySSSP, webgpu as webgpuSSSP } from "./sssp";
+import { initThreads } from "../../packages/graph-wasm";
 
 const TestsConfig = [
   {
@@ -31,6 +34,13 @@ const $results = TestsConfig.map(({ name }) => {
   return [$div.querySelector(".console")!, $div.querySelector(".time")!];
 });
 
+const initThreadsPool = async () => {
+  const singleThread = await initThreads(false);
+  const multiThreads = await initThreads(true);
+
+  return [singleThread, multiThreads];
+};
+
 (async () => {
   $run.innerHTML = "Loading...";
   $run.disabled = true;
@@ -44,7 +54,10 @@ const $results = TestsConfig.map(({ name }) => {
   // initialize WebGPU context
   const graph = new WebGPUGraph();
 
-  $run.innerHTML = "Run layouts";
+  console.time("Init WASM threads");
+  const [forceSingleThread, forceMultiThreads] = await initThreadsPool();
+  console.timeEnd("Init WASM threads");
+  $run.innerHTML = 'Run layouts';
   $run.disabled = false;
 
   const layoutConfig: any = [
@@ -52,27 +65,27 @@ const $results = TestsConfig.map(({ name }) => {
       name: TestName.GRAPHOLOGY,
       methods: {
         pageRank: graphologyPageRank,
-        sssp: graphologySSSP,
+        // sssp: graphologySSSP,
       },
     },
     {
       name: TestName.ANTV_ALGORITHM,
       methods: {
-        // pageRank: graphologyForceatlas2,
+        pageRank: antvPageRank,
         // sssp: graphologyFruchterman,
       },
     },
     {
       name: TestName.ANTV_GRAPH_GPU,
       methods: {
-        pageRank: webgpuPageRank,
-        sssp: webgpuSSSP,
+        // pageRank: webgpuPageRank,
+        // sssp: webgpuSSSP,
       },
     },
     {
       name: TestName.ANTV_GRAPH_WASM,
       methods: {
-        // pageRank: wasmPageRank,
+        pageRank: wasmPageRank,
         // sssp: webgpuSSSP,
       },
     },
@@ -81,7 +94,7 @@ const $results = TestsConfig.map(({ name }) => {
   $run.onclick = async () => {
     const dataset = datasets[$dataset.value];
     const algorithmName = $algorithm.value;
-    let options = null;
+    let options = {};
     // if (algorithmName === "sssp") {
     //   const graph = dataset[TestName.ANTV_WEBGPU_GRAPH];
     //   options = graph.getAllNodes()[1].id;
@@ -94,7 +107,8 @@ const $results = TestsConfig.map(({ name }) => {
           const result = await methods[algorithmName](
             dataset[name],
             options,
-            graph
+            graph,
+            forceMultiThreads
           );
           $results[i][1].innerHTML = `${(performance.now() - start).toFixed(
             2

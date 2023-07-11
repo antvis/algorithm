@@ -2,4 +2,4 @@ pub use crate::page_rank::*;
 pub use crate::sssp::*;
 pub use crate::utils::*;
 
-pub use graph_builder::prelude::*;
+pub use super::graph_builder::prelude::*;

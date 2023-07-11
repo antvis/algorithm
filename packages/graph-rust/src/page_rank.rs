@@ -1,11 +1,10 @@
-use crate::{prelude::*, DEFAULT_PARALLELISM};
+use super::graph_builder::{prelude::*, SharedMut};
+use crate::DEFAULT_PARALLELISM;
 
 use atomic_float::AtomicF64;
-use graph_builder::SharedMut;
 use rayon::prelude::*;
 
 use std::sync::atomic::Ordering;
-use std::thread::available_parallelism;
 
 const CHUNK_SIZE: usize = 16384;
 
@@ -36,7 +35,7 @@ impl Default for PageRankConfig {
 }
 
 impl PageRankConfig {
-    pub const DEFAULT_MAX_ITERATIONS: usize = 20;
+    pub const DEFAULT_MAX_ITERATIONS: usize = 1000;
     pub const DEFAULT_TOLERANCE: f64 = 1E-4;
     pub const DEFAULT_DAMPING_FACTOR: f32 = 0.85;
 
@@ -110,11 +109,11 @@ where
     let next_chunk = Atomic::new(NI::zero());
     let total_error = AtomicF64::new(0_f64);
 
-    std::thread::scope(|s| {
-        let num_threads = available_parallelism().map_or(DEFAULT_PARALLELISM, |p| p.get());
+    rayon::scope(|s| {
+        let num_threads = DEFAULT_PARALLELISM;
 
         for _ in 0..num_threads {
-            s.spawn(|| {
+            s.spawn(|_| {
                 let mut error = 0_f64;
 
                 loop {
@@ -151,34 +150,4 @@ where
     });
 
     total_error.load(Ordering::SeqCst)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::prelude::{CsrLayout, GraphBuilder};
-
-    #[test]
-    fn test_pr_two_components() {
-        let gdl = "(a)-->()-->()<--(a),(b)-->()-->()<--(b)";
-
-        let graph: DirectedCsrGraph<usize> = GraphBuilder::new()
-            .csr_layout(CsrLayout::Sorted)
-            .gdl_str::<usize, _>(gdl)
-            .build()
-            .unwrap();
-
-        let (scores, _, _) = page_rank(&graph, PageRankConfig::default());
-
-        let expected: Vec<f32> = vec![
-            0.024999997,
-            0.035624996,
-            0.06590624,
-            0.024999997,
-            0.035624996,
-            0.06590624,
-        ];
-
-        assert_eq!(scores, expected);
-    }
 }

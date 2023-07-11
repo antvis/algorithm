@@ -17,12 +17,43 @@ lto = true
 opt-level = 's'
 
 [dependencies]
+atoi = "2.0.0"
+atomic = "0.5.1"
 atomic_float = "0.1.0"
-graph_builder = "0.3.1"
+byte-slice-cast = "1.2.2"
+dashmap = "5.4.0"
+delegate = "0.8.0"
+fast-float = "0.2.0"
+fxhash = "0.2.1"
+gdl = { version = "0.2.7", optional = true}
 rayon = "1.5.1"
 serde = { optional = true }
 
-[dev-dependencies]
-graph_builder = { version = "^0.3.1", features = ["gdl"] }
+[dependencies.linereader]
+version = "0.4.0"
+
+[dependencies.log]
+version = "0.4.17"
+
+[dependencies.memmap2]
+version = "0.5.8"
+
+[dependencies.num]
+version = "0.4.0"
+
+[dependencies.num-format]
+version = "0.4.3"
+
+[dependencies.num_cpus]
+version = "1.14.0"
+
+[dependencies.page_size]
+version = "0.4.2"
+
+[dependencies.parking_lot]
+version = "0.12.1"
+
+[dependencies.thiserror]
+version = "1.0.37"
 
 

@@ -42,12 +42,7 @@
     "@babel/core": "^7.7.7",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
     "@types/d3-force": "^3.0.4",
-    "babel-loader": "^8.0.6",
-    "ts-loader": "^7.0.3",
-    "typescript": "^4.0.3",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^5.0.2",
-    "worker-loader": "^3.0.7"
+    "babel-loader": "^8.0.6"
   },
   "dependencies": {
     "@antv/util": "^2.0.13",

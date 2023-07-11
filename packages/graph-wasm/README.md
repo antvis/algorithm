@@ -5,6 +5,8 @@ A WASM binding of `@antv/graph-rust`. We used [wasm-bindgen-rayon](https://githu
 - [Use with Webpack](#webpack)
 - [Use with Vite](#vite)
 
+![pagerank](https://mdn.alipayobjects.com/huamei_qa8qxu/afts/img/A*klB7TKFwbskAAAAAAAAAAAAADmJ7AQ/original)
+
 ## Usage
 
 Since [cross origin workers are blocked](https://stackoverflow.com/questions/58098143/why-are-cross-origin-workers-blocked-and-why-is-the-workaround-ok/60015898#60015898), we do not recommand the UMD way of using it for now. You can opt to ESM usage with bundler such as [Webpack](#webpack) or [Vite](#vite).
@@ -90,9 +92,9 @@ If you can't control the server, try this hacky workaround which implemented wit
 
 ### PageRank
 
-* `tolerance` Set the tolerance the approximation, this parameter should be a small magnitude value. The lower the tolerance the better the approximation.
+* `tolerance` Set the tolerance the approximation, this parameter should be a small magnitude value. The lower the tolerance the better the approximation. The default value is 0.0001.
 * `alpha` The damping factor alpha represents the probability to follow an outgoing edge, standard value is 0.85.
-* `maxIterations` Set the maximum number of iterations.
+* `maxIterations` Set the maximum number of iterations. The default value is 1000.
 
 ### SSSP
 

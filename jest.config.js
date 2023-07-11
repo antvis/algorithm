@@ -11,11 +11,11 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   testEnvironment: "jsdom",
-  testRegex: "__tests__/.*test\\.ts?$",
+  testRegex: "__tests__/.*spec\\.ts?$",
   moduleDirectories: ["node_modules", "src", "es"],
   moduleFileExtensions: ["js", "ts", "json"],
   moduleNameMapper: {
-    "@antv/algorithm/(.*)": "<rootDir>/src/$1",
+    "@antv/graph/(.*)": "<rootDir>/src/$1",
   },
   transform: {
     // '^.+\\.[tj]sx?$' to process js/ts with `ts-jest`
