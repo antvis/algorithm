@@ -34,7 +34,8 @@
     "test-live": "npm run build:umd && DEBUG_MODE=1 jest --watch ./tests/unit/louvain-spec.ts",
     "test-live:async": "npm run build:umd && DEBUG_MODE=1 jest --watch ./tests/unit/louvain-async-spec.ts",
     "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx",
-    "cdn": "antv-bin upload -n @antv/algorithm"
+    "cdn": "antv-bin upload -n @antv/algorithm",
+    "benchmark": "node benchmarks/louvain.js"
   },
   "homepage": "https://g6.antv.vision",
   "bugs": {
@@ -54,6 +55,16 @@
     "@types/jest": "^26.0.18",
     "@umijs/fabric": "^2.5.6",
     "babel-loader": "^8.2.2",
+    "benchmark": "^2.1.4",
+    "graphology": "^0.25.1",
+    "graphology-communities-louvain": "latest",
+    "graphology-generators": "^0.11.2",
+    "graphology-types": "^0.24.7",
+    "graphology-metrics": "^2.1.0",
+    "ngraph.graph": "",
+    "ngraph.louvain": "",
+    "ngraph.coarsen": "",
+    "seedrandom": "^3.0.5",
     "father": "^2.30.0",
     "jest": "^26.6.3",
     "jest-electron": "^0.1.11",
