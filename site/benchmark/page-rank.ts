@@ -3,6 +3,7 @@ import pagerank from "graphology-metrics/centrality/pagerank";
 import { pageRank } from "../../packages/graph";
 import { WebGPUGraph } from "../../packages/graph-gpu";
 import { Threads } from "../../packages/graph-wasm";
+import { graph2Edgelist } from "./util";
 
 function format(records: { id: ID; score: number}[]) {
   return records.map(({ id, score }) => ({ id, score: score.toFixed(6) }));
@@ -73,21 +74,10 @@ export async function wasm(
   _: any,
   threads: Threads
 ): Promise<any[]> {
-  const edgelist: [number, number][] = [];
-  const nodeIdxMap: Record<ID, number> = {};
-  const idxNodeMap: Record<number, ID> = {};
-  const edges = graph.getAllEdges();
-  graph.getAllNodes().forEach((node, i) => {
-    nodeIdxMap[node.id] = i;
-    idxNodeMap[i] = node.id;
-  });
-  // convert graph to edgelist
-  edges.forEach((edge) => {
-    edgelist.push([nodeIdxMap[edge.source], nodeIdxMap[edge.target]]);
-  });
+  const { edgelist, idxNodeMap } = graph2Edgelist(graph);
   const ranks = await threads.pageRank({
     ...options,
-    edgelist
+    edgelist: edgelist as [number, number][]
   });
   const formatted = ranks.map((rank, i) => ({ id: idxNodeMap[i], score: rank }));
   return format(formatted.sort((a, b) => b.score - a.score).slice(0, 10)); // {id: 'Valjean', score: 0.1}

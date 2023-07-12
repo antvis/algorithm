@@ -7,7 +7,7 @@ import {
   webgpu as webgpuPageRank,
   wasm as wasmPageRank
 } from "./page-rank";
-import { graphology as graphologySSSP, webgpu as webgpuSSSP } from "./sssp";
+import { graphology as graphologySSSP, webgpu as webgpuSSSP, wasm as wasmSSSP } from "./sssp";
 import { initThreads } from "../../packages/graph-wasm";
 
 const TestsConfig = [
@@ -65,7 +65,7 @@ const initThreadsPool = async () => {
       name: TestName.GRAPHOLOGY,
       methods: {
         pageRank: graphologyPageRank,
-        // sssp: graphologySSSP,
+        sssp: graphologySSSP,
       },
     },
     {
@@ -86,7 +86,7 @@ const initThreadsPool = async () => {
       name: TestName.ANTV_GRAPH_WASM,
       methods: {
         pageRank: wasmPageRank,
-        // sssp: webgpuSSSP,
+        sssp: wasmSSSP,
       },
     },
   ];
@@ -95,10 +95,10 @@ const initThreadsPool = async () => {
     const dataset = datasets[$dataset.value];
     const algorithmName = $algorithm.value;
     let options = {};
-    // if (algorithmName === "sssp") {
-    //   const graph = dataset[TestName.ANTV_WEBGPU_GRAPH];
-    //   options = graph.getAllNodes()[1].id;
-    // }
+    if (algorithmName === "sssp") {
+      const graph = dataset[TestName.ANTV_ALGORITHM];
+      options = graph.getAllNodes()[1].id;
+    }
 
     await Promise.all(
       layoutConfig.map(async ({ name, methods }: any, i: number) => {
