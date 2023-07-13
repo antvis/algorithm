@@ -196,7 +196,7 @@ fn main(
   updatePredKernel.dispatch(grids, 1);
 
   const out = (await readback.readBuffer(DiOutBuffer)) as Float32Array;
-  const predecessor = await readback.readBuffer(POutBuffer);
+  const predecessor = await readback.readBuffer(POutBuffer) as Float32Array;
 
   return Array.from(out).map((distance, i) => ({
     target: graphData.getAllNodes()[V[i]].id,

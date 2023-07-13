@@ -3,9 +3,13 @@ import { loadDatasets } from "../datasets";
 import { TestName } from "../types";
 import {
   graphology as graphologyPageRank,
+  antv as antvPageRank,
   webgpu as webgpuPageRank,
+  wasm as wasmPageRank
 } from "./page-rank";
-import { graphology as graphologySSSP, webgpu as webgpuSSSP } from "./sssp";
+import { graphology as graphologySSSP, antv as antvSSSP, webgpu as webgpuSSSP, wasm as wasmSSSP } from "./sssp";
+import { graphology as graphologyLouvain, antv as antvLouvain, wasm as wasmLouvain } from "./louvain";
+import { initThreads } from "../../packages/graph-wasm";
 
 const TestsConfig = [
   {
@@ -15,10 +19,10 @@ const TestsConfig = [
     name: TestName.ANTV_ALGORITHM,
   },
   {
-    name: TestName.ANTV_WEBGPU_GRAPH,
+    name: TestName.ANTV_GRAPH_GPU,
   },
   {
-    name: TestName.ANTV_WEBGPU_GRAPH,
+    name: TestName.ANTV_GRAPH_WASM,
   },
 ];
 
@@ -30,6 +34,13 @@ const $results = TestsConfig.map(({ name }) => {
   const $div = document.getElementById(name) as HTMLDivElement;
   return [$div.querySelector(".console")!, $div.querySelector(".time")!];
 });
+
+const initThreadsPool = async () => {
+  const singleThread = await initThreads(false);
+  const multiThreads = await initThreads(true);
+
+  return [singleThread, multiThreads];
+};
 
 (async () => {
   $run.innerHTML = "Loading...";
@@ -44,7 +55,10 @@ const $results = TestsConfig.map(({ name }) => {
   // initialize WebGPU context
   const graph = new WebGPUGraph();
 
-  $run.innerHTML = "Run layouts";
+  console.time("Init WASM threads");
+  const [forceSingleThread, forceMultiThreads] = await initThreadsPool();
+  console.timeEnd("Init WASM threads");
+  $run.innerHTML = 'Run layouts';
   $run.disabled = false;
 
   const layoutConfig: any = [
@@ -53,59 +67,61 @@ const $results = TestsConfig.map(({ name }) => {
       methods: {
         pageRank: graphologyPageRank,
         sssp: graphologySSSP,
+        louvain: graphologyLouvain,
       },
     },
     {
       name: TestName.ANTV_ALGORITHM,
       methods: {
-        // pageRank: graphologyForceatlas2,
-        // sssp: graphologyFruchterman,
+        pageRank: antvPageRank,
+        sssp: antvSSSP,
+        louvain: antvLouvain,
       },
     },
     {
-      name: TestName.ANTV_WEBGPU_GRAPH,
+      name: TestName.ANTV_GRAPH_GPU,
       methods: {
-        pageRank: webgpuPageRank,
+        // pageRank: webgpuPageRank,
         sssp: webgpuSSSP,
       },
     },
     {
       name: TestName.ANTV_GRAPH_WASM,
       methods: {
-        // pageRank: webgpuPageRank,
-        // sssp: webgpuSSSP,
+        pageRank: wasmPageRank,
+        sssp: wasmSSSP,
+        louvain: wasmLouvain,
       },
     },
   ];
 
-  $run.onclick = async () => {
+  $run.onclick = () => {
     const dataset = datasets[$dataset.value];
     const algorithmName = $algorithm.value;
-    let options = null;
+    let options = {};
     if (algorithmName === "sssp") {
-      const graph = dataset[TestName.ANTV_WEBGPU_GRAPH];
+      const graph = dataset[TestName.ANTV_ALGORITHM];
       options = graph.getAllNodes()[1].id;
     }
 
-    await Promise.all(
-      layoutConfig.map(async ({ name, methods }: any, i: number) => {
-        if (methods[algorithmName]) {
-          const start = performance.now();
-          const result = await methods[algorithmName](
-            dataset[name],
-            options,
-            graph
-          );
-          $results[i][1].innerHTML = `${(performance.now() - start).toFixed(
-            2
-          )}ms`;
+    layoutConfig.map(async ({ name, methods }: any, i: number) => {
+      if (methods[algorithmName]) {
+        const start = performance.now();
+        const result = await methods[algorithmName](
+          dataset[name],
+          options,
+          graph,
+          forceMultiThreads
+        );
+        $results[i][1].innerHTML = `${(performance.now() - start).toFixed(
+          2
+        )}ms`;
 
-          $results[i][0].innerHTML = JSON.stringify(result);
-        } else {
-          $results[i][0].innerHTML = "";
-          $results[i][1].innerHTML = "-";
-        }
-      })
-    );
+        $results[i][0].innerHTML = JSON.stringify(result);
+      } else {
+        $results[i][0].innerHTML = "";
+        $results[i][1].innerHTML = "-";
+      }
+    })
   };
 })();

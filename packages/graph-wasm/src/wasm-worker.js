@@ -1,42 +1,65 @@
-import * as Comlink from "comlink";
+import * as Comlink from 'comlink';
 
-const DEFAULT_PAGE_RANK_OPTIONS = {
-  max_iterations: 10,
-  tolerance: 0.0001,
-  damping_factor: 0.85,
+const wrapTransferPageRank = pageRank => {
+  return options => {
+    const params = {
+      max_iterations: options.maxIterations || 1000,
+      tolerance: options.tolerance || 0.0001,
+      damping_factor: options.alpha || 0.85,
+      edgelist: options.edgelist
+    };
+
+    const ranks = pageRank(params);
+
+    return Comlink.transfer(ranks, []);
+  };
 };
 
-const wrapTransfer = (page_rank) => {
-  return (options) => {
-    const ranks = page_rank({
-      ...DEFAULT_PAGE_RANK_OPTIONS,
-      ...options,
-    });
-
-    return {
-      // Little perf boost to transfer data to the main thread w/o copying.
-      ranks: Comlink.transfer(ranks, [ranks]),
+const wrapTransferSSSP = sssp => {
+  return options => {
+    const params = {
+      start_node: options.startNode || 0,
+      delta: options.delta || 1,
+      edgelist: options.edgelist
     };
+
+    const ranks = sssp(params);
+
+    return Comlink.transfer(ranks, []);
+  };
+};
+
+const wrapTransferLouvain = louvain => {
+  return options => {
+    const params = {
+      edgelist: options.edgelist
+    };
+
+    const ranks = louvain(params);
+
+    return Comlink.transfer(ranks, []);
   };
 };
 
 // Wrap wasm-bindgen exports (the `generate` function) to add time measurement.
-function wrapExports({ page_rank }) {
+function wrapExports({ pageRank, sssp, louvain }) {
   return {
-    page_rank: wrapTransfer(page_rank),
+    pageRank: wrapTransferPageRank(pageRank),
+    sssp: wrapTransferSSSP(sssp),
+    louvain: wrapTransferLouvain(louvain)
   };
 }
 
 async function initHandlers(useMultiThread) {
   if (useMultiThread) {
     // @ts-ignore
-    const multiThread = await import("../pkg-parallel/antv_graph_wasm.js");
+    const multiThread = await import('../pkg-parallel/antv_graph_wasm.js');
     await multiThread.default();
     await multiThread.initThreadPool(navigator.hardwareConcurrency);
     return Comlink.proxy(wrapExports(multiThread));
   } else {
     // @ts-ignore
-    const singleThread = await import("../pkg/antv_graph_wasm.js");
+    const singleThread = await import('../pkg/antv_graph_wasm.js');
     await singleThread.default();
     return Comlink.proxy(wrapExports(singleThread));
   }

@@ -1,3 +1,28 @@
+export interface PageRankParams {
+  maxIterations?: number;
+  alpha?: number;
+  tolerance?: number;
+  /**
+   * [source, target]
+   */
+  edgelist: [number, number][];
+}
+
+export interface SSSPParams {
+  startNode?: number;
+  delta?: number;
+  /**
+   * [source, target, weight]
+   */
+  edgelist: [number, number, number][];
+}
+
+export interface LouvainParams {
+  edgelist: [number, number, number][];
+}
+
 export interface Threads {
-  page_rank: (options: any) => Promise<{ ranks: number[] }>;
+  pageRank: (options: PageRankParams) => Promise<number[]>;
+  sssp: (options: SSSPParams) => Promise<number[]>;
+  louvain: (options: LouvainParams) => Promise<number[]>;
 }

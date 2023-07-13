@@ -1,0 +1,31 @@
+name: CI
+
+on: ["push", "pull_request"]
+
+jobs:
+  ci:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [15]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: lint
+        run: |
+          pnpm lint
+      - name: build
+        run: |
+          pnpm build:ci
+      - name: test
+        run: |
+          pnpm test

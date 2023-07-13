@@ -1,6 +1,8 @@
-use graph::prelude::*;
+use std::sync::atomic::Ordering;
+use antv_graph::prelude::*;
 use js_sys::Array;
 use wasm_bindgen::prelude::*;
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "parallel")]
 pub use wasm_bindgen_rayon::init_thread_pool;
@@ -14,35 +16,23 @@ pub fn start() {
     console_error_panic_hook::set_once();
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct PageRankParams {
+    pub max_iterations: usize,
+    pub tolerance: f64,
+    pub damping_factor: f32,
+    pub edgelist: Vec<(usize, usize)>,
+}
+
 #[wasm_bindgen(js_name = "pageRank")]
 pub fn page_rank(val: JsValue) -> Array {
-    let options: PageRankConfig = serde_wasm_bindgen::from_value(val).unwrap();
+    let options: PageRankParams = serde_wasm_bindgen::from_value(val).unwrap();
 
     let graph: DirectedCsrGraph<usize> = GraphBuilder::new()
-        .edges(vec![
-            (1, 2),  // B->C
-            (2, 1),  // C->B
-            (4, 0),  // D->A
-            (4, 1),  // D->B
-            (5, 4),  // E->D
-            (5, 1),  // E->B
-            (5, 6),  // E->F
-            (6, 1),  // F->B
-            (6, 5),  // F->E
-            (7, 1),  // G->B
-            (7, 5),  // F->E
-            (8, 1),  // G->B
-            (8, 5),  // G->E
-            (9, 1),  // H->B
-            (9, 5),  // H->E
-            (10, 1), // I->B
-            (10, 5), // I->E
-            (11, 5), // J->B
-            (12, 5), // K->B
-        ])
+        .edges(options.edgelist)
         .build();
 
-    let (ranks, iterations, _) = graph::prelude::page_rank(
+    let (ranks, _, _) = antv_graph::prelude::page_rank(
         &graph,
         PageRankConfig::new(
             options.max_iterations,
@@ -53,4 +43,38 @@ pub fn page_rank(val: JsValue) -> Array {
 
     // @see https://stackoverflow.com/a/58996628
     ranks.into_iter().map(JsValue::from).collect()
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SSSPParams {
+    pub start_node: usize,
+    pub delta: f32,
+    pub edgelist: Vec<(usize, usize, f32)>,
+}
+
+#[wasm_bindgen(js_name = "sssp")]
+pub fn sssp(val: JsValue) -> Array {
+    let options: SSSPParams = serde_wasm_bindgen::from_value(val).unwrap();
+
+    let graph: DirectedCsrGraph<usize, (), f32> = GraphBuilder::new().edges_with_values(options.edgelist).build();
+    let config = DeltaSteppingConfig::new(options.start_node, options.delta);
+    let result: Vec<f32> = antv_graph::prelude::delta_stepping(&graph, config).into_iter()
+        .map(|d| d.load(Ordering::Relaxed))
+        .collect();
+    result.into_iter().map(JsValue::from).collect()
+}
+
+
+#[derive(Serialize, Deserialize)]
+pub struct LouvainParams {
+    pub edgelist: Vec<(usize, usize, f32)>,
+}
+#[wasm_bindgen(js_name = "louvain")]
+pub fn louvain(val: JsValue) -> Array {
+    let options: LouvainParams = serde_wasm_bindgen::from_value(val).unwrap();
+    let graph: DirectedCsrGraph<usize, (), f32> = GraphBuilder::new().edges_with_values(options.edgelist).build();
+
+    let mut modularity = Modularity::new(1.0, 1);
+    let results = modularity.execute(& graph);
+    vec![results.0, results.1].into_iter().map(JsValue::from).collect()
 }

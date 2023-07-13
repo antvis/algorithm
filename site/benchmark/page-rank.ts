@@ -1,5 +1,13 @@
+import { Graph, ID } from "@antv/graphlib";
 import pagerank from "graphology-metrics/centrality/pagerank";
-import { WebGPUGraph } from "../../packages/graph-gpu/src";
+import { pageRank } from "../../packages/graph";
+import { WebGPUGraph } from "../../packages/graph-gpu";
+import { Threads } from "../../packages/graph-wasm";
+import { graph2Edgelist } from "./util";
+
+function format(records: { id: ID; score: number}[]) {
+  return records.map(({ id, score }) => ({ id, score: score.toFixed(6) }));
+}
 
 interface Options {
   alpha: number;
@@ -25,24 +33,52 @@ export async function graphology(graph: any, options: Partial<Options>) {
     score: result[key],
   }));
 
-  return r.sort((a, b) => b.score - a.score).slice(0, 10); // {id: 'Valjean', score: 0.1}
+  return format(r.sort((a, b) => b.score - a.score).slice(0, 10)); // {id: 'Valjean', score: 0.1}
+}
+
+export async function antv(
+  graph: Graph<any, any>,
+  options: Partial<Options>,) {
+  const result = pageRank(graph, {
+    ...DEFAULT_OPTIONS,
+    ...options,
+  });
+
+  const r = Object.keys(result).map((key) => ({
+    id: key,
+    score: result[key],
+  }));
+
+  return format(r.sort((a, b) => b.score - a.score).slice(0, 10)); // {id: 'Valjean', score: 0.1}
 }
 
 export async function webgpu(
-  graph: any,
+  graph: Graph<any, any>,
   options: Partial<Options>,
   webgpuGraph: WebGPUGraph
 ) {
-  const { alpha, tolerance, maxIterations } = {
-    ...DEFAULT_OPTIONS,
-    ...options,
-  };
   const result = await webgpuGraph.pageRank(
     graph,
-    tolerance,
-    alpha,
-    maxIterations
+    {
+      ...DEFAULT_OPTIONS,
+      ...options,
+    }
   );
 
-  return result.slice(0, 10); // {id: 'Valjean', score: 0.1}
+  return format(result.slice(0, 10)); // {id: 'Valjean', score: 0.1}
+}
+
+export async function wasm(
+  graph: Graph<any, any>,
+  options: Partial<Options>,
+  _: any,
+  threads: Threads
+): Promise<any[]> {
+  const { edgelist, idxNodeMap } = graph2Edgelist(graph);
+  const ranks = await threads.pageRank({
+    ...options,
+    edgelist: edgelist as [number, number][]
+  });
+  const formatted = ranks.map((rank, i) => ({ id: idxNodeMap[i], score: rank }));
+  return format(formatted.sort((a, b) => b.score - a.score).slice(0, 10)); // {id: 'Valjean', score: 0.1}
 }

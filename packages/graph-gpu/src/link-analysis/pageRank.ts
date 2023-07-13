@@ -1,9 +1,15 @@
-import { DeviceRenderer } from '@antv/g-webgpu';
-import { Kernel } from '@antv/g-plugin-gpgpu';
-import { convertGraphData2CSC } from '../util';
-import { Graph } from '../types';
+import { DeviceRenderer } from "@antv/g-webgpu";
+import { Kernel } from "@antv/g-plugin-gpgpu";
+import { convertGraphData2CSC } from "../util";
+import { Graph } from "../types";
 
 const { BufferUsage } = DeviceRenderer;
+
+export interface PageRankParams {
+  alpha: number;
+  maxIterations: number;
+  tolerance: number;
+}
 
 /**
  * Pagerank using power method, ported from CUDA
@@ -18,10 +24,14 @@ const { BufferUsage } = DeviceRenderer;
 export async function pageRank(
   device: DeviceRenderer.Device,
   graphData: Graph,
-  eps = 1e-5,
-  alpha = 0.85,
-  maxIteration = 1000,
+  params?: PageRankParams
 ) {
+  let {
+    tolerance = 1e-5,
+    alpha = 0.85,
+    maxIterations = 1000
+  } = params || {};
+
   const BLOCK_SIZE = 1;
   const BLOCKS = 256;
 
@@ -145,14 +155,14 @@ fn main(
 
   const grids = Math.ceil(V.length / (BLOCKS * BLOCK_SIZE));
 
-  while (maxIteration--) {
+  while (maxIterations--) {
     storeKernel.dispatch(grids, 1);
     matmulKernel.dispatch(grids, 1);
     rankDiffKernel.dispatch(grids, 1);
 
     const last = (await readback.readBuffer(rLastBuffer)) as Float32Array;
     const result = last.reduce((prev, cur) => prev + cur, 0);
-    if (result < eps) {
+    if (result < tolerance) {
       break;
     }
   }
