@@ -17,7 +17,12 @@ export interface SSSPParams {
   edgelist: [number, number, number][];
 }
 
+export interface LouvainParams {
+  edgelist: [number, number, number][];
+}
+
 export interface Threads {
   pageRank: (options: PageRankParams) => Promise<number[]>;
-  sssp: (options: SSSPParams) => Promise<{ ranks: number[] }>;
+  sssp: (options: SSSPParams) => Promise<number[]>;
+  louvain: (options: LouvainParams) => Promise<number[]>;
 }

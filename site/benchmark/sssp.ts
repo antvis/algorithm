@@ -6,11 +6,20 @@ import { Threads } from "../../packages/graph-wasm";
 import { graph2Edgelist } from "./util";
 
 export async function graphology(graph: any, source: string) {
-  return dijkstra.singleSource(graph, source, "weight");
+  const result = dijkstra.singleSource(graph, source, "weight");
+  return Object.keys(result).map((key) => ({ key, path: result[key] }))
+    .filter(({ path }) => path.length > 0)
+    .slice(0, 3);
 }
 
 export async function antv(graph: Graph<any, any>, source: string) {
-  // findShortestPath(graph, source)
+  const nodes = graph.getAllNodes();
+  const paths: any[] = [];
+  nodes.forEach((node) => {
+    const p = findShortestPath(graph, source, node.id);
+    paths.push(p);
+  });
+  return paths.slice(0, 3);
 }
 
 export async function webgpu(
@@ -20,7 +29,7 @@ export async function webgpu(
 ) {
   const result = await webgpuGraph.sssp(graph, source, "weight");
 
-  return result.filter((r) => r.distance !== 1000000);
+  return result.filter((r) => r.distance !== 1000000).slice(0, 3);
 }
 
 export async function wasm(
@@ -34,7 +43,5 @@ export async function wasm(
     startNode: nodeIdxMap[source],
     edgelist: edgelist as [number, number, number][],
   });
-  console.log(paths);
-  // const formatted = ranks.map((rank, i) => ({ id: idxNodeMap[i], score: rank }));
-  // return format(formatted.sort((a, b) => b.score - a.score).slice(0, 10)); // {id: 'Valjean', score: 0.1}
+  return paths.slice(0, 3);
 }

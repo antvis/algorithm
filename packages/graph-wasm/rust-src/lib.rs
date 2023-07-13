@@ -63,3 +63,18 @@ pub fn sssp(val: JsValue) -> Array {
         .collect();
     result.into_iter().map(JsValue::from).collect()
 }
+
+
+#[derive(Serialize, Deserialize)]
+pub struct LouvainParams {
+    pub edgelist: Vec<(usize, usize, f32)>,
+}
+#[wasm_bindgen(js_name = "louvain")]
+pub fn louvain(val: JsValue) -> Array {
+    let options: LouvainParams = serde_wasm_bindgen::from_value(val).unwrap();
+    let graph: DirectedCsrGraph<usize, (), f32> = GraphBuilder::new().edges_with_values(options.edgelist).build();
+
+    let mut modularity = Modularity::new(1.0, 1);
+    let results = modularity.execute(& graph);
+    vec![results.0, results.1].into_iter().map(JsValue::from).collect()
+}

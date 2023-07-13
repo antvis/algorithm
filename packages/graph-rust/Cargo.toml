@@ -28,6 +28,7 @@ fxhash = "0.2.1"
 gdl = { version = "0.2.7", optional = true}
 rayon = "1.5.1"
 serde = { optional = true }
+slotmap = {version = "0.4"}
 
 [dependencies.linereader]
 version = "0.4.0"

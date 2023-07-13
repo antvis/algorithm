@@ -24,6 +24,7 @@ dependencies = [
  "parking_lot",
  "rayon",
  "serde",
+ "slotmap",
  "thiserror",
 ]
 
@@ -551,6 +552,12 @@ dependencies = [
  "ryu",
  "serde",
 ]
+
+[[package]]
+name = "slotmap"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6bf34684c5767b87de9119790e92e9a1d60056be2ceeaf16a8e6ef13082aeab1"
 
 [[package]]
 name = "smallvec"

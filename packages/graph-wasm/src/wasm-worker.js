@@ -19,7 +19,7 @@ const wrapTransferSSSP = sssp => {
   return options => {
     const params = {
       start_node: options.startNode || 0,
-      delta: options.delta || 3,
+      delta: options.delta || 1,
       edgelist: options.edgelist
     };
 
@@ -29,11 +29,24 @@ const wrapTransferSSSP = sssp => {
   };
 };
 
+const wrapTransferLouvain = louvain => {
+  return options => {
+    const params = {
+      edgelist: options.edgelist
+    };
+
+    const ranks = louvain(params);
+
+    return Comlink.transfer(ranks, []);
+  };
+};
+
 // Wrap wasm-bindgen exports (the `generate` function) to add time measurement.
-function wrapExports({ pageRank, sssp }) {
+function wrapExports({ pageRank, sssp, louvain }) {
   return {
     pageRank: wrapTransferPageRank(pageRank),
     sssp: wrapTransferSSSP(sssp),
+    louvain: wrapTransferLouvain(louvain)
   };
 }
 

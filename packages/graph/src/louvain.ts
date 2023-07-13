@@ -257,7 +257,7 @@ export function louvain(
         propertiesWeightRemove[index] = allPropertiesWeight[nodeRemove.data.originIndex as number];
       });
       // the inertialModularity for **removing** the node i from the origin cluster of node i
-      const removeInertialModularity = getInertialModularity(selfClusterNodesAfterRemove, allPropertiesWeight) * inertialWeight;
+      const removeInertialModularity = inertialModularity ? getInertialModularity(selfClusterNodesAfterRemove, allPropertiesWeight) * inertialWeight : 0;
 
       // the neightbors of the node
       const nodeNeighborIds = neighbors[node.id];
@@ -289,7 +289,7 @@ export function louvain(
           propertiesWeightAdd[index] = allPropertiesWeight[nodeAdd.data.originIndex as number];
         });
         // the inertialModularity for **adding** node i into this neighbor cluster
-        const addInertialModularity = getInertialModularity(clusterNodesAfterAdd, allPropertiesWeight) * inertialWeight;
+        const addInertialModularity = inertialModularity ? getInertialModularity(clusterNodesAfterAdd, allPropertiesWeight) * inertialWeight : 0;
 
         // the increase modurarity is the difference between addModurarity and removeModurarity
         let increase = addModurarity - removeModurarity;

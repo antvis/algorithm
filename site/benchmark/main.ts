@@ -7,7 +7,8 @@ import {
   webgpu as webgpuPageRank,
   wasm as wasmPageRank
 } from "./page-rank";
-import { graphology as graphologySSSP, webgpu as webgpuSSSP, wasm as wasmSSSP } from "./sssp";
+import { graphology as graphologySSSP, antv as antvSSSP, webgpu as webgpuSSSP, wasm as wasmSSSP } from "./sssp";
+import { graphology as graphologyLouvain, antv as antvLouvain, wasm as wasmLouvain } from "./louvain";
 import { initThreads } from "../../packages/graph-wasm";
 
 const TestsConfig = [
@@ -66,20 +67,22 @@ const initThreadsPool = async () => {
       methods: {
         pageRank: graphologyPageRank,
         sssp: graphologySSSP,
+        louvain: graphologyLouvain,
       },
     },
     {
       name: TestName.ANTV_ALGORITHM,
       methods: {
         pageRank: antvPageRank,
-        // sssp: graphologyFruchterman,
+        sssp: antvSSSP,
+        louvain: antvLouvain,
       },
     },
     {
       name: TestName.ANTV_GRAPH_GPU,
       methods: {
         // pageRank: webgpuPageRank,
-        // sssp: webgpuSSSP,
+        sssp: webgpuSSSP,
       },
     },
     {
@@ -87,11 +90,12 @@ const initThreadsPool = async () => {
       methods: {
         pageRank: wasmPageRank,
         sssp: wasmSSSP,
+        louvain: wasmLouvain,
       },
     },
   ];
 
-  $run.onclick = async () => {
+  $run.onclick = () => {
     const dataset = datasets[$dataset.value];
     const algorithmName = $algorithm.value;
     let options = {};
@@ -100,26 +104,24 @@ const initThreadsPool = async () => {
       options = graph.getAllNodes()[1].id;
     }
 
-    await Promise.all(
-      layoutConfig.map(async ({ name, methods }: any, i: number) => {
-        if (methods[algorithmName]) {
-          const start = performance.now();
-          const result = await methods[algorithmName](
-            dataset[name],
-            options,
-            graph,
-            forceMultiThreads
-          );
-          $results[i][1].innerHTML = `${(performance.now() - start).toFixed(
-            2
-          )}ms`;
+    layoutConfig.map(async ({ name, methods }: any, i: number) => {
+      if (methods[algorithmName]) {
+        const start = performance.now();
+        const result = await methods[algorithmName](
+          dataset[name],
+          options,
+          graph,
+          forceMultiThreads
+        );
+        $results[i][1].innerHTML = `${(performance.now() - start).toFixed(
+          2
+        )}ms`;
 
-          $results[i][0].innerHTML = JSON.stringify(result);
-        } else {
-          $results[i][0].innerHTML = "";
-          $results[i][1].innerHTML = "-";
-        }
-      })
-    );
+        $results[i][0].innerHTML = JSON.stringify(result);
+      } else {
+        $results[i][0].innerHTML = "";
+        $results[i][1].innerHTML = "-";
+      }
+    })
   };
 })();
