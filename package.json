@@ -15,5 +15,6 @@
   },
   "devDependencies": {
     "lerna": "^3.20.2"
-  }
+  },
+  "repository": "https://github.com/antvis/algorithm.git"
 }
