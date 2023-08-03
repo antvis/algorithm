@@ -1,5 +1,5 @@
-import { IAlgorithmCallbacks, GraphData } from './types'
-import { getNeighbors } from './util'
+import { IAlgorithmCallbacks, GraphData } from './types';
+import { getNeighbors } from './util';
 
 function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks) {
   const initiatedCallback = callbacks;
@@ -35,15 +35,16 @@ function depthFirstSearchRecursive(
   currentNode: string,
   previousNode: string,
   callbacks: IAlgorithmCallbacks,
+  directed: boolean = true,
 ) {
   callbacks.enter({
     current: currentNode,
     previous: previousNode,
   });
 
-  const { edges = [] } = graphData
+  const { edges = [] } = graphData;
 
-  getNeighbors(currentNode, edges, 'target').forEach((nextNode) => {
+  getNeighbors(currentNode, edges, directed ? 'target' : undefined).forEach((nextNode) => {
     if (
       callbacks.allowTraversal({
         previous: previousNode,
@@ -51,7 +52,7 @@ function depthFirstSearchRecursive(
         next: nextNode,
       })
     ) {
-      depthFirstSearchRecursive(graphData, nextNode, currentNode, callbacks);
+      depthFirstSearchRecursive(graphData, nextNode, currentNode, callbacks, directed);
     }
   });
 
@@ -71,6 +72,7 @@ export default function depthFirstSearch(
   graphData: GraphData,
   startNodeId: string,
   callbacks?: IAlgorithmCallbacks,
+  directed: boolean = true,
 ) {
-  depthFirstSearchRecursive(graphData, startNodeId, '', initCallbacks(callbacks));
+  depthFirstSearchRecursive(graphData, startNodeId, '', initCallbacks(callbacks), directed);
 }
