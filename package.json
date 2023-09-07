@@ -37,7 +37,6 @@
   },
   "devDependencies": {
     "@antv/graphlib": "^2.0.0",
-    "@antv/util": "^2.0.13",
     "@changesets/cli": "^2.26.1",
     "@types/jest": "latest",
     "benchmark": "^2.1.4",
