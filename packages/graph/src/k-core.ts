@@ -1,5 +1,11 @@
 import { Graph } from "./types";
 
+/**
+Finds the k-core of a given graph.
+@param graph - The input graph.
+@param k - The minimum degree required for a node to be considered part of the k-core. Default is 1.
+@returns An object containing the nodes and edges of the k-core.
+*/
 export function kCore(
     graph: Graph,
     k: number = 1,) {
