@@ -4,9 +4,7 @@ function getAdjMatrix(graph: Graph, directed: boolean) {
   const nodes = graph.getAllNodes();
   const matrix: Matrix[] = [];
   // map node with index in data.nodes
-  const nodeMap: {
-    [key: string]: number;
-  } = {};
+  const nodeMap = new Map<string | number, number>();
 
   if (!nodes) {
     throw new Error("invalid nodes data!");
@@ -14,7 +12,7 @@ function getAdjMatrix(graph: Graph, directed: boolean) {
 
   if (nodes) {
     nodes.forEach((node, i) => {
-      nodeMap[node.id] = i;
+      nodeMap.set(node.id, i);
       const row: number[] = [];
       matrix.push(row);
     });
@@ -24,8 +22,8 @@ function getAdjMatrix(graph: Graph, directed: boolean) {
   if (edges) {
     edges.forEach((edge) => {
       const { source, target } = edge;
-      const sIndex = nodeMap[source as string];
-      const tIndex = nodeMap[target as string];
+      const sIndex = nodeMap.get(source);
+      const tIndex = nodeMap.get(target);
       if ((!sIndex && sIndex !== 0) || (!tIndex && tIndex !== 0)) return;
       matrix[sIndex][tIndex] = 1;
       if (!directed) {
