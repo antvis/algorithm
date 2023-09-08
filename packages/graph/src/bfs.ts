@@ -8,7 +8,7 @@ import { Graph, IAlgorithmCallbacks, NodeID } from './types';
     - enterNode: Called when BFS visits a node.
     - leaveNode: Called after BFS visits the node.
 */
-function initCallbacks(startNodeId: NodeID, callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks) {
+function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks) {
   const initiatedCallback = callbacks;
   const stubCallback = () => { };
   const allowTraversalCallback = () => true;
@@ -30,7 +30,7 @@ const breadthFirstSearch = (
   originalCallbacks?: IAlgorithmCallbacks,
 ) => {
   const visit = new Set<NodeID>();
-  const callbacks = initCallbacks(startNodeId, originalCallbacks);
+  const callbacks = initCallbacks(originalCallbacks);
   const nodeQueue = new Queue();
   // init Queue. Enqueue node ID.
   nodeQueue.enqueue(startNodeId);
