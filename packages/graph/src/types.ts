@@ -2,7 +2,7 @@ import { Edge, Graph as IGraph, Node, PlainObject } from "@antv/graphlib";
 
 // 数据集中属性/特征值分布的map
 export interface KeyValueMap {
-  [key:string]: any[];
+  [key: string]: any[];
 }
 
 export interface NodeData extends PlainObject {
@@ -31,3 +31,10 @@ export interface ClusterMap {
 export type Graph = IGraph<NodeData, EdgeData>;
 
 export type Matrix = number[];
+export interface IAlgorithmCallbacks {
+  enter?: (param: { current: NodeID; previous: NodeID }) => void;
+  leave?: (param: { current: NodeID; previous?: NodeID }) => void;
+  allowTraversal?: (param: { previous?: NodeID; current?: NodeID; next: NodeID }) => boolean;
+}
+
+export type NodeID = string | number;
