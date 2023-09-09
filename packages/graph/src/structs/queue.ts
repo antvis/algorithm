@@ -1,21 +1,18 @@
 import LinkedList from './linked-list';
 
-export default class Queue {
-  public linkedList: LinkedList;
+export default class Queue<T> {
+  public linkedList: LinkedList<T>;
 
   constructor() {
-    this.linkedList = new LinkedList();
+    this.linkedList = new LinkedList<T>();
   }
 
-  /**
-   * 队列是否为空
-   */
   public isEmpty() {
     return !this.linkedList.head;
   }
 
   /**
-   * 读取队列头部的元素， 不删除队列中的元素
+   * get the first element without dequeue
    */
   public peek() {
     if (!this.linkedList.head) {
@@ -25,15 +22,15 @@ export default class Queue {
   }
 
   /**
-   * 在队列的尾部新增一个元素
+   * enqueue an element at the tail
    * @param value
    */
-  public enqueue(value) {
+  public enqueue(value: T) {
     this.linkedList.append(value);
   }
 
   /**
-   * 删除队列中的头部元素，如果队列为空，则返回 null
+   * Dequeue the first element. If the queue is empty, return null.
    */
   public dequeue() {
     const removeHead = this.linkedList.deleteHead();

@@ -31,7 +31,7 @@ const breadthFirstSearch = (
 ) => {
   const visit = new Set<NodeID>();
   const callbacks = initCallbacks(originalCallbacks);
-  const nodeQueue = new Queue();
+  const nodeQueue = new Queue<NodeID>();
   // init Queue. Enqueue node ID.
   nodeQueue.enqueue(startNodeId);
   visit.add(startNodeId);

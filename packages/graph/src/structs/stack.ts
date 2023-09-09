@@ -1,8 +1,7 @@
 import LinkedList from './linked-list';
+export default class Stack<T> {
 
-export default class Stack {
-
-  private linkedList: LinkedList;
+  private linkedList: LinkedList<T>;
 
   private maxStep: number;
 
@@ -16,32 +15,30 @@ export default class Stack {
   }
 
   /**
-   * 判断栈是否为空，如果链表中没有头部元素，则栈为空
+   * Determine whether the stack is empty, if there is no header element in the linked list, the stack is empty
    */
   isEmpty() {
     return !this.linkedList.head;
   }
 
   /**
-   * 是否到定义的栈的最大长度，如果达到最大长度后，不再允许入栈
+   * Whether to the maximum length of the defined stack, if the maximum length is reached, the stack is no longer allowed to enter the stack
    */
   isMaxStack() {
     return this.toArray().length >= this.maxStep;
   }
 
   /**
-   * 访问顶端元素
+   * Access the top element
    */
   peek() {
     if (this.isEmpty()) {
       return null;
     }
-
-    // 返回头部元素，不删除元素
     return this.linkedList.head.value;
   }
 
-  push(value) {
+  push(value: T) {
     this.linkedList.prepend(value);
     if (this.length > this.maxStep) {
       this.linkedList.deleteTail();

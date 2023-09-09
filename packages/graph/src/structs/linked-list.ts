@@ -1,47 +1,46 @@
-const defaultComparator = (a, b) => {
-  if (a === b) {
-    return true;
-  }
-
-  return false;
-};
 
 /**
- * 链表中单个元素节点
+ * ListNode in LinkedList
  */
-export class LinkedListNode {
-  public value;
+export class LinkedListNode<T> {
+  public value: T;
 
-  public next: LinkedListNode;
+  public next: LinkedListNode<T>;
 
-  constructor(value, next: LinkedListNode = null) {
+  constructor(value: T, next: LinkedListNode<T> = null) {
     this.value = value;
     this.next = next;
   }
 
-  toString(callback?: any) {
+  toString(callback?: Function) {
     return callback ? callback(this.value) : `${this.value}`;
   }
 }
 
-export default class LinkedList {
-  public head: LinkedListNode;
+export default class LinkedList<T> {
+  public head: LinkedListNode<T>;
 
-  public tail: LinkedListNode;
+  public tail: LinkedListNode<T>;
 
   public compare: Function;
+  defaultComparator = (a: T, b: T) => {
+    if (a === b) {
+      return true;
+    }
+    return false;
+  };
 
-  constructor(comparator = defaultComparator) {
+  constructor(comparator?: Function) {
     this.head = null;
     this.tail = null;
-    this.compare = comparator;
+    this.compare = comparator || this.defaultComparator;
   }
 
   /**
-   * 将指定元素添加到链表头部
-   * @param value
+   * Adds the specified element to the header of the linked list
+   * @param value The element
    */
-  prepend(value) {
+  prepend(value: T) {
     // 在头部添加一个节点
     const newNode = new LinkedListNode(value, this.head);
     this.head = newNode;
@@ -54,10 +53,10 @@ export default class LinkedList {
   }
 
   /**
-   * 将指定元素添加到链表中
-   * @param value
+   * Adds the specified element to the linked list
+   * @param value The element
    */
-  append(value) {
+  append(value: T) {
     const newNode = new LinkedListNode(value);
 
     // 如果不存在头节点，则将创建的新节点作为头节点
@@ -76,10 +75,10 @@ export default class LinkedList {
   }
 
   /**
-   * 删除指定元素
-   * @param value 要删除的元素
+   * Delete the specified element
+   * @param value The element
    */
-  delete(value): LinkedListNode {
+  delete(value: T): LinkedListNode<T> {
     if (!this.head) {
       return null;
     }
@@ -115,27 +114,25 @@ export default class LinkedList {
   }
 
   /**
-   * 查找指定的元素
-   * @param param0
-   */
-  find({ value = undefined, callback = undefined }): LinkedListNode {
+   * Finds the first occurrence of a node in the linked list that matches the specified value or satisfies the callback function.
+  @param value - The value to search for in the linked list.
+  @param callback - An optional callback function to determine if a node matches the search criteria.
+  Copy.The callback should accept a value from a node as its argument and return a boolean indicating a match.
+  @returns The first LinkedListNode<T> that matches the search criteria, or null if no match is found.
+  */
+  find({ value = undefined, callback = undefined }: { value: T, callback: Function }): LinkedListNode<T> {
     if (!this.head) {
       return null;
     }
-
     let currentNode = this.head;
-
     while (currentNode) {
-      // 如果指定了 callback，则按指定的 callback 查找
+      //find by callback first
       if (callback && callback(currentNode.value)) {
         return currentNode;
       }
-
-      // 如果指定了 value，则按 value 查找
       if (value !== undefined && this.compare(currentNode.value, value)) {
         return currentNode;
       }
-
       currentNode = currentNode.next;
     }
 
@@ -143,7 +140,7 @@ export default class LinkedList {
   }
 
   /**
-   * 删除尾部节点
+   * Delete tail node
    */
   deleteTail() {
     const deletedTail = this.tail;
@@ -170,7 +167,7 @@ export default class LinkedList {
   }
 
   /**
-   * 删除头部节点
+   * Delete head node
    */
   deleteHead() {
     if (!this.head) {
@@ -190,16 +187,16 @@ export default class LinkedList {
   }
 
   /**
-   * 将一组元素转成链表中的节点
-   * @param values 链表中的元素
+   * Convert a set of elements to nodes in a linked list
+   * @param values element in linkedlist
    */
-  fromArray(values) {
+  fromArray(values: T[]) {
     values.forEach((value) => this.append(value));
     return this;
   }
 
   /**
-   * 将链表中的节点转成数组元素
+   * Convert nodes in a linked list into array elements
    */
   toArray() {
     const nodes = [];
@@ -215,7 +212,7 @@ export default class LinkedList {
   }
 
   /**
-   * 反转链表中的元素节点
+   * Invert element nodes in a linked list
    */
   reverse() {
     let currentNode = this.head;
@@ -237,7 +234,7 @@ export default class LinkedList {
     this.head = prevNode;
   }
 
-  toString(callback = undefined) {
+  toString(callback: Function = undefined) {
     return this.toArray()
       .map((node) => node.toString(callback))
       .toString();
