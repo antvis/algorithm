@@ -1,4 +1,4 @@
-import Queue from './structs/queue'
+import Queue from './structs/queue';
 import { Graph, IAlgorithmCallbacks, NodeID } from './types';
 
 /**

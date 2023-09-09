@@ -4,7 +4,7 @@ const defaultComparator = (a, b) => {
   }
 
   return false;
-}
+};
 
 /**
  * 链表中单个元素节点
