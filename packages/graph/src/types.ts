@@ -38,9 +38,6 @@ export interface IAlgorithmCallbacks {
 }
 
 export type NodeID = string | number;
-// export interface NodeSimilarity extends Node<{ [key: string]: any }> {
-//   cosineSimilarity?: number;
-// }
 
 export type NodeSimilarity = Node<PlainObject> & {
   data: {
