@@ -1,7 +1,7 @@
 import { clone } from '@antv/util';
 import { getAllProperties, oneHot } from './utils';
 import { NodeSimilarity } from './types';
-import cosineSimilarity from './cosine-similarity';
+import { cosineSimilarity } from '.';
 
 /**
 Calculates the cosine similarity based on node attributes using the nodes-cosine-similarity algorithm.
@@ -12,7 +12,7 @@ This algorithm is used to find similar nodes based on a seed node in a graph.
 @param uninvolvedKeys - The collection of keys that are not involved in the calculation.
 @returns An array of nodes that are similar to the seed node based on cosine similarity.
 */
-const nodesCosineSimilarity = (
+export const nodesCosineSimilarity = (
   nodes: NodeSimilarity[] = [],
   seedNode: NodeSimilarity,
   involvedKeys: string[] = [],
@@ -31,16 +31,13 @@ const nodesCosineSimilarity = (
   const seedNodeProperties = allPropertiesWeight[seedNodeIndex];
   const allCosineSimilarity: number[] = [];
   similarNodes.forEach((node: NodeSimilarity, index: number) => {
-    if (node.id !== seedNode.id) {
-      const nodeProperties = allPropertiesWeight[index];
-      // Calculate the cosine similarity between node vector and seed node vector
-      const cosineSimilarityValue = cosineSimilarity(nodeProperties, seedNodeProperties);
-      allCosineSimilarity.push(cosineSimilarityValue);
-      node.cosineSimilarity = cosineSimilarityValue;
-    }
+    const nodeProperties = allPropertiesWeight[index];
+    // Calculate the cosine similarity between node vector and seed node vector
+    const cosineSimilarityValue = cosineSimilarity(nodeProperties, seedNodeProperties);
+    allCosineSimilarity.push(cosineSimilarityValue);
+    node.cosineSimilarity = cosineSimilarityValue;
   });
   // Sort the returned nodes according to cosine similarity
   similarNodes.sort((a: NodeSimilarity, b: NodeSimilarity) => b.cosineSimilarity - a.cosineSimilarity);
   return { allCosineSimilarity, similarNodes };
 }
-export default nodesCosineSimilarity;

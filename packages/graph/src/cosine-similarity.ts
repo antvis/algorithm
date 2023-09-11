@@ -6,7 +6,7 @@ Calculates the cosine similarity
 @param targetItem - The target element.
 @returns The cosine similarity between the item and the targetItem.
 */
-const cosineSimilarity = (
+export const cosineSimilarity = (
     item: number[],
     targetItem: number[],
 ): number => {
@@ -25,5 +25,3 @@ const cosineSimilarity = (
     const cosineSimilarity = norm2Product ? dot / norm2Product : 0;
     return cosineSimilarity;
 }
-
-export default cosineSimilarity;
