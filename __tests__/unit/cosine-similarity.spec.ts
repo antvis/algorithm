@@ -1,4 +1,4 @@
-import cosineSimilarity from "../../packages/graph/src/cosine-similarity";
+import { cosineSimilarity } from "../../packages/graph/src";
 
 describe('cosineSimilarity abnormal demo: ', () => {
     it('item contains only zeros: ', () => {
