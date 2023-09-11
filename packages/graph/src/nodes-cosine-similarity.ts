@@ -1,7 +1,7 @@
 import { clone } from '@antv/util';
 import { getAllProperties, oneHot } from './utils';
 import { NodeSimilarity } from './types';
-import { cosineSimilarity } from '.';
+import { cosineSimilarity } from './cosine-similarity';
 
 /**
 Calculates the cosine similarity based on node attributes using the nodes-cosine-similarity algorithm.
@@ -35,9 +35,9 @@ export const nodesCosineSimilarity = (
     // Calculate the cosine similarity between node vector and seed node vector
     const cosineSimilarityValue = cosineSimilarity(nodeProperties, seedNodeProperties);
     allCosineSimilarity.push(cosineSimilarityValue);
-    node.cosineSimilarity = cosineSimilarityValue;
+    node.data.cosineSimilarity = cosineSimilarityValue;
   });
   // Sort the returned nodes according to cosine similarity
-  similarNodes.sort((a: NodeSimilarity, b: NodeSimilarity) => b.cosineSimilarity - a.cosineSimilarity);
+  similarNodes.sort((a: NodeSimilarity, b: NodeSimilarity) => b.data.cosineSimilarity - a.data.cosineSimilarity);
   return { allCosineSimilarity, similarNodes };
 }
