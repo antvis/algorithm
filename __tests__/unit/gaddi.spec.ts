@@ -1,4 +1,4 @@
-import { Edge, Graph, Node } from '@antv/graphlib';
+import { Graph } from '@antv/graphlib';
 import { GADDI } from '../../packages/graph/src';
 import { nodes77, nodes202, nodes1589, nodes20 } from '../data/gaddi-test-data';
 

@@ -92,9 +92,9 @@ const findKNeighborUnit = (
       unitNodeIdxs.push(j);
       neighbors.push(nodes[j]);
       const label = nodes[j].data[nodeLabelProp] as string;
-      if (!labelCountMap[label])
+      if (!labelCountMap[label]) {
         labelCountMap[label] = { count: 1, dists: [v] };
-      else {
+      } else {
         labelCountMap[label].count++;
         labelCountMap[label].dists.push(v);
       }
@@ -204,11 +204,12 @@ const getIntersectNeighborInducedGraph = (
   graphData: GraphData,
   cachedInducedGraphMap?: InterGraphMap
 ): InterGraphMap => {
+  let usingCachedInducedGraphmap = cachedInducedGraphMap;
   const nodes = graphData.nodes;
-  if (!cachedInducedGraphMap) cachedInducedGraphMap = {};
+  if (!usingCachedInducedGraphmap) usingCachedInducedGraphmap = {};
   Object.keys(nodePairMap).forEach((key) => {
-    if (cachedInducedGraphMap && cachedInducedGraphMap[key]) return;
-    cachedInducedGraphMap[key] = { nodes: [], edges: [] };
+    if (usingCachedInducedGraphmap && usingCachedInducedGraphmap[key]) return;
+    usingCachedInducedGraphmap[key] = { nodes: [], edges: [] };
     const pair = nodePairMap[key];
     const startUnitNodeIds = neighborUnits[pair.start]?.nodeIdxs;
     const endUnitNodeIds = neighborUnits[pair.end]?.nodeIdxs;
@@ -223,16 +224,17 @@ const getIntersectNeighborInducedGraph = (
     for (let i = 0; i < intersectLength; i++) {
       const node = nodes[intersect[i]];
       // Add intersected nodes to the induced subgraph
-      cachedInducedGraphMap[key].nodes.push(node);
+      usingCachedInducedGraphmap[key].nodes.push(node);
       intersectIdMap[node.id] = true;
     }
     graphData.edges.forEach((edge) => {
-      if (intersectIdMap[edge.source] && intersectIdMap[edge.target])
+      if (intersectIdMap[edge.source] && intersectIdMap[edge.target]) {
         // Add edges to the induced subgraph if both endpoints are in the intersection
-        cachedInducedGraphMap[key].edges.push(edge);
+        usingCachedInducedGraphmap[key].edges.push(edge);
+      }
     });
   });
-  return cachedInducedGraphMap;
+  return usingCachedInducedGraphmap;
 };
 
 /**
@@ -285,8 +287,8 @@ const findRepresentStructure = (
   structureNum: number,
   structures: GraphData[]
 ) => {
-  let maxOffset = Infinity,
-    representClusterType = 0;
+  let maxOffset = Infinity;
+  let representClusterType = 0;
   for (let i = 0; i < structureNum; i++) {
     // Group's map, key is the keys in intGraph, values is the number of matches in structures[i]
     const countMapI = matchedCountMap[i];
@@ -303,8 +305,9 @@ const findRepresentStructure = (
       aveCount: number;
     }[] = []; // groupNum items
     sortedGraphKeys.forEach((key, j) => {
-      if (!clusters[j % groupNum])
+      if (!clusters[j % groupNum]) {
         clusters[j % groupNum] = { graphs: [], totalCount: 0, aveCount: 0 };
+      }
       clusters[j % groupNum].graphs.push(key);
       clusters[j % groupNum].totalCount += countMapI[key];
     });
@@ -362,8 +365,8 @@ const getNodeMaps = (
   nodes: INode[],
   nodeLabelProp: string
 ): { nodeMap: NodeMap; nodeLabelMap: LabelMap } => {
-  const nodeMap: NodeMap = {},
-    nodeLabelMap: LabelMap = {};
+  const nodeMap: NodeMap = {};
+  const nodeLabelMap: LabelMap = {};
   nodes.forEach((node, i) => {
     nodeMap[node.id] = { idx: i, node, degree: 0, inDegree: 0, outDegree: 0 };
     const label = node.data[nodeLabelProp] as string;
@@ -378,8 +381,8 @@ const getEdgeMaps = (
   edgeLabelProp: string,
   nodeMap: NodeMap
 ): { edgeMap: EdgeMap; edgeLabelMap: LabelMap } => {
-  const edgeMap: { [key: string]: { idx: number; edge: IEdge } } = {},
-    edgeLabelMap: { [key: string]: IEdge[] } = {};
+  const edgeMap: { [key: string]: { idx: number; edge: IEdge } } = {};
+  const edgeLabelMap: { [key: string]: IEdge[] } = {};
   edges.forEach((edge, i) => {
     edgeMap[`${uniqueId++}`] = { idx: i, edge };
     const label = edge.data[edgeLabelProp] as string;
@@ -456,10 +459,11 @@ const getNDSDist = (
   cachedNDSMap: { [key: string]: number },
   cachedInterInducedGraph: InterGraphMap
 ) => {
+  let usingCachedInterInducedGraph = cachedInterInducedGraph;
   const key = `${node1.id}-${node2.id}`;
   if (cachedNDSMap && cachedNDSMap[key]) return cachedNDSMap[key];
-  let interInducedGraph = cachedInterInducedGraph
-    ? cachedInterInducedGraph[key]
+  let interInducedGraph = usingCachedInterInducedGraph
+    ? usingCachedInterInducedGraph[key]
     : undefined;
   // If there is no cached intersected induced graph, calculate it
   if (!interInducedGraph) {
@@ -471,13 +475,13 @@ const getNDSDist = (
       },
     };
 
-    cachedInterInducedGraph = getIntersectNeighborInducedGraph(
+    usingCachedInterInducedGraph = getIntersectNeighborInducedGraph(
       pairMap,
       kNeighborUnits,
       graph,
-      cachedInterInducedGraph
+      usingCachedInterInducedGraph
     );
-    interInducedGraph = cachedInterInducedGraph[key];
+    interInducedGraph = usingCachedInterInducedGraph[key];
   }
 
   return getMatchedCount(
@@ -523,16 +527,19 @@ const stashPatternNodeLabelDegreeMap = (
       (patternNodeWithLabel: INode) => {
         const patternNodeDegree =
           patternNodeMap[patternNodeWithLabel.id].degree;
-        if (minPatternNodeLabelDegree > patternNodeDegree)
+        if (minPatternNodeLabelDegree > patternNodeDegree) {
           minPatternNodeLabelDegree = patternNodeDegree;
+        }
         const patternNodeInDegree =
           patternNodeMap[patternNodeWithLabel.id].inDegree;
-        if (minPatternNodeLabelInDegree > patternNodeInDegree)
+        if (minPatternNodeLabelInDegree > patternNodeInDegree) {
           minPatternNodeLabelInDegree = patternNodeInDegree;
+        }
         const patternNodeOutDegree =
           patternNodeMap[patternNodeWithLabel.id].outDegree;
-        if (minPatternNodeLabelOutDegree > patternNodeOutDegree)
+        if (minPatternNodeLabelOutDegree > patternNodeOutDegree) {
           minPatternNodeLabelOutDegree = patternNodeOutDegree;
+        }
       }
     );
     minPatternNodeLabelDegreeMap[neighborLabel] = {
@@ -559,7 +566,7 @@ const stashPatternNodeLabelDegreeMap = (
  * @param nodeLabelProp The field name for the label (clustering info) in the node data, 'cluster' by default
  * @param edgeLabelProp The field name for the label (clustering info) in the edge data, 'cluster' by default
  */
-export function GADDI(
+export const GADDI = (
   graph: Graph,
   pattern: GraphData,
   directed: boolean = false,
@@ -567,13 +574,15 @@ export function GADDI(
   length: number,
   nodeLabelProp: string = 'cluster',
   edgeLabelProp: string = 'cluster'
-): GraphData[] {
+): GraphData[] => {
   const graphData = {
     nodes: graph.getAllNodes(),
     edges: graph.getAllEdges(),
   };
   if (!graph || !graphData.nodes) return;
   const patternGraph = new GraphCore(pattern);
+  let usingLength = length;
+  let usingK = k;
 
   // Three steps:
   // 0. Pre-processing: number of nodes/edges, adjacency matrix, shortest path distance matrix
@@ -620,17 +629,22 @@ export function GADDI(
   patternSpm?.forEach((row) => {
     patternSpmSpread = patternSpmSpread.concat(row);
   });
-  if (!length) length = Math.max(...patternSpmSpread, 2);
-  if (!k) k = length;
+  if (!usingLength) usingLength = Math.max(...patternSpmSpread, 2);
+  if (!usingK) usingK = usingLength;
 
   // console.log("----- stage-pre.6: calc k neighbor units -------");
   // Calculate the k-nearest-neighbor collection for each node
-  const kNeighborUnits = findKNeighborUnits(graphData, spm, nodeLabelProp, k);
+  const kNeighborUnits = findKNeighborUnits(
+    graphData,
+    spm,
+    nodeLabelProp,
+    usingK
+  );
   const patternKNeighborUnits = findKNeighborUnits(
     pattern,
     patternSpm,
     nodeLabelProp,
-    k
+    usingK
   );
 
   // console.log(
@@ -644,7 +658,7 @@ export function GADDI(
   // When the number of nodes in graphData is smaller then  20, 100 node pairs are not able to be found. Only find no more than n(n-1)/2 pairs.
   const maxNodePairNum = Math.min(100, (nodeNum * (nodeNum - 1)) / 2);
   const nodePairsMap = findNodePairsRandomly(
-    k,
+    usingK,
     nodeNum,
     maxNodePairNum,
     kNeighborUnits,
@@ -661,17 +675,14 @@ export function GADDI(
     graphData
   );
   // 1.3. Calculate the top frequent sub structures with 3-4 edges in ISIntG, with gSpan(frequent graph mining) algorithm
-  const top = 10,
-    minSupport = 1,
-    minNodeNum = 1,
-    maxNodeNum = 4;
+  const top = 10;
   const params = {
     graphs: intGMap,
     nodeLabelProp,
     edgeLabelProp,
-    minSupport,
-    minNodeNum,
-    maxNodeNum,
+    minSupport: 1,
+    minNodeNum: 1,
+    maxNodeNum: 4,
     directed,
   };
 
@@ -714,10 +725,10 @@ export function GADDI(
 
   // -------- Step 2: Matching-------
   // 2.1 找到从 Q 中的一个节点作为起始节点，寻找 G 中的匹配。这个其实节点的标签可以在 G 中找到最多的节点
-  let beginPNode = pattern.nodes[0],
-    candidates: INode[] = [],
-    label = pattern.nodes[0]?.data[nodeLabelProp],
-    maxNodeNumWithSameLabel = -Infinity;
+  let beginPNode = pattern.nodes[0];
+  let candidates: INode[] = [];
+  let label = pattern.nodes[0]?.data[nodeLabelProp];
+  let maxNodeNumWithSameLabel = -Infinity;
   pattern.nodes.forEach((node) => {
     const pLabel = node.data[nodeLabelProp] as string;
     const nodesWithSameLabel = nodeLabelMap[pLabel];
@@ -733,9 +744,9 @@ export function GADDI(
 
   // Global caching is used to avoid redundant calculations.
   const minPatternNodeLabelDegreeMap = {}; // Key is label, value is the minimum degree of the nodes with label
-  let patternIntGraphMap: InterGraphMap = {},
-    patternNDSDist: { [key: string]: number } = {}, // key is node.id-node.id
-    patternNDSDistMap: { [key: string]: number[] } = {}; // key is node.id-label2, value nds array is sortted from large to small
+  let patternIntGraphMap: InterGraphMap = {};
+  const patternNDSDist: { [key: string]: number } = {}; // key is node.id-node.id
+  const patternNDSDistMap: { [key: string]: number[] } = {}; // key is node.id-label2, value nds array is sortted from large to small
   // 2.2.2 For the k nodes with another label in Q, calculate the shortest path distance to the node and the NDS distance
   const patternSpDist: { [key: string]: number[] } = {};
   const patternSpDistBack: { [key: string]: number[] } = {};
@@ -770,10 +781,11 @@ export function GADDI(
 
     // spDist[label2] sortted from small to large
     patternSpDist[label2] = patternSpDist[label2].sort((a, b) => a - b);
-    if (directed)
+    if (directed) {
       patternSpDistBack[label2] = patternSpDistBack[label2].sort(
         (a, b) => a - b
       );
+    }
 
     // Calculate NDS distances from all the nodes in Q with label2 to beginPNode
     // The intersected neighbor induced subgraph from label2 nodes to beginPNode:
@@ -916,7 +928,7 @@ export function GADDI(
       spm[nodeIdx],
       nodeIdx,
       nodeLabelProp,
-      length
+      usingLength
     );
 
     const neighborNodes = lengthNeighborUnit.neighbors;
@@ -956,7 +968,7 @@ export function GADDI(
       // prune2.2
       const distToCandidate = spmMap[key];
       let idx = patternSpDist[neighborLabel].length - 1;
-      let maxDistWithLabelInPattern = patternSpDist[neighborLabel][idx]; // patternSpDist[neighborLabel] has been sortted from small to large
+      const maxDistWithLabelInPattern = patternSpDist[neighborLabel][idx]; // patternSpDist[neighborLabel] has been sortted from small to large
       if (distToCandidate > maxDistWithLabelInPattern) {
         neighborNodes.splice(i, 1);
         continue;
@@ -966,7 +978,7 @@ export function GADDI(
         const keyBack = `${neighborNode.id}-${candidate.id}`;
         const distFromCandidate = spmMap[keyBack];
         idx = patternSpDistBack[neighborLabel].length - 1;
-        let maxBackDistWithLabelInPattern =
+        const maxBackDistWithLabelInPattern =
           patternSpDistBack[neighborLabel][idx];
         if (distFromCandidate > maxBackDistWithLabelInPattern) {
           neighborNodes.splice(i, 1);
@@ -1038,14 +1050,15 @@ export function GADDI(
   if (directed) {
     Object.keys(undirectedLengthsToBeginPNode).forEach((nodeId) => {
       const nodeLabel = patternNodeMap[nodeId].node.data[nodeLabelProp];
-      if (!undirectedLengthsToBeginPNodeLabelMap[nodeLabel])
+      if (!undirectedLengthsToBeginPNodeLabelMap[nodeLabel]) {
         undirectedLengthsToBeginPNodeLabelMap[nodeLabel] = [
           undirectedLengthsToBeginPNode[nodeId],
         ];
-      else
+      } else {
         undirectedLengthsToBeginPNodeLabelMap[nodeLabel].push(
           undirectedLengthsToBeginPNode[nodeId]
         );
+      }
     });
     Object.keys(undirectedLengthsToBeginPNodeLabelMap).forEach((pLabel) => {
       undirectedLengthsToBeginPNodeLabelMap[pLabel].sort((a, b) => a - b);
@@ -1055,7 +1068,7 @@ export function GADDI(
   }
 
   // Only nodes in andidateGraphs now. Filter edges:
-  let candidateGraphNum = candidateGraphs.length;
+  const candidateGraphNum = candidateGraphs.length;
   for (let i = candidateGraphNum - 1; i >= 0; i--) {
     const candidateGraph = candidateGraphs[i];
     const candidate = candidateGraph.nodes[0];
@@ -1079,9 +1092,9 @@ export function GADDI(
         outDegree: 0,
       };
       const cNodeLabel = node.data[nodeLabelProp] as string;
-      if (!candidateNodeLabelCountMap[cNodeLabel])
+      if (!candidateNodeLabelCountMap[cNodeLabel]) {
         candidateNodeLabelCountMap[cNodeLabel] = 1;
-      else candidateNodeLabelCountMap[cNodeLabel]++;
+      } else candidateNodeLabelCountMap[cNodeLabel]++;
     });
 
     // Generate the induced subgraph of G based on the nodes in candidates and neighborNodes.
@@ -1091,9 +1104,9 @@ export function GADDI(
     graphData.edges.forEach((edge) => {
       if (candidateNodeMap[edge.source] && candidateNodeMap[edge.target]) {
         candidateEdges.push(edge);
-        if (!edgeLabelCountMap[edge.data[edgeLabelProp] as string])
+        if (!edgeLabelCountMap[edge.data[edgeLabelProp] as string]) {
           edgeLabelCountMap[edge.data[edgeLabelProp] as string] = 1;
-        else edgeLabelCountMap[edge.data[edgeLabelProp] as string]++;
+        } else edgeLabelCountMap[edge.data[edgeLabelProp] as string]++;
         candidateNodeMap[edge.source].degree++;
         candidateNodeMap[edge.target].degree++;
         candidateNodeMap[edge.source].outDegree++;
@@ -1165,14 +1178,16 @@ export function GADDI(
         if (
           patternSource.data[nodeLabelProp] === sourceLabel &&
           patternTarget.data[nodeLabelProp] === targetLabel
-        )
+        ) {
           edgeMatched = true;
+        }
         if (
           !directed &&
           patternSource.data[nodeLabelProp] === targetLabel &&
           patternTarget.data[nodeLabelProp] === sourceLabel
-        )
+        ) {
           edgeMatched = true;
+        }
       });
       if (!edgeMatched) {
         edgeLabelCountMap[edgeLabel]--;
@@ -1209,8 +1224,9 @@ export function GADDI(
     Object.keys(lengthsToCandidate)
       .reverse()
       .forEach((targetId) => {
-        if (targetId === candidateGraph.nodes[0].id || candidateGraphInvalid)
+        if (targetId === candidateGraph.nodes[0].id || candidateGraphInvalid) {
           return;
+        }
         // prune4: The pruning described above may result in the neighbor subgraph becoming disconnected. Remove the nodes in the neighbor subgraph that are currently not connected to the candidate (first node).
         if (lengthsToCandidate[targetId] === Infinity) {
           const targetNodeLabel = candidateNodeMap[targetId].node.data[
@@ -1425,4 +1441,4 @@ export function GADDI(
   }
 
   return candidateGraphs;
-}
+};

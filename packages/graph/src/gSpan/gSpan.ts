@@ -118,11 +118,13 @@ class DFScode {
       const toNodeId = dfsEdge.toNode;
       const { nodeLabel1, edgeLabel, nodeLabel2 } = dfsEdge.nodeEdgeNodeLabel;
 
-      if (nodeLabel1 !== VACANT_NODE_LABEL)
+      if (nodeLabel1 !== VACANT_NODE_LABEL) {
         graph.addNode(fromNodeId, nodeLabel1);
+      }
       if (nodeLabel2 !== VACANT_NODE_LABEL) graph.addNode(toNodeId, nodeLabel2);
-      if (nodeLabel1 !== VACANT_NODE_LABEL && nodeLabel2 !== nodeLabel1)
+      if (nodeLabel1 !== VACANT_NODE_LABEL && nodeLabel2 !== nodeLabel1) {
         graph.addEdge(undefined, fromNodeId, toNodeId, edgeLabel);
+      }
     });
     return graph;
   }
@@ -169,13 +171,14 @@ class History {
     this.edgesUsed = {};
     this.edges = [];
     if (!pdfs) return;
-    while (pdfs) {
-      const e = pdfs.edge;
+    let pdfsIterator = pdfs;
+    while (pdfsIterator) {
+      const e = pdfsIterator.edge;
       this.edges.push(e);
       this.nodesUsed[e.from] = 1;
       this.nodesUsed[e.to] = 1;
       this.edgesUsed[e.id] = 1;
-      pdfs = pdfs.preNode;
+      pdfsIterator = pdfsIterator.preNode;
     }
     // reverse the order
     this.edges = this.edges.reverse();
@@ -264,8 +267,9 @@ class GSpan {
     const result: Edge[] = [];
     const nodeMap = graph.nodeMap;
     fromNode.edges.forEach((edge) => {
-      if (this.directed || fromNode.label <= nodeMap[edge.to].label)
+      if (this.directed || fromNode.label <= nodeMap[edge.to].label) {
         result.push(edge);
+      }
     });
 
     return result;
@@ -412,15 +416,16 @@ class GSpan {
     graph.nodes.forEach((node) => {
       const forwardEdges = this.findForwardRootEdges(graph, node);
       forwardEdges.forEach((edge) => {
-        let otherNode = nodeMap[edge.to];
+        const otherNode = nodeMap[edge.to];
         const nodeEdgeNodeLabel = `${node.label}-${edge.label}-${otherNode.label}`;
-        if (!root[nodeEdgeNodeLabel])
+        if (!root[nodeEdgeNodeLabel]) {
           root[nodeEdgeNodeLabel] = {
             projected: [],
             nodeLabel1: node.label,
             edgeLabel: edge.label,
             nodeLabel2: otherNode.label,
           };
+        }
         const pdfs: PDFS = {
           graphId: graph.id,
           edge,
@@ -431,7 +436,7 @@ class GSpan {
     });
 
     // 比较 root 中每一项的 nodeEdgeNodeLabel 大小，按照 nodeLabel1、edgeLabe、nodeLabel2 的顺序比较
-    let minLabel = this.findMinLabel(root); // line 419
+    const minLabel = this.findMinLabel(root); // line 419
     if (!minLabel) return;
     dfsCodeMin.dfsEdgeList.push(
       new DFSedge(
@@ -451,9 +456,9 @@ class GSpan {
       const maxToC = dfsCodeMin.dfsEdgeList[rmpath[0]].toNode; // node id
 
       const backwardRoot: Root = {};
-      let flag = false,
-        newTo = 0;
-      let end = directed ? -1 : 0;
+      let flag = false;
+      let newTo = 0;
+      const end = directed ? -1 : 0;
       for (let i = rmpath.length - 1; i > end; i--) {
         if (flag) break;
         // line 435
@@ -496,8 +501,9 @@ class GSpan {
           )
         );
         const idx = dfsCodeMin.dfsEdgeList.length - 1;
-        if (this.dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx])
+        if (this.dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx]) {
           return false;
+        }
         return projectIsMin(
           backwardRoot[minBackwardEdgeLabel.edgeLabel].projected
         );
@@ -518,12 +524,13 @@ class GSpan {
           newFrom = maxToC;
           forwardPureEdges.forEach((edge) => {
             const key = `${edge.label}-${nodeMap[edge.to].label}`;
-            if (!forwardRoot[key])
+            if (!forwardRoot[key]) {
               forwardRoot[key] = {
                 projected: [],
                 edgeLabel: edge.label,
                 nodeLabel2: nodeMap[edge.to].label,
               };
+            }
             forwardRoot[key].projected.push({
               graphId: graph.id,
               edge,
@@ -550,12 +557,13 @@ class GSpan {
             newFrom = dfsCodeMin.dfsEdgeList[value].fromNode;
             forwardRmpathEdges.forEach((edge) => {
               const key = `${edge.label}-${nodeMap[edge.to].label}`;
-              if (!forwardRoot[key])
+              if (!forwardRoot[key]) {
                 forwardRoot[key] = {
                   projected: [],
                   edgeLabel: edge.label,
                   nodeLabel2: nodeMap[edge.to].label,
                 };
+              }
               forwardRoot[key].projected.push({
                 graphId: graph.id,
                 edge,
@@ -579,8 +587,9 @@ class GSpan {
         )
       );
       const idx = dfsCodeMin.dfsEdgeList.length - 1;
-      if (dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx])
+      if (dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx]) {
         return false;
+      }
       return projectIsMin(
         forwardRoot[
           `${forwardMinEdgeNodeLabel.edgeLabel}-${forwardMinEdgeNodeLabel.nodeLabel2}`
@@ -629,12 +638,13 @@ class GSpan {
           const key = `${this.dfsCode.dfsEdgeList[rmpath[i]].fromNode}-${
             backwardEdge.label
           }`;
-          if (!backwardRoot[key])
+          if (!backwardRoot[key]) {
             backwardRoot[key] = {
               projected: [],
               toNodeId: this.dfsCode.dfsEdgeList[rmpath[i]].fromNode,
               edgeLabel: backwardEdge.label,
             };
+          }
           backwardRoot[key].projected.push({
             graphId: p.graphId,
             edge: backwardEdge,
@@ -653,13 +663,14 @@ class GSpan {
       );
       forwardPureEdges.forEach((edge) => {
         const key = `${maxToC}-${edge.label}-${nodeMap[edge.to].label}`;
-        if (!forwardRoot[key])
+        if (!forwardRoot[key]) {
           forwardRoot[key] = {
             projected: [],
             fromNodeId: maxToC,
             edgeLabel: edge.label,
             nodeLabel2: nodeMap[edge.to].label,
           };
+        }
         forwardRoot[key].projected.push({
           graphId: p.graphId,
           edge,
@@ -679,13 +690,14 @@ class GSpan {
           const key = `${this.dfsCode.dfsEdgeList[rmpath[i]].fromNode}-${
             edge.label
           }-${nodeMap[edge.to].label}`;
-          if (!forwardRoot[key])
+          if (!forwardRoot[key]) {
             forwardRoot[key] = {
               projected: [],
               fromNodeId: this.dfsCode.dfsEdgeList[rmpath[i]].fromNode,
               edgeLabel: edge.label,
               nodeLabel2: nodeMap[edge.to].label,
             };
+          }
           forwardRoot[key].projected.push({
             graphId: p.graphId,
             edge,
@@ -727,8 +739,8 @@ class GSpan {
     const directed = this.directed;
     const minSupport = this.minSupport;
     const frequentSize1Subgraphs = this.frequentSize1Subgraphs;
-    let nodeLabelCounter: { [key: string]: number } = {},
-      nodeEdgeNodeCounter: { [key: string]: number } = {};
+    const nodeLabelCounter: { [key: string]: number } = {};
+    const nodeEdgeNodeCounter: { [key: string]: number } = {};
     // Save the relationship map between each graph and its respective nodes. The key format is "graphKey-nodeType".
     const nodeLableCounted: {
       [key: string]: { graphKey: string; label: string };
@@ -820,15 +832,16 @@ class GSpan {
       graph.nodes.forEach((node) => {
         const forwardRootEdges = this.findForwardRootEdges(graph, node);
         forwardRootEdges.forEach((edge) => {
-          let toNode = nodeMap[edge.to];
+          const toNode = nodeMap[edge.to];
           const nodeEdgeNodeLabel = `${node.label}-${edge.label}-${toNode.label}`;
-          if (!root[nodeEdgeNodeLabel])
+          if (!root[nodeEdgeNodeLabel]) {
             root[nodeEdgeNodeLabel] = {
               projected: [],
               nodeLabel1: node.label as string,
               edgeLabel: edge.label as string,
               nodeLabel2: toNode.label as string,
             };
+          }
           const pdfs: PDFS = {
             graphId,
             edge,

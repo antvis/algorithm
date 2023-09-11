@@ -91,12 +91,20 @@ export class Graph {
   }
 
   addEdge(id: number, from: number, to: number, label: string) {
-    if (this.edgeIdAutoIncrease || id === undefined) id = this.counter++;
-    if (this.nodeMap[from] && this.nodeMap[to] && this.nodeMap[to].edgeMap[id])
+    let usingId = id;
+    if (this.edgeIdAutoIncrease || usingId === undefined) {
+      usingId = this.counter++;
+    }
+    if (
+      this.nodeMap[from] &&
+      this.nodeMap[to] &&
+      this.nodeMap[to].edgeMap[usingId]
+    ) {
       return;
-    const edge = new Edge(id, from, to, label);
+    }
+    const edge = new Edge(usingId, from, to, label);
     this.edges.push(edge);
-    this.edgeMap[id] = edge;
+    this.edgeMap[usingId] = edge;
 
     this.nodeMap[from].addEdge(edge);
 
@@ -104,7 +112,7 @@ export class Graph {
     this.edgeLabelMap[label].push(edge);
 
     if (!this.directed) {
-      const rEdge = new Edge(id, to, from, label);
+      const rEdge = new Edge(usingId, to, from, label);
       this.nodeMap[to].addEdge(rEdge);
       this.edgeLabelMap[label].push(rEdge);
     }
