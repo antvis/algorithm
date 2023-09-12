@@ -1,5 +1,5 @@
-import { Node, PlainObject } from "@antv/graphlib";
-import { KeyValueMap, NodeData } from "./types";
+import { Edge, Node, PlainObject } from "@antv/graphlib";
+import { KeyValueMap, NodeData, NodeID } from "./types";
 import { uniq } from "@antv/util";
 
 export const getAllProperties = (nodes: Node<NodeData>[]) => {
@@ -79,3 +79,12 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   });
   return oneHotCode;
 };
+
+/**
+ * 获取指定节点的边，包括出边和入边
+ * @param nodeId 节点 ID
+ * @param edges 图中的所有边数据
+ */
+export const getEdgesByNodeId = (nodeId: NodeID, edges: Edge<{ [key: string]: any }>[]): Edge<{ [key: string]: any }>[] => {
+  return edges.filter(edge => edge.source === nodeId || edge.target === nodeId)
+}
