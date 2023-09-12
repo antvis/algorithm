@@ -1,4 +1,4 @@
-import breadthFirstSearch from "../../packages/graph/src/bfs";
+import { breadthFirstSearch } from "../../packages/graph/src";
 import { Graph } from "@antv/graphlib";
 
 const data = {

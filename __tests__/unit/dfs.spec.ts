@@ -1,4 +1,4 @@
-import depthFirstSearch from "../../packages/graph/src/dfs";
+import { depthFirstSearch } from "../../packages/graph/src";
 import { Graph } from "@antv/graphlib";
 
 

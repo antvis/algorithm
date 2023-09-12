@@ -41,7 +41,7 @@ function depthFirstSearchRecursive(
   });
 }
 
-export default function depthFirstSearch(
+export function depthFirstSearch(
   graph: Graph,
   startNodeId: NodeID,
   originalCallbacks?: IAlgorithmCallbacks,

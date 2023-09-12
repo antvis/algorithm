@@ -50,7 +50,7 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   // 获取所有的属性/特征值
   const allValue = Object.values(allKeyValueMap);
   // 是否所有属性/特征的值都是数值型
-  const isAllNumber = allValue.every((value) => value.every((item) => (typeof(item) === 'number')));
+  const isAllNumber = allValue.every((value) => value.every((item) => (typeof (item) === 'number')));
 
   // 对数据进行one-hot编码
   dataList.forEach((data, index) => {
@@ -65,7 +65,7 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
         subCode.push(keyValue);
       } else {
         // 进行one-hot编码
-        for(let i = 0; i < allKeyValue.length; i++) {
+        for (let i = 0; i < allKeyValue.length; i++) {
           if (i === valueIndex) {
             subCode.push(1);
           } else {

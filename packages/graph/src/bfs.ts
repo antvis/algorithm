@@ -24,7 +24,7 @@ Performs breadth-first search (BFS) traversal on a graph.
 @param startNodeId - The ID of the starting node for BFS.
 @param originalCallbacks - Optional object containing callback functions for BFS.
 */
-const breadthFirstSearch = (
+export const breadthFirstSearch = (
   graph: Graph,
   startNodeId: NodeID,
   originalCallbacks?: IAlgorithmCallbacks,
@@ -65,5 +65,3 @@ const breadthFirstSearch = (
     previousNodeId = currentNodeId;
   }
 };
-
-export default breadthFirstSearch;

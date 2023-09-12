@@ -6,3 +6,5 @@ export * from "./k-core";
 export * from "./floydWarshall";
 export * from "./bfs";
 export * from "./dfs";
+export * from "./cosine-similarity"
+export * from "./nodes-cosine-similarity";
