@@ -28,7 +28,7 @@ export default class LinkedList<T> {
       return true;
     }
     return false;
-  };
+  }
 
   constructor(comparator?: Function) {
     this.head = null;
@@ -126,7 +126,7 @@ export default class LinkedList<T> {
     }
     let currentNode = this.head;
     while (currentNode) {
-      //find by callback first
+      // find by callback first
       if (callback && callback(currentNode.value)) {
         return currentNode;
       }

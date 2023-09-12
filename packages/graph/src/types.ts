@@ -1,4 +1,4 @@
-import { Edge, Graph as IGraph, Node, PlainObject } from "@antv/graphlib";
+import { Edge, Graph as IGraph, Node, PlainObject } from '@antv/graphlib';
 
 // 数据集中属性/特征值分布的map
 export interface KeyValueMap {
@@ -34,7 +34,11 @@ export type Matrix = number[];
 export interface IAlgorithmCallbacks {
   enter?: (param: { current: NodeID; previous: NodeID }) => void;
   leave?: (param: { current: NodeID; previous?: NodeID }) => void;
-  allowTraversal?: (param: { previous?: NodeID; current?: NodeID; next: NodeID }) => boolean;
+  allowTraversal?: (param: {
+    previous?: NodeID;
+    current?: NodeID;
+    next: NodeID;
+  }) => boolean;
 }
 
 export type NodeID = string | number;
@@ -42,5 +46,13 @@ export type NodeID = string | number;
 export type NodeSimilarity = Node<PlainObject> & {
   data: {
     cosineSimilarity?: number;
-  }
-}
+  };
+};
+
+export type GraphData = {
+  nodes: Node<NodeData>[];
+  edges?: Edge<EdgeData>[];
+};
+
+export type INode = Node<NodeData>;
+export type IEdge = Edge<EdgeData>;
