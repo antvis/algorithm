@@ -1,26 +1,25 @@
-const defaultCompare = (a, b) => {
-  return a - b;
-};
 
 export default class MinBinaryHeap {
-  list: any[];
+  list: number[];
 
   compareFn: (a: any, b: any) => number;
 
-  constructor(compareFn = defaultCompare) {
-    this.compareFn = compareFn;
+  constructor(compareFn: (a: any, b: any) => number) {
+    this.compareFn = compareFn || ((a: number, b: number) => {
+      return a - b;
+    });
     this.list = [];
   }
 
-  getLeft(index) {
+  getLeft(index: number) {
     return 2 * index + 1;
   }
 
-  getRight(index) {
+  getRight(index: number) {
     return 2 * index + 2;
   }
 
-  getParent(index) {
+  getParent(index: number) {
     if (index === 0) {
       return null;
     }
@@ -45,7 +44,7 @@ export default class MinBinaryHeap {
     return top;
   }
 
-  insert(value) {
+  insert(value: number) {
     if (value !== null) {
       this.list.push(value);
       const index = this.list.length - 1;
@@ -55,20 +54,21 @@ export default class MinBinaryHeap {
     return false;
   }
 
-  moveUp(index) {
-    let parent = this.getParent(index);
-    while (index && index > 0 && this.compareFn(this.list[parent], this.list[index]) > 0) {
+  moveUp(index: number) {
+    let i = index;
+    let parent = this.getParent(i);
+    while (i && i > 0 && this.compareFn(this.list[i], this.list[i]) > 0) {
       // swap
       const tmp = this.list[parent];
-      this.list[parent] = this.list[index];
-      this.list[index] = tmp;
-      // [this.list[index], this.list[parent]] = [this.list[parent], this.list[index]]
-      index = parent;
-      parent = this.getParent(index);
+      this.list[parent] = this.list[i];
+      this.list[i] = tmp;
+      // [this.list[i], this.list[parent]] = [this.list[parent], this.list[i]]
+      i = parent;
+      parent = this.getParent(i);
     }
   }
 
-  moveDown(index) {
+  moveDown(index: number) {
     let element = index;
     const left = this.getLeft(index);
     const right = this.getRight(index);

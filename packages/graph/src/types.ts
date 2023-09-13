@@ -57,8 +57,8 @@ export type GraphData = {
 export type INode = Node<NodeData>;
 export type IEdge = Edge<EdgeData>;
 
-export type IMSTAlgorithm = (graph: Graph, weightProps?: string) => IEdge[]
+export type IMSTAlgorithm = (graph: Graph, weightProps?: string) => IEdge[];
 export interface IMSTAlgorithmOpt {
-  'prim': IMSTAlgorithm,
-  'kruskal': IMSTAlgorithm,
+  'prim': IMSTAlgorithm;
+  'kruskal': IMSTAlgorithm;
 }

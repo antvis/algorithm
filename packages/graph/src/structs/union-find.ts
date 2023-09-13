@@ -4,7 +4,7 @@
 export default class UnionFind {
   count: number;
 
-  parent: {};
+  parent: { [key: number | string]: number | string };
 
   constructor(items: (number | string)[]) {
     this.count = items.length;
@@ -15,14 +15,15 @@ export default class UnionFind {
   }
 
   // find the root of the item
-  find(item) {
+  find(item: (number | string)) {
+    let resItem = item;
     while (this.parent[item] !== item) {
-      item = this.parent[item];
+      resItem = this.parent[item];
     }
-    return item;
+    return resItem;
   }
 
-  union(a, b) {
+  union(a: (number | string), b: (number | string)) {
     const rootA = this.find(a);
     const rootB = this.find(b);
 
@@ -39,7 +40,7 @@ export default class UnionFind {
   }
 
   // whether a and b are connected, i.e. a and b have the same root
-  connected(a, b) {
+  connected(a: (number | string), b: (number | string)) {
     return this.find(a) === this.find(b);
   }
 }

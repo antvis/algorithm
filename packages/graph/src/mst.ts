@@ -12,7 +12,7 @@ Calculates the Minimum Spanning Tree (MST) of a graph using the Prim's algorithm
 */
 const primMST: IMSTAlgorithm = (graph, weightProps?) => {
     const selectedEdges: IEdge[] = [];
-    const nodes = graph.getAllNodes()
+    const nodes = graph.getAllNodes();
     const edges = graph.getAllEdges();
     if (nodes.length === 0) {
         return selectedEdges;
@@ -25,7 +25,7 @@ const primMST: IMSTAlgorithm = (graph, weightProps?) => {
     // Using binary heap to maintain the weight of edges from other nodes that have joined the node
     const compareWeight = (a: IEdge, b: IEdge) => {
         if (weightProps) {
-            a.data
+            a.data;
             return (a.data[weightProps] as number) - (b.data[weightProps] as number);
         }
         return 0;
@@ -65,7 +65,7 @@ Calculates the Minimum Spanning Tree (MST) of a graph using the Kruskal's algori
 */
 const kruskalMST: IMSTAlgorithm = (graph, weightProps?) => {
     const selectedEdges: IEdge[] = [];
-    const nodes = graph.getAllNodes()
+    const nodes = graph.getAllNodes();
     const edges = graph.getAllEdges();
     if (nodes.length === 0) {
         return selectedEdges;
@@ -106,4 +106,4 @@ export const minimumSpanningTree = (graph: Graph, weightProps?: string, algo?: '
         'kruskal': kruskalMST,
     };
     return (algo && algos[algo](graph, weightProps)) || kruskalMST(graph, weightProps);
-}
+};

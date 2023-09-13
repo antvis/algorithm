@@ -9,4 +9,4 @@ export * from './dfs';
 export * from './cosine-similarity';
 export * from './nodes-cosine-similarity';
 export * from './gaddi';
-export * from './mst'
+export * from './mst';

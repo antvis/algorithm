@@ -86,5 +86,5 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
  * @param edges 图中的所有边数据
  */
 export const getEdgesByNodeId = (nodeId: NodeID, edges: Edge<{ [key: string]: any }>[]): Edge<{ [key: string]: any }>[] => {
-  return edges.filter(edge => edge.source === nodeId || edge.target === nodeId)
-}
+  return edges.filter((edge) => edge.source === nodeId || edge.target === nodeId);
+};
