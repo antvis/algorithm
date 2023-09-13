@@ -1,6 +1,6 @@
 import { Edge, Graph as IGraph, Node, PlainObject } from '@antv/graphlib';
 
-// 数据集中属性/特征值分布的map
+// Map of attribute / eigenvalue distribution in dataset
 export interface KeyValueMap {
   [key: string]: any[];
 }

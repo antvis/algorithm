@@ -1,5 +1,5 @@
 /**
- * 并查集 Disjoint set to support quick union
+ * Disjoint set to support quick union
  */
 export default class UnionFind {
   count: number;
@@ -26,9 +26,7 @@ export default class UnionFind {
   union(a: (number | string), b: (number | string)) {
     const rootA = this.find(a);
     const rootB = this.find(b);
-
     if (rootA === rootB) return;
-
     // make the element with smaller root the parent
     if (rootA < rootB) {
       if (this.parent[b] !== b) this.union(this.parent[b], a);
@@ -39,7 +37,7 @@ export default class UnionFind {
     }
   }
 
-  // whether a and b are connected, i.e. a and b have the same root
+  // Determine that A and B are connected
   connected(a: (number | string), b: (number | string)) {
     return this.find(a) === this.find(b);
   }
