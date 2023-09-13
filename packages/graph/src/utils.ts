@@ -1,5 +1,5 @@
-import { Edge, Node, PlainObject } from "@antv/graphlib";
-import { KeyValueMap, NodeData, NodeID } from "./types";
+import { Node, PlainObject } from "@antv/graphlib";
+import { KeyValueMap, NodeData } from "./types";
 import { uniq } from "@antv/util";
 
 export const getAllProperties = (nodes: Node<NodeData>[]) => {
