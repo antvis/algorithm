@@ -1,13 +1,11 @@
 
-export default class MinBinaryHeap {
-  list: number[];
+export default class MinBinaryHeap<T> {
+  list: T[];
 
-  compareFn: (a: any, b: any) => number;
+  compareFn: (a?: T, b?: T) => number;
 
-  constructor(compareFn: (a: any, b: any) => number) {
-    this.compareFn = compareFn || ((a: number, b: number) => {
-      return a - b;
-    });
+  constructor(compareFn: (a: T, b: T) => number) {
+    this.compareFn = compareFn || (() => 0);
     this.list = [];
   }
 
@@ -44,7 +42,7 @@ export default class MinBinaryHeap {
     return top;
   }
 
-  insert(value: number) {
+  insert(value: T) {
     if (value !== null) {
       this.list.push(value);
       const index = this.list.length - 1;

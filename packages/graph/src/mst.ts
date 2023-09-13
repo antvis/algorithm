@@ -2,7 +2,6 @@ import UnionFind from './structs/union-find';
 import MinBinaryHeap from './structs/binary-heap';
 import { Graph, IEdge, IMSTAlgorithm, IMSTAlgorithmOpt } from './types';
 import { clone } from '@antv/util';
-import { getEdgesByNodeId } from './utils';
 
 /**
 Calculates the Minimum Spanning Tree (MST) of a graph using the Prim's algorithm.The MST is a subset of edges that forms a tree connecting all nodes with the minimum possible total edge weight.
@@ -21,7 +20,6 @@ const primMST: IMSTAlgorithm = (graph, weightProps?) => {
     const currNode = nodes[0];
     const visited = new Set();
     visited.add(currNode);
-
     // Using binary heap to maintain the weight of edges from other nodes that have joined the node
     const compareWeight = (a: IEdge, b: IEdge) => {
         if (weightProps) {
@@ -30,8 +28,9 @@ const primMST: IMSTAlgorithm = (graph, weightProps?) => {
         }
         return 0;
     };
-    const edgeQueue = new MinBinaryHeap(compareWeight);
-    getEdgesByNodeId(currNode.id, edges).forEach((edge) => {
+    const edgeQueue = new MinBinaryHeap<IEdge>(compareWeight);
+
+    graph.getRelatedEdges(currNode.id, 'both').forEach((edge) => {
         edgeQueue.insert(edge);
     });
     while (!edgeQueue.isEmpty()) {
@@ -43,13 +42,13 @@ const primMST: IMSTAlgorithm = (graph, weightProps?) => {
         selectedEdges.push(currEdge);
         if (!visited.has(source)) {
             visited.add(source);
-            getEdgesByNodeId(source, edges).forEach((edge) => {
+            graph.getRelatedEdges(source, 'both').forEach((edge) => {
                 edgeQueue.insert(edge);
             });
         }
         if (!visited.has(target)) {
             visited.add(target);
-            getEdgesByNodeId(target, edges).forEach((edge) => {
+            graph.getRelatedEdges(target, 'both').forEach((edge) => {
                 edgeQueue.insert(edge);
             });
         }
@@ -70,7 +69,7 @@ const kruskalMST: IMSTAlgorithm = (graph, weightProps?) => {
     if (nodes.length === 0) {
         return selectedEdges;
     }
-    // 若指定weight，则将所有的边按权值从小到大排序
+    // If you specify weight, all edges are sorted by weight from smallest to largest
     const weightEdges = clone(edges);
     if (weightProps) {
         weightEdges.sort((a: IEdge, b: IEdge) => {
@@ -78,9 +77,7 @@ const kruskalMST: IMSTAlgorithm = (graph, weightProps?) => {
         });
     }
     const disjointSet = new UnionFind(nodes.map((n) => n.id));
-
-    // 从权值最小的边开始，如果这条边连接的两个节点于图G中不在同一个连通分量中，则添加这条边
-    // 直到遍历完所有点或边
+    // Starting with the edge with the least weight, if the two nodes connected by this edge are not in the same connected component in graph G, the edge is added.
     while (weightEdges.length > 0) {
         const curEdge = weightEdges.shift();
         const source = curEdge.source;
