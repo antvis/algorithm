@@ -17,8 +17,8 @@ export default class UnionFind {
   // find the root of the item
   find(item: (number | string)) {
     let resItem = item;
-    while (this.parent[item] !== item) {
-      resItem = this.parent[item];
+    while (this.parent[resItem] !== resItem) {
+      resItem = this.parent[resItem];
     }
     return resItem;
   }

@@ -57,12 +57,11 @@ export default class MinBinaryHeap {
   moveUp(index: number) {
     let i = index;
     let parent = this.getParent(i);
-    while (i && i > 0 && this.compareFn(this.list[i], this.list[i]) > 0) {
+    while (i && i > 0 && this.compareFn(this.list[parent], this.list[i]) > 0) {
       // swap
       const tmp = this.list[parent];
       this.list[parent] = this.list[i];
       this.list[i] = tmp;
-      // [this.list[i], this.list[parent]] = [this.list[parent], this.list[i]]
       i = parent;
       parent = this.getParent(i);
     }
