@@ -15,7 +15,7 @@ export const detectConnectedComponents = (graph: Graph): INode[][] => {
     for (let i = 0; i < neighbors.length; ++i) {
       const neighbor = neighbors[i].id;
       if (!visited[neighbor]) {
-        const targetNode = nodes.filter(node => node.id === neighbor)
+        const targetNode = nodes.filter((node) => node.id === neighbor);
         if (targetNode.length > 0) {
           getComponent(targetNode[0]);
         }
@@ -35,7 +35,7 @@ export const detectConnectedComponents = (graph: Graph): INode[][] => {
     }
   }
   return allComponents;
-}
+};
 
 /**
  * Tarjan's Algorithm O(|V|+|E|)
@@ -48,7 +48,7 @@ export const detectConnectedComponents = (graph: Graph): INode[][] => {
 export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
   const nodes = graph.getAllNodes();
   const nodeStack: INode[] = [];
-  //Assist to determine whether it is already in the stack to reduce the search overhead
+  // Assist to determine whether it is already in the stack to reduce the search overhead
   const inStack: { [key: NodeID]: boolean } = {};
   const indices: { [key: NodeID]: number } = {};
   const lowLink: { [key: NodeID]: number } = {};
@@ -65,7 +65,7 @@ export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
     for (let i = 0; i < relatedEdges.length; i++) {
       const targetNodeID = relatedEdges[i].target;
       if (!indices[targetNodeID] && indices[targetNodeID] !== 0) {
-        const targetNode = nodes.filter(node => node.id === targetNodeID)
+        const targetNode = nodes.filter((node) => node.id === targetNodeID);
         if (targetNode.length > 0) {
           getComponent(targetNode[0]);
         }
@@ -96,7 +96,7 @@ export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
     }
   }
   return allComponents;
-}
+};
 
 export function getConnectedComponents(graph: Graph, directed?: boolean): INode[][] {
   if (directed) return detectStrongConnectComponents(graph);

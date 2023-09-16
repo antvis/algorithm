@@ -88,7 +88,7 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
 export const dataTransformer = (data: { nodes: { id: NodeID, [key: string]: any }[], edges: { source: NodeID, target: NodeID, [key: string]: any }[] }): { nodes: INode[], edges: IEdge[] } => {
   const { nodes, edges } = data;
   return {
-    nodes: nodes.map(n => {
+    nodes: nodes.map((n) => {
       const { id, ...rest } = n;
       return { id, data: rest };
     }),
@@ -96,5 +96,5 @@ export const dataTransformer = (data: { nodes: { id: NodeID, [key: string]: any 
       const { id, source, target, ...rest } = e;
       return { id: id ? id : `edge-${i}`, target, source, data: rest };
     }),
-  }
-}
+  };
+};

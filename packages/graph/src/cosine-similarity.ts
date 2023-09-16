@@ -24,4 +24,4 @@ export const cosineSimilarity = (
     // Calculate the cosine similarity between the item vector and the target element vector
     const cosineSimilarity = norm2Product ? dot / norm2Product : 0;
     return cosineSimilarity;
-}
+};

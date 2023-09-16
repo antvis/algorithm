@@ -21,8 +21,8 @@ export const nodesCosineSimilarity = (
   allCosineSimilarity: number[],
   similarNodes: NodeSimilarity[],
 } => {
-  const similarNodes = clone(nodes.filter(node => node.id !== seedNode.id));
-  const seedNodeIndex = nodes.findIndex(node => node.id === seedNode.id);
+  const similarNodes = clone(nodes.filter((node) => node.id !== seedNode.id));
+  const seedNodeIndex = nodes.findIndex((node) => node.id === seedNode.id);
   // Collection of all node properties
   const properties = getAllProperties(nodes);
   // One-hot feature vectors for all node properties
@@ -40,4 +40,4 @@ export const nodesCosineSimilarity = (
   // Sort the returned nodes according to cosine similarity
   similarNodes.sort((a: NodeSimilarity, b: NodeSimilarity) => b.data.cosineSimilarity - a.data.cosineSimilarity);
   return { allCosineSimilarity, similarNodes };
-}
+};
