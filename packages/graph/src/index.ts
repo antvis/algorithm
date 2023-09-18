@@ -9,8 +9,5 @@ export * from './dfs';
 export * from './cosine-similarity';
 export * from './nodes-cosine-similarity';
 export * from './gaddi';
-<<<<<<< HEAD
 export * from './connected-component';
-=======
 export * from './mst';
->>>>>>> upstream/next

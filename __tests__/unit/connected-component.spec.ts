@@ -1,7 +1,7 @@
 import { getConnectedComponents } from "../../packages/graph/src";
 import { Graph } from "@antv/graphlib";
 import connectedTestData from '../data/connected-test-data.json';
-import { dataTransformer } from "../../packages/graph/src/utils";
+import { dataTransformer } from "../utils/data";
 
 const data = {
   nodes: [
