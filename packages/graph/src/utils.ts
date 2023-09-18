@@ -77,4 +77,3 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   });
   return oneHotCode;
 };
-
