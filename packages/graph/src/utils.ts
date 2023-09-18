@@ -12,17 +12,17 @@ export const getAllProperties = (nodes: Node<NodeData>[]) => {
 
 export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string[], uninvolvedKeys?: string[]) => {
   let keys: string[] = [];
-  // 指定了参与计算的keys时，使用指定的keys
+  // Use the specified keys when the keys participating in the calculation is specified
   if (involvedKeys?.length) {
     keys = involvedKeys;
   } else {
-    // 未指定抽取的keys时，提取数据中所有的key
+    // When the extracted keys is not specified, all key in the data is extracted
     dataList.forEach((data) => {
       keys = keys.concat(Object.keys(data));
     });
     keys = uniq(keys);
   }
-  // 获取所有值非空的key的value数组
+  // Get the value array of all key with non-null values
   const allKeyValueMap: KeyValueMap = {};
   keys.forEach((key) => {
     const value: unknown[] = [];
@@ -40,19 +40,17 @@ export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string
 };
 
 export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvolvedKeys?: string[]) => {
-  // 获取数据中所有的属性/特征及其对应的值
+  // Get all attributes / features in the data and their corresponding values
   const allKeyValueMap = getAllKeyValueMap(dataList, involvedKeys, uninvolvedKeys);
   const oneHotCode: unknown[][] = [];
   if (!Object.keys(allKeyValueMap).length) {
     return oneHotCode;
   }
-
-  // 获取所有的属性/特征值
+  // Get all attribute / feature values
   const allValue = Object.values(allKeyValueMap);
-  // 是否所有属性/特征的值都是数值型
+  // Whether the values of all attributes / features are numerical
   const isAllNumber = allValue.every((value) => value.every((item) => (typeof (item) === 'number')));
-
-  // 对数据进行one-hot编码
+  // One-hot encode the data
   dataList.forEach((data, index) => {
     let code: unknown[] = [];
     Object.keys(allKeyValueMap).forEach((key) => {
@@ -60,11 +58,11 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
       const allKeyValue = allKeyValueMap[key];
       const valueIndex = allKeyValue.findIndex((value) => keyValue === value);
       const subCode = [];
-      // 如果属性/特征所有的值都能转成数值型，不满足分箱，则直接用值（todo: 为了收敛更快，需做归一化处理）
+      // If all the values of the attribute / feature can be converted to numerical type and do not satisfy the box division, then use the value directly (todo: normalization is needed for faster convergence)
       if (isAllNumber) {
         subCode.push(keyValue);
       } else {
-        // 进行one-hot编码
+        // Encode one-hot
         for (let i = 0; i < allKeyValue.length; i++) {
           if (i === valueIndex) {
             subCode.push(1);

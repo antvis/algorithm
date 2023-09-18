@@ -1,6 +1,6 @@
 import { Edge, Graph as IGraph, Node, PlainObject } from '@antv/graphlib';
 
-// 数据集中属性/特征值分布的map
+// Map of attribute / eigenvalue distribution in dataset
 export interface KeyValueMap {
   [key: string]: any[];
 }
@@ -56,3 +56,9 @@ export type GraphData = {
 
 export type INode = Node<NodeData>;
 export type IEdge = Edge<EdgeData>;
+
+export type IMSTAlgorithm = (graph: Graph, weightProps?: string) => IEdge[];
+export interface IMSTAlgorithmOpt {
+  'prim': IMSTAlgorithm;
+  'kruskal': IMSTAlgorithm;
+}
