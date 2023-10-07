@@ -28,7 +28,6 @@ const getCentroid = (distanceType: DistanceType, allPropertiesWeight: number[][]
  * Performs the k-means clustering algorithm on a graph.
  * @param graph The graph to perform clustering on.
  * @param k The number of clusters.
- * @param propertyKey The property key to use for clustering. Default is undefined.
  * @param involvedKeys The keys of properties to be considered for clustering. Default is an empty array.
  * @param uninvolvedKeys The keys of properties to be ignored for clustering. Default is ['id'].
  * @param distanceType The distance type to use for clustering. Default is DistanceType.EuclideanDistance.
@@ -37,9 +36,8 @@ const getCentroid = (distanceType: DistanceType, allPropertiesWeight: number[][]
 export const kMeans = (
     graph: Graph,
     k: number = 3,
-    propertyKey: string = undefined,
     involvedKeys: string[] = [],
-    uninvolvedKeys: string[] = ['id'],
+    uninvolvedKeys: string[] = [],
     distanceType: DistanceType = DistanceType.EuclideanDistance,
 ): ClusterData => {
     const nodes = graph.getAllNodes();
@@ -55,7 +53,7 @@ export const kMeans = (
     };
 
     // When the distance type is Euclidean distance and there are no attributes in data, return directly
-    if (distanceType === DistanceType.EuclideanDistance && !nodes.every(node => node.data.hasOwnProperty(propertyKey))) {
+    if (distanceType === DistanceType.EuclideanDistance && !nodes.every(node => node.data)) {
         return defaultClusterInfo;
     }
     let properties = [];
@@ -89,8 +87,11 @@ export const kMeans = (
                     break;
             }
             centroidIndexList.push(randomIndex);
-            clusters[i].nodes = [nodes[randomIndex]];
             nodes[randomIndex].data.clusterId = String(i);
+            clusters[i] = {
+                id: `${i}`,
+                nodes: [nodes[randomIndex]]
+            };
         } else {
             let maxDistance = -Infinity;
             let maxDistanceNodeIndex = 0;
@@ -122,7 +123,10 @@ export const kMeans = (
             }
             centroids[i] = getCentroid(distanceType, allPropertiesWeight, maxDistanceNodeIndex);
             centroidIndexList.push(maxDistanceNodeIndex);
-            clusters[i].nodes = [nodes[maxDistanceNodeIndex]];
+            clusters[i] = {
+                id: `${i}`,
+                nodes: [nodes[maxDistanceNodeIndex]]
+            };
             nodes[maxDistanceNodeIndex].data.clusterId = String(i);
         }
     }
