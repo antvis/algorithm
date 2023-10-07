@@ -21,7 +21,7 @@
     "build:ci": "pnpm -r run build:ci",
     "prepare": "husky install",
     "test": "jest",
-    "test_one": "jest ./__tests__/unit/mst.spec.ts",
+    "test_one": "jest ./__tests__/unit/k-means.spec.ts",
     "coverage": "jest --coverage",
     "build:site": "vite build",
     "deploy": "gh-pages -d site/dist",
