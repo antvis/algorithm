@@ -22,7 +22,7 @@ const getCentroid = (distanceType: DistanceType, allPropertiesWeight: number[][]
             break;
     }
     return centroid;
-}
+};
 
 /**
  * Performs the k-means clustering algorithm on a graph.
@@ -53,7 +53,7 @@ export const kMeans = (
     };
 
     // When the distance type is Euclidean distance and there are no attributes in data, return directly
-    if (distanceType === DistanceType.EuclideanDistance && !nodes.every(node => node.data)) {
+    if (distanceType === DistanceType.EuclideanDistance && !nodes.every((node) => node.data)) {
         return defaultClusterInfo;
     }
     let properties = [];
@@ -65,7 +65,7 @@ export const kMeans = (
     if (!allPropertiesWeight.length) {
         return defaultClusterInfo;
     }
-    const allPropertiesWeightUniq = uniq(allPropertiesWeight.map(item => item.join('')));
+    const allPropertiesWeightUniq = uniq(allPropertiesWeight.map((item) => item.join('')));
     // When the number of nodes or the length of the attribute set is less than k, k will be adjusted to the smallest of them
     const finalK = Math.min(k, nodes.length, allPropertiesWeightUniq.length);
     for (let i = 0; i < nodes.length; i++) {
@@ -115,7 +115,7 @@ export const kMeans = (
                     const avgDistance = totalDistance / centroids.length;
                     // Record the distance and node index to the farthest centroid
                     if (avgDistance > maxDistance &&
-                        !centroids.find(centroid => isEqual(centroid, getCentroid(distanceType, allPropertiesWeight, nodes[m].data.originIndex as number)))) {
+                        !centroids.find((centroid) => isEqual(centroid, getCentroid(distanceType, allPropertiesWeight, nodes[m].data.originIndex as number)))) {
                         maxDistance = avgDistance;
                         maxDistanceNodeIndex = m;
                     }
@@ -184,7 +184,7 @@ export const kMeans = (
         }
         iterations++;
         // Stop if each node belongs to a category and there is no centroid (cluster center) movement or the number of iterations exceeds 1000
-        if (nodes.every(node => node.data.clusterId !== undefined) && centroidsEqualAvg || iterations >= 1000) {
+        if (nodes.every((node) => node.data.clusterId !== undefined) && centroidsEqualAvg || iterations >= 1000) {
             break;
         }
     }
@@ -195,10 +195,10 @@ export const kMeans = (
         [key: string]: Edge<EdgeData>
     } = {};
     let edgeIndex = 0;
-    edges.forEach(edge => {
+    edges.forEach((edge) => {
         const { source, target } = edge;
-        const sourceClusterId = nodes.find(node => node.id === source)?.data.clusterId;
-        const targetClusterId = nodes.find(node => node.id === target)?.data.clusterId;
+        const sourceClusterId = nodes.find((node) => node.id === source)?.data.clusterId;
+        const targetClusterId = nodes.find((node) => node.id === target)?.data.clusterId;
         const newEdgeId = `${sourceClusterId}---${targetClusterId}`;
         if (clusterEdgeMap[newEdgeId]) {
             (clusterEdgeMap[newEdgeId].data.count as number)++;
@@ -215,5 +215,5 @@ export const kMeans = (
     });
 
     return { clusters, clusterEdges };
-}
+};
 

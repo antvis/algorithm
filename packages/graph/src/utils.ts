@@ -89,4 +89,4 @@ export const getDistance = (item: number[], otherItem: number[], distanceType: D
       break;
   }
   return distance;
-}
+};
