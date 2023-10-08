@@ -87,10 +87,8 @@ const data = {
 const graph = new Graph<any, any>(data);
 describe('depthFirstSearch', () => {
   it('should perform DFS operation on graph', () => {
-
     const enterNodeCallback = jest.fn();
     const leaveNodeCallback = jest.fn();
-
     // Traverse graphs without callbacks first to check default ones.
     depthFirstSearch(graph, 'A');
 
