@@ -83,10 +83,21 @@ export const getDistance = (item: number[], otherItem: number[], distanceType: D
   let distance = 0;
   switch (distanceType) {
     case DistanceType.EuclideanDistance:
-      distance = new Vector(item).euclideanDistance(new Vector(otherItem));
+      distance = euclideanDistance(item, otherItem);
       break;
     default:
       break;
   }
   return distance;
 };
+
+
+function euclideanDistance(source: number[], target: number[]) {
+  if (source.length !== target.length) return 0;
+  let res = 0;
+  source.forEach((s, i) => {
+    res += Math.pow(s - target[i], 2)
+  })
+  return Math.sqrt(res);
+}
+
