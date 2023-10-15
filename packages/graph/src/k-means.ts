@@ -51,7 +51,8 @@ export const kMeans = (
                 nodes,
             }
         ],
-        clusterEdges: []
+        clusterEdges: [],
+        nodeToCluster,
     };
 
     // When the distance type is Euclidean distance and there are no attributes in data, return directly
@@ -89,7 +90,7 @@ export const kMeans = (
                     break;
             }
             centroidIndexList.push(randomIndex);
-            nodes[randomIndex].data.clusterId = String(i);
+            nodeToCluster.set(nodes[randomIndex].id, `${i}`);
             clusters[i] = {
                 id: `${i}`,
                 nodes: [nodes[randomIndex]]
@@ -129,7 +130,7 @@ export const kMeans = (
                 id: `${i}`,
                 nodes: [nodes[maxDistanceNodeIndex]]
             };
-            nodes[maxDistanceNodeIndex].data.clusterId = String(i);
+            nodeToCluster.set(nodes[maxDistanceNodeIndex].id, `${i}`);
         }
     }
 
@@ -155,15 +156,16 @@ export const kMeans = (
                     }
                 }
                 // delete node 
-                if (nodes[i].data.clusterId !== undefined) {
-                    for (let n = clusters[Number(nodes[i].data.clusterId)].nodes.length - 1; n >= 0; n--) {
-                        if (clusters[Number(nodes[i].data.clusterId)].nodes[n].id === nodes[i].id) {
-                            clusters[Number(nodes[i].data.clusterId)].nodes.splice(n, 1);
+                const cId = nodeToCluster.get(nodes[i].id);
+                if (cId !== undefined) {
+                    for (let n = clusters[Number(cId)].nodes.length - 1; n >= 0; n--) {
+                        if (clusters[Number(cId)].nodes[n].id === nodes[i].id) {
+                            clusters[Number(cId)].nodes.splice(n, 1);
                         }
                     }
                 }
                 // Divide the node into the class corresponding to the centroid (cluster center) with the smallest distance.
-                nodes[i].data.clusterId = String(minDistanceIndex);
+                nodeToCluster.set(nodes[i].id, `${minDistanceIndex}`);
                 clusters[minDistanceIndex].nodes.push(nodes[i]);
             }
         }
@@ -186,7 +188,7 @@ export const kMeans = (
         }
         iterations++;
         // Stop if each node belongs to a category and there is no centroid (cluster center) movement or the number of iterations exceeds 1000
-        if (nodes.every((node) => node.data.clusterId !== undefined) && centroidsEqualAvg || iterations >= 1000) {
+        if (nodes.every((node) => !nodeToCluster.get(node.id)) && centroidsEqualAvg || iterations >= 1000) {
             break;
         }
     }
@@ -199,8 +201,8 @@ export const kMeans = (
     let edgeIndex = 0;
     edges.forEach((edge) => {
         const { source, target } = edge;
-        const sourceClusterId = nodes.find((node) => node.id === source)?.data.clusterId;
-        const targetClusterId = nodes.find((node) => node.id === target)?.data.clusterId;
+        const sourceClusterId = nodeToCluster.get(source);
+        const targetClusterId = nodeToCluster.get(target);
         const newEdgeId = `${sourceClusterId}---${targetClusterId}`;
         if (clusterEdgeMap[newEdgeId]) {
             (clusterEdgeMap[newEdgeId].data.count as number)++;
@@ -216,8 +218,6 @@ export const kMeans = (
         }
     });
 
-    console.log(clusters);
-
-    return { clusters, clusterEdges };
+    return { clusters, clusterEdges, nodeToCluster };
 };
 

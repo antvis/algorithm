@@ -104,34 +104,36 @@ describe('kMeans normal demo', () => {
         }
         const data = dataPropertiesTransformer(simpleGraphData);
         const graph = new Graph(data);
-        const { clusters } = kMeans(graph, 3);
+        const { clusters, nodeToCluster } = kMeans(graph, 3);
         expect(clusters.length).toBe(3);
         const nodes = graph.getAllNodes();
-        expect(nodes[2].data.clusterId).toEqual(nodes[3].data.clusterId);
-        expect(nodes[2].data.clusterId).toEqual(nodes[4].data.clusterId);
+
+
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[3].id));
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[4].id));
     });
 
 
     it('complex data demo: ', () => {
         const data = dataLabelDataTransformer(propertiesGraphData);
         const graph = new Graph(data);
-        const { clusters } = kMeans(graph, 3);
+        const { clusters,nodeToCluster } = kMeans(graph, 3);
         expect(clusters.length).toBe(3);
         const nodes = graph.getAllNodes();
-        expect(nodes[0].data.clusterId).toEqual(nodes[1].data.clusterId);
-        expect(nodes[0].data.clusterId).toEqual(nodes[2].data.clusterId);
-        expect(nodes[0].data.clusterId).toEqual(nodes[3].data.clusterId);
-        expect(nodes[0].data.clusterId).toEqual(nodes[4].data.clusterId);
-        expect(nodes[5].data.clusterId).toEqual(nodes[6].data.clusterId);
-        expect(nodes[5].data.clusterId).toEqual(nodes[7].data.clusterId);
-        expect(nodes[5].data.clusterId).toEqual(nodes[8].data.clusterId);
-        expect(nodes[5].data.clusterId).toEqual(nodes[9].data.clusterId);
-        expect(nodes[5].data.clusterId).toEqual(nodes[10].data.clusterId);
-        expect(nodes[11].data.clusterId).toEqual(nodes[12].data.clusterId);
-        expect(nodes[11].data.clusterId).toEqual(nodes[13].data.clusterId);
-        expect(nodes[11].data.clusterId).toEqual(nodes[14].data.clusterId);
-        expect(nodes[11].data.clusterId).toEqual(nodes[15].data.clusterId);
-        expect(nodes[11].data.clusterId).toEqual(nodes[16].data.clusterId);
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[1].id));
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[2].id));
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[3].id));
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[4].id));
+        expect(nodeToCluster.get(nodes[5].id)).toEqual(nodeToCluster.get(nodes[6].id));
+        expect(nodeToCluster.get(nodes[5].id)).toEqual(nodeToCluster.get(nodes[7].id));
+        expect(nodeToCluster.get(nodes[5].id)).toEqual(nodeToCluster.get(nodes[8].id));
+        expect(nodeToCluster.get(nodes[5].id)).toEqual(nodeToCluster.get(nodes[9].id));
+        expect(nodeToCluster.get(nodes[5].id)).toEqual(nodeToCluster.get(nodes[10].id));
+        expect(nodeToCluster.get(nodes[11].id)).toEqual(nodeToCluster.get(nodes[12].id));
+        expect(nodeToCluster.get(nodes[11].id)).toEqual(nodeToCluster.get(nodes[13].id));
+        expect(nodeToCluster.get(nodes[11].id)).toEqual(nodeToCluster.get(nodes[14].id));
+        expect(nodeToCluster.get(nodes[11].id)).toEqual(nodeToCluster.get(nodes[15].id));
+        expect(nodeToCluster.get(nodes[11].id)).toEqual(nodeToCluster.get(nodes[16].id));
     });
 
     it('demo use involvedKeys: ', () => {
@@ -204,11 +206,11 @@ describe('kMeans normal demo', () => {
         const data = dataPropertiesTransformer(simpleGraphData);
         const involvedKeys = ['amount'];
         const graph = new Graph(data);
-        const { clusters } = kMeans(graph, 3, involvedKeys);
+        const { clusters ,nodeToCluster} = kMeans(graph, 3, involvedKeys);
         expect(clusters.length).toBe(3);
         const nodes = graph.getAllNodes();
-        expect(nodes[2].data.clusterId).toEqual(nodes[3].data.clusterId);
-        expect(nodes[2].data.clusterId).toEqual(nodes[4].data.clusterId);
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[3].id));
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[4].id));
     });
 
     it('demo use uninvolvedKeys: ', () => {
@@ -281,11 +283,11 @@ describe('kMeans normal demo', () => {
         const data = dataPropertiesTransformer(simpleGraphData);
         const graph = new Graph(data);
         const uninvolvedKeys = ['id', 'city'];
-        const { clusters } = kMeans(graph, 3, [], uninvolvedKeys);
+        const { clusters,nodeToCluster } = kMeans(graph, 3, [], uninvolvedKeys);
         expect(clusters.length).toBe(3);
         const nodes = graph.getAllNodes(); data
-        expect(nodes[2].data.clusterId).toEqual(nodes[3].data.clusterId);
-        expect(nodes[2].data.clusterId).toEqual(nodes[4].data.clusterId);
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[3].id));
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[4].id));
     });
 
 });
@@ -331,12 +333,12 @@ describe('kMeans All properties values are numeric demo', () => {
         }
         const data = dataPropertiesTransformer(allPropertiesValuesNumericData);
         const graph = new Graph(data);
-        const { clusters, clusterEdges } = kMeans(graph, 2);
+        const { clusters, clusterEdges,nodeToCluster } = kMeans(graph, 2);
         expect(clusters.length).toBe(2);
         expect(clusterEdges.length).toBe(0);
         const nodes = graph.getAllNodes();
-        expect(nodes[0].data.clusterId).toEqual(nodes[1].data.clusterId);
-        expect(nodes[2].data.clusterId).toEqual(nodes[3].data.clusterId);
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[1].id));
+        expect(nodeToCluster.get(nodes[2].id)).toEqual(nodeToCluster.get(nodes[3].id));
     });
     it('only one property and the value are numeric demo: ', () => {
         const allPropertiesValuesNumericData = {
@@ -376,13 +378,13 @@ describe('kMeans All properties values are numeric demo', () => {
         }
         const data = dataPropertiesTransformer(allPropertiesValuesNumericData);
         const graph = new Graph(data);
-        const { clusters, clusterEdges } = kMeans(graph, 2);
+        const { clusters, clusterEdges,nodeToCluster } = kMeans(graph, 2);
         expect(clusters.length).toBe(2);
         expect(clusterEdges.length).toBe(0);
         const nodes = graph.getAllNodes();
-        expect(nodes[0].data.clusterId).toEqual(nodes[1].data.clusterId);
-        expect(nodes[0].data.clusterId).toEqual(nodes[2].data.clusterId);
-        expect(nodes[3].data.clusterId).toEqual(nodes[4].data.clusterId);
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[1].id));
+        expect(nodeToCluster.get(nodes[0].id)).toEqual(nodeToCluster.get(nodes[2].id));
+        expect(nodeToCluster.get(nodes[3].id)).toEqual(nodeToCluster.get(nodes[4].id));
     });
 
 });

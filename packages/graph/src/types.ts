@@ -22,6 +22,7 @@ export interface Cluster {
 export interface ClusterData {
   clusters: Cluster[];
   clusterEdges: Edge<EdgeData>[];
+  nodeToCluster: Map<NodeID, string>
 }
 
 export interface ClusterMap {
