@@ -2,7 +2,7 @@ import { isEqual, uniq } from '@antv/util';
 import { Edge } from '@antv/graphlib';
 import { getAllProperties, oneHot, getDistance } from './utils';
 import { Vector } from "./vector";
-import { ClusterData, DistanceType, Graph, EdgeData, Cluster } from './types';
+import { ClusterData, DistanceType, Graph, EdgeData, Cluster, NodeID } from './types';
 
 /**
  * Calculates the centroid based on the distance type and the given index.
@@ -42,6 +42,8 @@ export const kMeans = (
 ): ClusterData => {
     const nodes = graph.getAllNodes();
     const edges = graph.getAllEdges();
+    const nodeToOriginIdx = new Map<NodeID, number>();
+    const nodeToCluster = new Map<NodeID, string>();
     const defaultClusterInfo: ClusterData = {
         clusters: [
             {
@@ -69,7 +71,7 @@ export const kMeans = (
     // When the number of nodes or the length of the attribute set is less than k, k will be adjusted to the smallest of them
     const finalK = Math.min(k, nodes.length, allPropertiesWeightUniq.length);
     for (let i = 0; i < nodes.length; i++) {
-        nodes[i].data.originIndex = i;
+        nodeToOriginIdx.set(nodes[i].id, i);
     }
     const centroids: number[][] = [];
     const centroidIndexList: number[] = [];
@@ -104,7 +106,7 @@ export const kMeans = (
                         let distance = 0;
                         switch (distanceType) {
                             case DistanceType.EuclideanDistance:
-                                distance = getDistance(allPropertiesWeight[nodes[m].data.originIndex as number], centroids[j], distanceType);
+                                distance = getDistance(allPropertiesWeight[nodeToOriginIdx.get(nodes[m].id)], centroids[j], distanceType);
                                 break;
                             default:
                                 break;
@@ -115,7 +117,7 @@ export const kMeans = (
                     const avgDistance = totalDistance / centroids.length;
                     // Record the distance and node index to the farthest centroid
                     if (avgDistance > maxDistance &&
-                        !centroids.find((centroid) => isEqual(centroid, getCentroid(distanceType, allPropertiesWeight, nodes[m].data.originIndex as number)))) {
+                        !centroids.find((centroid) => isEqual(centroid, getCentroid(distanceType, allPropertiesWeight, nodeToOriginIdx.get(nodes[m].id))))) {
                         maxDistance = avgDistance;
                         maxDistanceNodeIndex = m;
                     }
@@ -171,7 +173,7 @@ export const kMeans = (
             const clusterNodes = clusters[i].nodes;
             let totalVector = new Vector([]);
             for (let j = 0; j < clusterNodes.length; j++) {
-                totalVector = totalVector.add(new Vector(allPropertiesWeight[clusterNodes[j].data.originIndex as number]));
+                totalVector = totalVector.add(new Vector(allPropertiesWeight[nodeToOriginIdx.get(clusterNodes[j].id)]));
             }
             // Calculates the mean vector for each category
             const avgVector = totalVector.avg(clusterNodes.length);
@@ -213,6 +215,8 @@ export const kMeans = (
             clusterEdges.push(newEdge);
         }
     });
+
+    console.log(clusters);
 
     return { clusters, clusterEdges };
 };
