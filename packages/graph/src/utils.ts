@@ -96,8 +96,8 @@ function euclideanDistance(source: number[], target: number[]) {
   if (source.length !== target.length) return 0;
   let res = 0;
   source.forEach((s, i) => {
-    res += Math.pow(s - target[i], 2)
-  })
+    res += Math.pow(s - target[i], 2);
+  });
   return Math.sqrt(res);
 }
 

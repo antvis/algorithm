@@ -57,7 +57,7 @@ export const detectDirectedCycle = (graph: Graph): {
             return true;
         },
     };
-    for (let key of Object.keys(unvisitedSet)) {
+    for (const key of Object.keys(unvisitedSet)) {
         depthFirstSearch(graph, key, callbacks, true, false);
     }
     return cycle;
@@ -89,7 +89,7 @@ export const detectAllUndirectedCycle = (graph: Graph, nodeIds?: NodeID[], inclu
             // const neighbors = getNeighbors(curNodeId, graphData.edges);
             for (let i = 0; i < neighbors.length; i += 1) {
                 const neighborId = neighbors[i].id;
-                const neighbor = graph.getAllNodes().find(node => node.id === neighborId);
+                const neighbor = graph.getAllNodes().find((node) => node.id === neighborId);
                 if (neighborId === curNodeId) {
                     allCycles.push({ [neighborId]: curNode });
                 } else if (!(neighborId in used)) {
@@ -170,7 +170,7 @@ export const detectAllDirectedCycle = (graph: Graph, nodeIds?: NodeID[], include
 
     const circuit = (node: INode, start: INode, adjList: { [key: NodeID]: number[] }) => {
         let closed = false; // whether a path is closed
-        if (nodeIds && include === false && nodeIds.indexOf(node.id) > -1) return closed;
+        if (nodeIds && !include && nodeIds.indexOf(node.id) > -1) return closed;
         path.push(node);
         blocked.add(node);
         const neighbors = adjList[node.id];
@@ -221,7 +221,7 @@ export const detectAllDirectedCycle = (graph: Graph, nodeIds?: NodeID[], include
             const nodeId = nodeIds[i];
             node2Idx[nodes[i].id] = node2Idx[nodeId];
             node2Idx[nodeId] = 0;
-            idx2Node[0] = nodes.find(node => node.id === nodeId);
+            idx2Node[0] = nodes.find((node) => node.id === nodeId);
             idx2Node[node2Idx[nodes[i].id]] = nodes[i];
         }
     }
@@ -246,9 +246,9 @@ export const detectAllDirectedCycle = (graph: Graph, nodeIds?: NodeID[], include
         for (let i = 0; i < component.length; i += 1) {
             const node = component[i];
             adjList[node.id] = [];
-            for (const neighbor of graph.getRelatedEdges(node.id, "out").map(n => n.target).filter((n) => component.map(c => c.id).indexOf(n) > -1)) {
+            for (const neighbor of graph.getRelatedEdges(node.id, "out").map((n) => n.target).filter((n) => component.map((c) => c.id).indexOf(n) > -1)) {
                 // 对自环情况 (点连向自身) 特殊处理：记录自环，但不加入adjList
-                if (neighbor === node.id && !(include === false && nodeIds.indexOf(node.id) > -1)) {
+                if (neighbor === node.id && !(!include && nodeIds.indexOf(node.id) > -1)) {
                     allCycles.push({ [node.id]: node });
                 } else {
                     adjList[node.id].push(node2Idx[neighbor]);

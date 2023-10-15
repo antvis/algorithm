@@ -40,7 +40,7 @@ function depthFirstSearchRecursive(
   });
   const neighbors = directed
     ?
-    graph.getRelatedEdges(currentNodeId, "out").map(e => graph.getNode(e.target))
+    graph.getRelatedEdges(currentNodeId, "out").map((e) => graph.getNode(e.target))
     :
     graph.getNeighbors(currentNodeId)
     ;
