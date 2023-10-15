@@ -12,3 +12,4 @@ export * from './gaddi';
 export * from './connected-component';
 export * from './mst';
 export * from './k-means';
+export * from './detect-cycle';

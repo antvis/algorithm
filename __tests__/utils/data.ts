@@ -9,7 +9,7 @@ export const dataTransformer = (data: { nodes: { id: NodeID, [key: string]: any 
     return {
         nodes: nodes.map((n) => {
             const { id, ...rest } = n;
-            return { id, data: rest };
+            return { id, data: rest ? rest : {} };
         }),
         edges: edges.map((e, i) => {
             const { id, source, target, ...rest } = e;
