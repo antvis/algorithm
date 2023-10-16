@@ -1,5 +1,6 @@
 import { Node, PlainObject } from "@antv/graphlib";
-import { KeyValueMap, NodeData } from "./types";
+import { Vector } from "./vector";
+import { DistanceType, KeyValueMap, NodeData } from "./types";
 import { uniq } from "@antv/util";
 
 export const getAllProperties = (nodes: Node<NodeData>[]) => {
@@ -77,3 +78,26 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   });
   return oneHotCode;
 };
+
+export const getDistance = (item: number[], otherItem: number[], distanceType: DistanceType = DistanceType.EuclideanDistance) => {
+  let distance = 0;
+  switch (distanceType) {
+    case DistanceType.EuclideanDistance:
+      distance = euclideanDistance(item, otherItem);
+      break;
+    default:
+      break;
+  }
+  return distance;
+};
+
+
+function euclideanDistance(source: number[], target: number[]) {
+  if (source.length !== target.length) return 0;
+  let res = 0;
+  source.forEach((s, i) => {
+    res += Math.pow(s - target[i], 2);
+  });
+  return Math.sqrt(res);
+}
+

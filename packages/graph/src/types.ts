@@ -29,6 +29,7 @@ export interface ClusterMap {
   [key: string]: Cluster;
 }
 
+
 export type Graph = IGraph<NodeData, EdgeData>;
 
 export type Matrix = number[];
@@ -58,6 +59,10 @@ export type IEdge = Edge<EdgeData>;
 
 export type IMSTAlgorithm = (graph: Graph, weightProps?: string) => IEdge[];
 export interface IMSTAlgorithmOpt {
-  prim: IMSTAlgorithm;
-  kruskal: IMSTAlgorithm;
+  'prim': IMSTAlgorithm;
+  'kruskal': IMSTAlgorithm;
+}
+
+export enum DistanceType {
+  EuclideanDistance = 'euclideanDistance',
 }
