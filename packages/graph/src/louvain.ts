@@ -142,6 +142,7 @@ export function louvain(
   let uniqueId = 1;
   const clusters: ClusterMap = {};
   const nodeMap: Record<ID, { node: Node<NodeData>; idx: number }> = {};
+  const nodeToCluster = new Map<ID, string>();
   nodes.forEach((node, i) => {
     const cid: string = String(uniqueId++);
     node.data.clusterId = cid;
@@ -412,9 +413,13 @@ export function louvain(
   const clustersArray: Cluster[] = [];
   Object.keys(finalClusters).forEach((clusterId) => {
     clustersArray.push(finalClusters[clusterId]);
+    finalClusters[clusterId].nodes.forEach((node) => {
+      nodeToCluster.set(node.id, clusterId);
+    });
   });
   return {
     clusters: clustersArray,
-    clusterEdges
+    clusterEdges,
+    nodeToCluster
   };
 }

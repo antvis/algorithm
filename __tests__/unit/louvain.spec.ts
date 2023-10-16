@@ -43,6 +43,21 @@ describe('Louvain', () => {
     expect(clusteredData.clusterEdges[0].data.count).toBe(13);
     expect(clusteredData.clusterEdges[1].data.count).toBe(10);
     expect(clusteredData.clusterEdges[1].data.weight).toBe(14);
+    expect(clusteredData.nodeToCluster.get('0')).toBe('1');
+    expect(clusteredData.nodeToCluster.get('1')).toBe('1');
+    expect(clusteredData.nodeToCluster.get('2')).toBe('1');
+    expect(clusteredData.nodeToCluster.get('3')).toBe('1');
+    expect(clusteredData.nodeToCluster.get('4')).toBe('1');
+    expect(clusteredData.nodeToCluster.get('5')).toBe('2');
+    expect(clusteredData.nodeToCluster.get('6')).toBe('2');
+    expect(clusteredData.nodeToCluster.get('7')).toBe('2');
+    expect(clusteredData.nodeToCluster.get('8')).toBe('2');
+    expect(clusteredData.nodeToCluster.get('9')).toBe('2');
+    expect(clusteredData.nodeToCluster.get('10')).toBe('3');
+    expect(clusteredData.nodeToCluster.get('11')).toBe('3');
+    expect(clusteredData.nodeToCluster.get('12')).toBe('3');
+    expect(clusteredData.nodeToCluster.get('13')).toBe('3');
+    expect(clusteredData.nodeToCluster.get('14')).toBe('3');
   });
 
   // it('louvain with large graph', () => { // https://gw.alipayobjects.com/os/antvdemo/assets/data/relations.json
