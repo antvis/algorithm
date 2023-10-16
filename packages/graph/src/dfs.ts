@@ -1,15 +1,19 @@
-import { Graph, IAlgorithmCallbacks, NodeID } from './types';
+import { ID } from '@antv/graphlib';
+import { Graph, IAlgorithmCallbacks } from './types';
 
 /**
  * Initializes the callback functions for the depth-first search algorithm.
  * @param callbacks (Optional) The original callbacks object containing custom callback functions.
  * @returns The initialized callbacks object.
  */
-function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks) {
+function initCallbacks(
+  callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks
+) {
   const initiatedCallback = callbacks;
-  const stubCallback = () => { };
+  const stubCallback = () => {};
   const allowTraversalCallback = () => true;
-  initiatedCallback.allowTraversal = callbacks.allowTraversal || allowTraversalCallback;
+  initiatedCallback.allowTraversal =
+    callbacks.allowTraversal || allowTraversalCallback;
   initiatedCallback.enter = callbacks.enter || stubCallback;
   initiatedCallback.leave = callbacks.leave || stubCallback;
   return initiatedCallback;
@@ -27,42 +31,48 @@ function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallback
  */
 function depthFirstSearchRecursive(
   graph: Graph,
-  currentNodeId: NodeID,
-  previousNodeId: NodeID,
+  currentNodeId: ID,
+  previousNodeId: ID,
   callbacks: IAlgorithmCallbacks,
-  visit: Set<NodeID>,
+  visit: Set<ID>,
   directed: boolean,
-  visitOnce: boolean,
+  visitOnce: boolean
 ) {
   callbacks.enter({
     current: currentNodeId,
     previous: previousNodeId,
   });
   const neighbors = directed
-    ?
-    graph.getRelatedEdges(currentNodeId, "out").map((e) => graph.getNode(e.target))
-    :
-    graph.getNeighbors(currentNodeId)
-    ;
+    ? graph
+        .getRelatedEdges(currentNodeId, 'out')
+        .map((e) => graph.getNode(e.target))
+    : graph.getNeighbors(currentNodeId);
   neighbors.forEach((nextNode) => {
     const nextNodeId = nextNode.id;
     // `Visit` is not considered when judging recursive conditions
     if (
-      visitOnce ?
-        (callbacks.allowTraversal({
-          previous: previousNodeId,
-          current: currentNodeId,
-          next: nextNodeId,
-        }) && !visit.has(nextNodeId))
-        :
-        callbacks.allowTraversal({
-          previous: previousNodeId,
-          current: currentNodeId,
-          next: nextNodeId,
-        })
+      visitOnce
+        ? callbacks.allowTraversal({
+            previous: previousNodeId,
+            current: currentNodeId,
+            next: nextNodeId,
+          }) && !visit.has(nextNodeId)
+        : callbacks.allowTraversal({
+            previous: previousNodeId,
+            current: currentNodeId,
+            next: nextNodeId,
+          })
     ) {
       visit.add(nextNodeId);
-      depthFirstSearchRecursive(graph, nextNodeId, currentNodeId, callbacks, visit, directed, visitOnce);
+      depthFirstSearchRecursive(
+        graph,
+        nextNodeId,
+        currentNodeId,
+        callbacks,
+        visit,
+        directed,
+        visitOnce
+      );
     }
   });
   callbacks.leave({
@@ -81,12 +91,20 @@ function depthFirstSearchRecursive(
  */
 export function depthFirstSearch(
   graph: Graph,
-  startNodeId: NodeID,
+  startNodeId: ID,
   originalCallbacks?: IAlgorithmCallbacks,
   directed: boolean = false,
   visitOnce: boolean = true
 ) {
-  const visit = new Set<NodeID>();
+  const visit = new Set<ID>();
   visit.add(startNodeId);
-  depthFirstSearchRecursive(graph, startNodeId, '', initCallbacks(originalCallbacks), visit, directed, visitOnce);
+  depthFirstSearchRecursive(
+    graph,
+    startNodeId,
+    '',
+    initCallbacks(originalCallbacks),
+    visit,
+    directed,
+    visitOnce
+  );
 }
