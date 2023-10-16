@@ -1,4 +1,4 @@
-import { Edge, Graph as IGraph, Node, PlainObject } from '@antv/graphlib';
+import { ID, Edge, Graph as IGraph, Node, PlainObject } from '@antv/graphlib';
 
 // Map of attribute / eigenvalue distribution in dataset
 export interface KeyValueMap {
@@ -22,6 +22,7 @@ export interface Cluster {
 export interface ClusterData {
   clusters: Cluster[];
   clusterEdges: Edge<EdgeData>[];
+  nodeToCluster: Map<ID, string>;
 }
 
 export interface ClusterMap {
@@ -32,16 +33,14 @@ export type Graph = IGraph<NodeData, EdgeData>;
 
 export type Matrix = number[];
 export interface IAlgorithmCallbacks {
-  enter?: (param: { current: NodeID; previous: NodeID }) => void;
-  leave?: (param: { current: NodeID; previous?: NodeID }) => void;
+  enter?: (param: { current: ID; previous: ID }) => void;
+  leave?: (param: { current: ID; previous?: ID }) => void;
   allowTraversal?: (param: {
-    previous?: NodeID;
-    current?: NodeID;
-    next: NodeID;
+    previous?: ID;
+    current?: ID;
+    next: ID;
   }) => boolean;
 }
-
-export type NodeID = string | number;
 
 export type NodeSimilarity = Node<PlainObject> & {
   data: {
@@ -59,6 +58,6 @@ export type IEdge = Edge<EdgeData>;
 
 export type IMSTAlgorithm = (graph: Graph, weightProps?: string) => IEdge[];
 export interface IMSTAlgorithmOpt {
-  'prim': IMSTAlgorithm;
-  'kruskal': IMSTAlgorithm;
+  prim: IMSTAlgorithm;
+  kruskal: IMSTAlgorithm;
 }
