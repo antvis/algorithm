@@ -1,5 +1,6 @@
+import { ID } from '@antv/graphlib';
 import Queue from './structs/queue';
-import { Graph, IAlgorithmCallbacks, NodeID } from './types';
+import { Graph, IAlgorithmCallbacks } from './types';
 
 /**
 * @param startNodeId The ID of the bfs traverse starting node.
@@ -8,11 +9,14 @@ import { Graph, IAlgorithmCallbacks, NodeID } from './types';
     - enterNode: Called when BFS visits a node.
     - leaveNode: Called after BFS visits the node.
 */
-function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks) {
+function initCallbacks(
+  callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks
+) {
   const initiatedCallback = callbacks;
-  const stubCallback = () => { };
+  const stubCallback = () => {};
   const allowTraversalCallback = () => true;
-  initiatedCallback.allowTraversal = callbacks.allowTraversal || allowTraversalCallback;
+  initiatedCallback.allowTraversal =
+    callbacks.allowTraversal || allowTraversalCallback;
   initiatedCallback.enter = callbacks.enter || stubCallback;
   initiatedCallback.leave = callbacks.leave || stubCallback;
   return initiatedCallback;
@@ -26,19 +30,19 @@ Performs breadth-first search (BFS) traversal on a graph.
 */
 export const breadthFirstSearch = (
   graph: Graph,
-  startNodeId: NodeID,
-  originalCallbacks?: IAlgorithmCallbacks,
+  startNodeId: ID,
+  originalCallbacks?: IAlgorithmCallbacks
 ) => {
-  const visit = new Set<NodeID>();
+  const visit = new Set<ID>();
   const callbacks = initCallbacks(originalCallbacks);
-  const nodeQueue = new Queue<NodeID>();
+  const nodeQueue = new Queue<ID>();
   // init Queue. Enqueue node ID.
   nodeQueue.enqueue(startNodeId);
   visit.add(startNodeId);
-  let previousNodeId: NodeID = '';
+  let previousNodeId: ID = '';
   // 遍历队列中的所有顶点
   while (!nodeQueue.isEmpty()) {
-    const currentNodeId: NodeID = nodeQueue.dequeue();
+    const currentNodeId: ID = nodeQueue.dequeue();
     callbacks.enter({
       current: currentNodeId,
       previous: previousNodeId,
@@ -52,7 +56,8 @@ export const breadthFirstSearch = (
           previous: previousNodeId,
           current: currentNodeId,
           next: nextNodeId,
-        }) && !visit.has(nextNodeId)
+        }) &&
+        !visit.has(nextNodeId)
       ) {
         visit.add(nextNodeId);
         nodeQueue.enqueue(nextNodeId);

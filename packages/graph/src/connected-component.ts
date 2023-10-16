@@ -1,4 +1,5 @@
-import { Graph, INode, NodeID } from './types';
+import { ID } from '@antv/graphlib';
+import { Graph, INode } from './types';
 /**
  * Generate all connected components for an undirected graph
  * @param graph
@@ -6,7 +7,7 @@ import { Graph, INode, NodeID } from './types';
 export const detectConnectedComponents = (graph: Graph): INode[][] => {
   const nodes = graph.getAllNodes();
   const allComponents: INode[][] = [];
-  const visited: { [key: NodeID]: boolean } = {};
+  const visited: { [key: ID]: boolean } = {};
   const nodeStack: INode[] = [];
   const getComponent = (node: INode) => {
     nodeStack.push(node);
@@ -49,9 +50,9 @@ export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
   const nodes = graph.getAllNodes();
   const nodeStack: INode[] = [];
   // Assist to determine whether it is already in the stack to reduce the search overhead
-  const inStack: { [key: NodeID]: boolean } = {};
-  const indices: { [key: NodeID]: number } = {};
-  const lowLink: { [key: NodeID]: number } = {};
+  const inStack: { [key: ID]: boolean } = {};
+  const indices: { [key: ID]: number } = {};
+  const lowLink: { [key: ID]: number } = {};
   const allComponents: INode[][] = [];
   let index = 0;
   const getComponent = (node: INode) => {
@@ -61,7 +62,7 @@ export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
     index += 1;
     nodeStack.push(node);
     inStack[node.id] = true;
-    const relatedEdges = graph.getRelatedEdges(node.id, "out");
+    const relatedEdges = graph.getRelatedEdges(node.id, 'out');
     for (let i = 0; i < relatedEdges.length; i++) {
       const targetNodeID = relatedEdges[i].target;
       if (!indices[targetNodeID] && indices[targetNodeID] !== 0) {
@@ -98,7 +99,10 @@ export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
   return allComponents;
 };
 
-export function getConnectedComponents(graph: Graph, directed?: boolean): INode[][] {
+export function getConnectedComponents(
+  graph: Graph,
+  directed?: boolean
+): INode[][] {
   if (directed) return detectStrongConnectComponents(graph);
   return detectConnectedComponents(graph);
 }

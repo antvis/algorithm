@@ -1,38 +1,68 @@
-import { Graph } from "@antv/graphlib";
-import { louvain, iLouvain } from "../../packages/graph/src";
-import * as propertiesGraphData from "../data/cluster-origin-properties-data.json";
+import { Graph } from '@antv/graphlib';
+import { louvain, iLouvain } from '../../packages/graph/src';
+import * as propertiesGraphData from '../data/cluster-origin-properties-data.json';
 
 describe('Louvain', () => {
   it('simple louvain', () => {
     const graph = new Graph<any, any>({
       nodes: [
-        { id: '0', data: {} }, { id: '1', data: {} }, { id: '2', data: {} }, { id: '3', data: {} }, { id: '4', data: {} },
-        { id: '5', data: {} }, { id: '6', data: {} }, { id: '7', data: {} }, { id: '8', data: {} }, { id: '9', data: {} },
-        { id: '10', data: {} }, { id: '11', data: {} }, { id: '12', data: {} }, { id: '13', data: {} }, { id: '14', data: {} },
+        { id: '0', data: {} },
+        { id: '1', data: {} },
+        { id: '2', data: {} },
+        { id: '3', data: {} },
+        { id: '4', data: {} },
+        { id: '5', data: {} },
+        { id: '6', data: {} },
+        { id: '7', data: {} },
+        { id: '8', data: {} },
+        { id: '9', data: {} },
+        { id: '10', data: {} },
+        { id: '11', data: {} },
+        { id: '12', data: {} },
+        { id: '13', data: {} },
+        { id: '14', data: {} },
       ],
       edges: [
-        { id: 'e1', source: '0', target: '1', data: {} }, { id: 'e2', source: '0', target: '2', data: {} }, { id: 'e3', source: '0', target: '3', data: {} }, { id: 'e4', source: '0', target: '4', data: {} },
-        { id: 'e5', source: '1', target: '2', data: {} }, { id: 'e6', source: '1', target: '3', data: {} }, { id: 'e7', source: '1', target: '4', data: {} },
-        { id: 'e8', source: '2', target: '3', data: {} }, { id: 'e9', source: '2', target: '4', data: {} },
+        { id: 'e1', source: '0', target: '1', data: {} },
+        { id: 'e2', source: '0', target: '2', data: {} },
+        { id: 'e3', source: '0', target: '3', data: {} },
+        { id: 'e4', source: '0', target: '4', data: {} },
+        { id: 'e5', source: '1', target: '2', data: {} },
+        { id: 'e6', source: '1', target: '3', data: {} },
+        { id: 'e7', source: '1', target: '4', data: {} },
+        { id: 'e8', source: '2', target: '3', data: {} },
+        { id: 'e9', source: '2', target: '4', data: {} },
         { id: 'e10', source: '3', target: '4', data: {} },
         { id: 'e11', source: '0', target: '0', data: {} },
         { id: 'e12', source: '0', target: '0', data: {} },
         { id: 'e13', source: '0', target: '0', data: {} },
-    
-        { id: 'e14', source: '5', target: '6', data: {weight: 5} }, { id: 'e15', source: '5', target: '7', data: {} }, { id: 'e16', source: '5', target: '8', data: {} }, { id: 'e17', source: '5', target: '9', data: {} },
-        { id: 'e18', source: '6', target: '7', data: {} }, { id: 'e19', source: '6', target: '8', data: {} }, { id: 'e20', source: '6', target: '9', data: {} },
-        { id: 'e21', source: '7', target: '8', data: {} }, { id: 'e22', source: '7', target: '9', data: {} },
-        { id: 'e23',source: '8', target: '9', data: {} },
-    
-        { id: 'e24',source: '10', target: '11', data: {} }, { id: 'e25',source: '10', target: '12', data: {} }, { id: 'e26',source: '10', target: '13', data: {} }, { id: 'e27',source: '10', target: '14', data: {} },
-        { id: 'e28',source: '11', target: '12', data: {} }, { id: 'e29',source: '11', target: '13', data: {} }, { id: 'e30',source: '11', target: '14', data: {} },
-        { id: 'e31',source: '12', target: '13', data: {} }, { id: 'e32',source: '12', target: '14', data: {} },
-        { id: 'e33',source: '13', target: '14', data: { weight: 5 } },
-    
-        { id: 'e34',source: '0', target: '5', data: {}},
-        { id: 'e35',source: '5', target: '10', data: {} },
-        { id: 'e36',source: '10', target: '0', data: {} },
-        { id: 'e37',source: '10', target: '0', data: {} },
+
+        { id: 'e14', source: '5', target: '6', data: { weight: 5 } },
+        { id: 'e15', source: '5', target: '7', data: {} },
+        { id: 'e16', source: '5', target: '8', data: {} },
+        { id: 'e17', source: '5', target: '9', data: {} },
+        { id: 'e18', source: '6', target: '7', data: {} },
+        { id: 'e19', source: '6', target: '8', data: {} },
+        { id: 'e20', source: '6', target: '9', data: {} },
+        { id: 'e21', source: '7', target: '8', data: {} },
+        { id: 'e22', source: '7', target: '9', data: {} },
+        { id: 'e23', source: '8', target: '9', data: {} },
+
+        { id: 'e24', source: '10', target: '11', data: {} },
+        { id: 'e25', source: '10', target: '12', data: {} },
+        { id: 'e26', source: '10', target: '13', data: {} },
+        { id: 'e27', source: '10', target: '14', data: {} },
+        { id: 'e28', source: '11', target: '12', data: {} },
+        { id: 'e29', source: '11', target: '13', data: {} },
+        { id: 'e30', source: '11', target: '14', data: {} },
+        { id: 'e31', source: '12', target: '13', data: {} },
+        { id: 'e32', source: '12', target: '14', data: {} },
+        { id: 'e33', source: '13', target: '14', data: { weight: 5 } },
+
+        { id: 'e34', source: '0', target: '5', data: {} },
+        { id: 'e35', source: '5', target: '10', data: {} },
+        { id: 'e36', source: '10', target: '0', data: {} },
+        { id: 'e37', source: '10', target: '0', data: {} },
       ],
     });
     const clusteredData = louvain(graph, false, 'weight');
