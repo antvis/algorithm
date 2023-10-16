@@ -1,11 +1,10 @@
-import { ID } from '@antv/graphlib';
+import { ID, Node } from '@antv/graphlib';
 import { depthFirstSearch } from './dfs';
 import {
   getConnectedComponents,
   detectStrongConnectComponents,
 } from './connected-component';
 import { Graph, IAlgorithmCallbacks, INode, NodeData } from './types';
-import { Node } from '@antv/graphlib';
 
 /**
  * Detects a directed cycle in a graph.
