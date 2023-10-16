@@ -1,8 +1,8 @@
 import { isEqual, uniq } from '@antv/util';
-import { Edge } from '@antv/graphlib';
+import { Edge, ID } from '@antv/graphlib';
 import { getAllProperties, oneHot, getDistance } from './utils';
 import { Vector } from "./vector";
-import { ClusterData, DistanceType, Graph, EdgeData, Cluster, NodeID } from './types';
+import { ClusterData, DistanceType, Graph, EdgeData, Cluster } from './types';
 
 /**
  * Calculates the centroid based on the distance type and the given index.
@@ -42,8 +42,8 @@ export const kMeans = (
 ): ClusterData => {
     const nodes = graph.getAllNodes();
     const edges = graph.getAllEdges();
-    const nodeToOriginIdx = new Map<NodeID, number>();
-    const nodeToCluster = new Map<NodeID, string>();
+    const nodeToOriginIdx = new Map<ID, number>();
+    const nodeToCluster = new Map<ID, string>();
     const defaultClusterInfo: ClusterData = {
         clusters: [
             {
