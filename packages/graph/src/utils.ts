@@ -1,5 +1,4 @@
 import { Node, PlainObject } from "@antv/graphlib";
-import { Vector } from "./vector";
 import { DistanceType, KeyValueMap, NodeData } from "./types";
 import { uniq } from "@antv/util";
 
