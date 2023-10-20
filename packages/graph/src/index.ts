@@ -13,3 +13,4 @@ export * from './connected-component';
 export * from './mst';
 export * from './k-means';
 export * from './detect-cycle';
+export * from './label-propagation';
