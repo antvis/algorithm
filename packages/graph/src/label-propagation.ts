@@ -1,7 +1,6 @@
 
 import { uniqueId } from './utils';
-import { ClusterData, INode, IEdge } from './types';
-import { Graph, Matrix, Cluster } from './types';
+import { ClusterData, INode, IEdge, Graph, Matrix, Cluster } from './types';
 import { ID } from '@antv/graphlib';
 
 function getAdjMatrix(graph: Graph, directed: boolean) {
@@ -39,14 +38,13 @@ function getAdjMatrix(graph: Graph, directed: boolean) {
 }
 
 /**
- * Performs label propagation clustering on the given graph.
- * @param graph The graph object representing the nodes and edges.
- * @param directed A boolean indicating whether the graph is directed or not. Default is false.
- * @param weightPropertyName The name of the property used as the weight for edges. Default is 'weight'.
- * @param maxIteration The maximum number of iterations for label propagation. Default is 1000.
- * @returns The clustering result including clusters, cluster edges, and node-to-cluster mapping.
+ * 标签传播算法
+ * @param graphData 图数据
+ * @param directed 是否有向图，默认为 false
+ * @param weightPropertyName 权重的属性字段
+ * @param maxIteration 最大迭代次数
  */
-export const labelPropagation = (
+const labelPropagation = (
   graph: Graph,
   directed: boolean = false,
   weightPropertyName: string = 'weight',
@@ -55,6 +53,7 @@ export const labelPropagation = (
   // the origin data
   const nodes = graph.getAllNodes();
   const edges = graph.getAllEdges();
+
 
   const clusters: { [key: string]: { id: string, nodes: INode[] } } = {};
   const nodeMap: { [key: ID]: { node: INode, idx: number } } = {};
@@ -77,6 +76,13 @@ export const labelPropagation = (
   const adjMatrix = getAdjMatrix(graph, directed);
   // the sum of each row in adjacent matrix
   const ks = [];
+  /**
+   * neighbor nodes (id for key and weight for value) for each node
+   * neighbors = {
+   *  id(node_id): { id(neighbor_1_id): weight(weight of the edge), id(neighbor_2_id): weight(weight of the edge), ... },
+   *  ...
+   * }
+   */
   const neighbors: { [key: ID]: { [key: ID]: number } } = {};
   adjMatrix.forEach((row, i) => {
     let k = 0;
@@ -95,9 +101,9 @@ export const labelPropagation = (
 
   while (iter < maxIteration) {
     let changed = false;
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       const neighborClusters: { [key: string]: number } = {};
-      Object.keys(neighbors[node.id]).forEach(neighborId => {
+      Object.keys(neighbors[node.id]).forEach((neighborId) => {
         const neighborWeight = neighbors[node.id][neighborId];
         const neighborNode = nodeMap[neighborId].node;
 
@@ -108,7 +114,7 @@ export const labelPropagation = (
       // find the cluster with max weight
       let maxWeight = -Infinity;
       let bestClusterIds: string[] = [];
-      Object.keys(neighborClusters).forEach(clusterId => {
+      Object.keys(neighborClusters).forEach((clusterId) => {
         if (maxWeight < neighborClusters[clusterId]) {
           maxWeight = neighborClusters[clusterId];
           bestClusterIds = [clusterId];
@@ -131,7 +137,7 @@ export const labelPropagation = (
         const randomIdx = Math.floor(Math.random() * bestClusterIds.length);
         const bestCluster = clusters[bestClusterIds[randomIdx]];
         bestCluster.nodes.push(node);
-        nodeToCluster.set(node.id, bestCluster.id)
+        nodeToCluster.set(node.id, bestCluster.id);
       }
     });
     if (!changed) break;
@@ -139,7 +145,7 @@ export const labelPropagation = (
   }
 
   // delete the empty clusters
-  Object.keys(clusters).forEach(clusterId => {
+  Object.keys(clusters).forEach((clusterId) => {
     const cluster = clusters[clusterId];
     if (!cluster.nodes || !cluster.nodes.length) {
       delete clusters[clusterId];
@@ -149,7 +155,7 @@ export const labelPropagation = (
   // get the cluster edges
   const clusterEdges: IEdge[] = [];
   const clusterEdgeMap: { [key: string]: IEdge } = {};
-  edges.forEach(edge => {
+  edges.forEach((edge) => {
     let i = 0;
     const { source, target } = edge;
     const weight = (edge.data[weightPropertyName] || 1) as number;
@@ -158,7 +164,7 @@ export const labelPropagation = (
     const newEdgeId = `${sourceClusterId}---${targetClusterId}`;
     if (clusterEdgeMap[newEdgeId]) {
       clusterEdgeMap[newEdgeId].data.weight += weight;
-      (clusterEdgeMap[newEdgeId].data.count as number)++;
+      ()++;
     } else {
       const newEdge = {
         id: i++,
@@ -174,13 +180,14 @@ export const labelPropagation = (
     }
   });
 
-  const clustersArray: Cluster[] = [];
-  Object.keys(clusters).forEach(clusterId => {
+  const clustersArray = [];
+  Object.keys(clusters).forEach((clusterId) => {
     clustersArray.push(clusters[clusterId]);
   });
   return {
     clusters: clustersArray,
-    clusterEdges,
-    nodeToCluster,
-  }
-}
+    clusterEdges
+  };
+};
+
+export default labelPropagation;

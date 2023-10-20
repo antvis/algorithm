@@ -62,7 +62,7 @@ export const detectDirectedCycle = (
       return true;
     },
   };
-  for (let key of Object.keys(unvisitedSet)) {
+  for (const key of Object.keys(unvisitedSet)) {
     depthFirstSearch(graph, key, callbacks, true, false);
   }
   return cycle;
@@ -193,8 +193,9 @@ export const detectAllDirectedCycle = (
     adjList: { [key: ID]: number[] }
   ) => {
     let closed = false; // whether a path is closed
-    if (nodeIds && include === false && nodeIds.indexOf(node.id) > -1)
+    if (nodeIds && !include && nodeIds.indexOf(node.id) > -1) {
       return closed;
+    }
     path.push(node);
     blocked.add(node);
     const neighbors = adjList[node.id];
@@ -277,7 +278,7 @@ export const detectAllDirectedCycle = (
         // 对自环情况 (点连向自身) 特殊处理：记录自环，但不加入adjList
         if (
           neighbor === node.id &&
-          !(include === false && nodeIds.indexOf(node.id) > -1)
+          !(!include && nodeIds.indexOf(node.id) > -1)
         ) {
           allCycles.push({ [node.id]: node });
         } else {
@@ -306,8 +307,9 @@ export const detectAllDirectedCycle = (
       });
       const startNode = idx2Node[minIdx];
       // StartNode is not in the specified node to include. End the search ahead of time.
-      if (nodeIds && include && nodeIds.indexOf(startNode.id) === -1)
+      if (nodeIds && include && nodeIds.indexOf(startNode.id) === -1) {
         return allCycles;
+      }
       circuit(startNode, startNode, adjList);
       nodeIdx = minIdx + 1;
     } else {

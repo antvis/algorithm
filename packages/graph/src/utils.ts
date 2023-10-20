@@ -103,7 +103,7 @@ function euclideanDistance(source: number[], target: number[]) {
 export const uniqueId = (index: number = 0) => {
   const random1 = `${Math.random()}`.split('.')[1].slice(0, 5);
   const random2 = `${Math.random()}`.split('.')[1].slice(0, 5);
-  return `${index}-${random1}${random2}`
+  return `${index}-${random1}${random2}`;
 };
 
 
