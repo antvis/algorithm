@@ -1,7 +1,6 @@
-
-import { uniqueId } from './utils';
-import { ClusterData, INode, IEdge, Graph, Matrix, Cluster } from './types';
-import { ID } from '@antv/graphlib';
+import { uniqueId } from "./utils";
+import { ClusterData, INode, IEdge, Graph, Matrix, Cluster } from "./types";
+import { ID } from "@antv/graphlib";
 
 function getAdjMatrix(graph: Graph, directed: boolean) {
   const nodes = graph.getAllNodes();
@@ -44,19 +43,18 @@ function getAdjMatrix(graph: Graph, directed: boolean) {
  * @param weightPropertyName 权重的属性字段
  * @param maxIteration 最大迭代次数
  */
-const labelPropagation = (
+export const labelPropagation = (
   graph: Graph,
   directed: boolean = false,
-  weightPropertyName: string = 'weight',
+  weightPropertyName: string = "weight",
   maxIteration: number = 1000
 ): ClusterData => {
   // the origin data
   const nodes = graph.getAllNodes();
   const edges = graph.getAllEdges();
 
-
-  const clusters: { [key: string]: { id: string, nodes: INode[] } } = {};
-  const nodeMap: { [key: ID]: { node: INode, idx: number } } = {};
+  const clusters: { [key: string]: { id: string; nodes: INode[] } } = {};
+  const nodeMap: { [key: ID]: { node: INode; idx: number } } = {};
   const nodeToCluster = new Map<ID, string>();
   // init the clusters and nodeMap
   nodes.forEach((node, i) => {
@@ -64,11 +62,11 @@ const labelPropagation = (
     nodeToCluster.set(node.id, cid);
     clusters[cid] = {
       id: cid,
-      nodes: [node]
+      nodes: [node],
     };
     nodeMap[node.id] = {
       node,
-      idx: i
+      idx: i,
     };
   });
 
@@ -108,7 +106,8 @@ const labelPropagation = (
         const neighborNode = nodeMap[neighborId].node;
 
         const neighborClusterId = nodeToCluster.get(neighborNode.id);
-        if (!neighborClusters[neighborClusterId]) neighborClusters[neighborClusterId] = 0;
+        if (!neighborClusters[neighborClusterId])
+          neighborClusters[neighborClusterId] = 0;
         neighborClusters[neighborClusterId] += neighborWeight;
       });
       // find the cluster with max weight
@@ -122,7 +121,11 @@ const labelPropagation = (
           bestClusterIds.push(clusterId);
         }
       });
-      if (bestClusterIds.length === 1 && bestClusterIds[0] === nodeToCluster.get(node.id)) return;
+      if (
+        bestClusterIds.length === 1 &&
+        bestClusterIds[0] === nodeToCluster.get(node.id)
+      )
+        return;
       const selfClusterIdx = bestClusterIds.indexOf(nodeToCluster.get(node.id));
       if (selfClusterIdx >= 0) bestClusterIds.splice(selfClusterIdx, 1);
       if (bestClusterIds && bestClusterIds.length) {
@@ -164,7 +167,7 @@ const labelPropagation = (
     const newEdgeId = `${sourceClusterId}---${targetClusterId}`;
     if (clusterEdgeMap[newEdgeId]) {
       clusterEdgeMap[newEdgeId].data.weight += weight;
-      ()++;
+      (clusterEdgeMap[newEdgeId].data.count as number)++;
     } else {
       const newEdge = {
         id: i++,
@@ -172,8 +175,8 @@ const labelPropagation = (
         target: targetClusterId,
         data: {
           weight,
-          count: 1
-        }
+          count: 1,
+        },
       };
       clusterEdgeMap[newEdgeId] = newEdge;
       clusterEdges.push(newEdge);
@@ -186,8 +189,6 @@ const labelPropagation = (
   });
   return {
     clusters: clustersArray,
-    clusterEdges
+    clusterEdges,
   };
 };
-
-export default labelPropagation;
