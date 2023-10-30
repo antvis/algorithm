@@ -1,5 +1,5 @@
 import { uniqueId } from "./utils";
-import { ClusterData, INode, IEdge, Graph, Matrix, Cluster } from "./types";
+import { ClusterData, INode, IEdge, Graph, Matrix } from "./types";
 import { ID } from "@antv/graphlib";
 
 function getAdjMatrix(graph: Graph, directed: boolean) {
@@ -106,8 +106,9 @@ export const labelPropagation = (
         const neighborNode = nodeMap[neighborId].node;
 
         const neighborClusterId = nodeToCluster.get(neighborNode.id);
-        if (!neighborClusters[neighborClusterId])
+        if (!neighborClusters[neighborClusterId]) {
           neighborClusters[neighborClusterId] = 0;
+        }
         neighborClusters[neighborClusterId] += neighborWeight;
       });
       // find the cluster with max weight
@@ -124,8 +125,9 @@ export const labelPropagation = (
       if (
         bestClusterIds.length === 1 &&
         bestClusterIds[0] === nodeToCluster.get(node.id)
-      )
+      ) {
         return;
+      }
       const selfClusterIdx = bestClusterIds.indexOf(nodeToCluster.get(node.id));
       if (selfClusterIdx >= 0) bestClusterIds.splice(selfClusterIdx, 1);
       if (bestClusterIds && bestClusterIds.length) {
@@ -183,12 +185,13 @@ export const labelPropagation = (
     }
   });
 
-  const clustersArray = [];
+  const clustersArray: { id: string; nodes: INode[] }[] = [];
   Object.keys(clusters).forEach((clusterId) => {
     clustersArray.push(clusters[clusterId]);
   });
   return {
     clusters: clustersArray,
     clusterEdges,
+    nodeToCluster,
   };
 };
