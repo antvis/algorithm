@@ -82,16 +82,16 @@ export const labelPropagation = (
    *  ...
    * }
    */
-  const neighbors: { [key: ID]: { [key: ID]: number } } = {};
+  const neighbors: Map<ID, Map<ID, number>> = new Map<ID, Map<ID, number>>();
   adjMatrix.forEach((row, i) => {
     let k = 0;
     const iid = nodes[i].id;
-    neighbors[iid] = {};
+    neighbors.set(iid, new Map<ID, number>());
     row.forEach((entry, j) => {
       if (!entry) return;
       k += entry;
       const jid = nodes[j].id;
-      neighbors[iid][jid] = entry;
+      neighbors.get(iid).set(jid, entry);
     });
     ks.push(k);
   });
@@ -102,10 +102,9 @@ export const labelPropagation = (
     let changed = false;
     nodes.forEach((node) => {
       const neighborClusters: { [key: string]: number } = {};
-      Object.keys(neighbors[node.id]).forEach((neighborId) => {
-        const neighborWeight = neighbors[node.id][neighborId];
+      neighbors.get(node.id).forEach((neighborId, value) => {
+        const neighborWeight = neighbors.get(node.id).get(neighborId);
         const neighborNode = nodeMap[neighborId].node;
-
         const neighborClusterId = nodeToCluster.get(neighborNode.id);
         if (!neighborClusters[neighborClusterId]) {
           neighborClusters[neighborClusterId] = 0;
