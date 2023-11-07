@@ -10,7 +10,11 @@ export const getAllProperties = (nodes: Node<NodeData>[]) => {
   return allProperties;
 };
 
-export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string[], uninvolvedKeys?: string[]) => {
+export const getAllKeyValueMap = (
+  dataList: PlainObject[],
+  involvedKeys?: string[],
+  uninvolvedKeys?: string[]
+) => {
   let keys: string[] = [];
   // Use the specified keys when the keys participating in the calculation is specified
   if (involvedKeys?.length) {
@@ -27,7 +31,7 @@ export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string
   keys.forEach((key) => {
     const value: unknown[] = [];
     dataList.forEach((data) => {
-      if (data[key] !== undefined && data[key] !== '') {
+      if (data[key] !== undefined && data[key] !== "") {
         value.push(data[key]);
       }
     });
@@ -39,9 +43,17 @@ export const getAllKeyValueMap = (dataList: PlainObject[], involvedKeys?: string
   return allKeyValueMap;
 };
 
-export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvolvedKeys?: string[]) => {
+export const oneHot = (
+  dataList: PlainObject[],
+  involvedKeys?: string[],
+  uninvolvedKeys?: string[]
+) => {
   // Get all attributes / features in the data and their corresponding values
-  const allKeyValueMap = getAllKeyValueMap(dataList, involvedKeys, uninvolvedKeys);
+  const allKeyValueMap = getAllKeyValueMap(
+    dataList,
+    involvedKeys,
+    uninvolvedKeys
+  );
   const oneHotCode: unknown[][] = [];
   if (!Object.keys(allKeyValueMap).length) {
     return oneHotCode;
@@ -49,7 +61,9 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   // Get all attribute / feature values
   const allValue = Object.values(allKeyValueMap);
   // Whether the values of all attributes / features are numerical
-  const isAllNumber = allValue.every((value) => value.every((item) => (typeof (item) === 'number')));
+  const isAllNumber = allValue.every((value) =>
+    value.every((item) => typeof item === "number")
+  );
   // One-hot encode the data
   dataList.forEach((data, index) => {
     let code: unknown[] = [];
@@ -78,7 +92,11 @@ export const oneHot = (dataList: PlainObject[], involvedKeys?: string[], uninvol
   return oneHotCode;
 };
 
-export const getDistance = (item: number[], otherItem: number[], distanceType: DistanceType = DistanceType.EuclideanDistance) => {
+export const getDistance = (
+  item: number[],
+  otherItem: number[],
+  distanceType: DistanceType = DistanceType.EuclideanDistance
+) => {
   let distance = 0;
   switch (distanceType) {
     case DistanceType.EuclideanDistance:
@@ -90,7 +108,6 @@ export const getDistance = (item: number[], otherItem: number[], distanceType: D
   return distance;
 };
 
-
 function euclideanDistance(source: number[], target: number[]) {
   if (source.length !== target.length) return 0;
   let res = 0;
@@ -99,11 +116,3 @@ function euclideanDistance(source: number[], target: number[]) {
   });
   return Math.sqrt(res);
 }
-
-export const uniqueId = (index: number = 0) => {
-  const random1 = `${Math.random()}`.split('.')[1].slice(0, 5);
-  const random2 = `${Math.random()}`.split('.')[1].slice(0, 5);
-  return `${index}-${random1}${random2}`;
-};
-
-
