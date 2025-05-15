@@ -22,7 +22,7 @@
   "scripts": {
     "clean": "rimraf dist lib",
     "dev": "webpack --config webpack.dev.config.js --mode development",
-    "build": "npm run clean && npm run build:esm && npm run build:umd",
+    "build": "npm run clean && npm run build:esm",
     "build:ci": "npm run build",
     "build:esm": "tsc",
     "build:umd": "webpack --config webpack.config.js --mode production",

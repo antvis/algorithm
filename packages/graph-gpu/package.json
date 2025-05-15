@@ -1,6 +1,6 @@
 {
   "name": "@antv/graph-gpu",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "description": "provide common graph algorithms implemented with WebGPU",
   "keywords": [
     "webgpu",
@@ -25,7 +25,7 @@
   "types": "lib/index.d.ts",
   "unpkg": "dist/index.min.js",
   "scripts": {
-    "build": "npm run clean && npm run build:esm && npm run build:umd",
+    "build": "npm run clean && npm run build:esm",
     "build:esm": "tsc",
     "build:umd": "webpack --config webpack.config.js --mode production",
     "dev:umd": "webpack --config webpack.dev.config.js --mode development",

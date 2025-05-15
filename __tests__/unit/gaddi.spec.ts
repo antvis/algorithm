@@ -2130,14 +2130,14 @@ describe('Performance: 1589 nodes G', () => {
       'cluster',
       'cluster'
     );
-    console.log(
-      '1589 nodes graph matching 6 nodes full-connected pattern',
-      performance.now() - begin,
-      result.length
-    );
-    result.forEach((re) => {
-      console.log(JSON.stringify(re));
-    });
+    // console.log(
+    //   '1589 nodes graph matching 6 nodes full-connected pattern',
+    //   performance.now() - begin,
+    //   result.length
+    // );
+    // result.forEach((re) => {
+    //   console.log(JSON.stringify(re));
+    // });
   });
 });
 
