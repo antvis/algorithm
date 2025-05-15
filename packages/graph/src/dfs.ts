@@ -35,7 +35,7 @@ function depthFirstSearchRecursive(
   previousNodeId: ID,
   callbacks: IAlgorithmCallbacks,
   visit: Set<ID>,
-  directed: boolean,
+  directed: boolean = true,
   visitOnce: boolean
 ) {
   callbacks.enter({
@@ -47,6 +47,7 @@ function depthFirstSearchRecursive(
         .getRelatedEdges(currentNodeId, 'out')
         .map((e) => graph.getNode(e.target))
     : graph.getNeighbors(currentNodeId);
+
   neighbors.forEach((nextNode) => {
     const nextNodeId = nextNode.id;
     // `Visit` is not considered when judging recursive conditions
