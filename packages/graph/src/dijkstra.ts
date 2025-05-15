@@ -1,13 +1,12 @@
+import { Edge, ID, Node } from "@antv/graphlib";
 import { isArray } from '@antv/util';
-import { GraphData, NodeConfig, EdgeConfig } from './types';
-import { getOutEdgesNodeId, getEdgesByNodeId } from './util';
+import { EdgeData, Graph, NodeData } from "./types";
 
-const minVertex = (
-  D: { [key: string]: number },
-  nodes: NodeConfig[],
+function minVertex(
+  D: { [key: ID]: number },
+  nodes: Node<NodeData>[],
   marks: { [key: string]: boolean },
-): NodeConfig => {
-  // 找出最小的点
+): Node<NodeData> {
   let minDis = Infinity;
   let minNode;
   for (let i = 0; i < nodes.length; i++) {
@@ -18,19 +17,41 @@ const minVertex = (
     }
   }
   return minNode;
-};
+}
 
-const dijkstra = (
-  graphData: GraphData,
-  source: string,
+function findAllPaths(source: ID, target: ID, prevs: Record<ID, ID[]>, foundPaths: Record<ID, ID[][]>): ID[] {
+  if (source === target) {
+    return [source];
+  }
+  if (foundPaths[target]) {
+    // @ts-ignore
+    return foundPaths[target];
+  }
+  const paths: ID[][] = [];
+  for (const prev of prevs[target]) {
+    const prevPaths = findAllPaths(source, prev, prevs, foundPaths);
+    if (!prevPaths) return;
+    for (const prePath of prevPaths) {
+      if (isArray(prePath)) paths.push([...prePath, target]);
+      else paths.push([prePath, target]);
+    }
+  }
+  foundPaths[target] = paths;
+  // @ts-ignore
+  return foundPaths[target];
+}
+
+export function dijkstra(
+  graph: Graph,
+  source: ID,
   directed?: boolean,
   weightPropertyName?: string,
-) => {
-  const { nodes = [], edges = [] } = graphData;
-  const nodeIds = [];
-  const marks = {};
-  const D = {};
-  const prevs = {}; // key: 顶点, value: 顶点的前驱点数组（可能有多条等长的最短路径）
+) {
+  const nodes = graph.getAllNodes();
+  const nodeIds: ID[] = [];
+  const marks: Record<ID, boolean> = {};
+  const D: Record<ID, number> = {};
+  const prevs: Record<ID, ID[]> = {}; // key: 顶点, value: 顶点的前驱点数组（可能有多条等长的最短路径）
   nodes.forEach((node, i) => {
     const id = node.id;
     nodeIds.push(id);
@@ -47,15 +68,18 @@ const dijkstra = (
 
     if (D[minNodeId] === Infinity) continue; // Unreachable vertices cannot be the intermediate point
 
-    let relatedEdges: EdgeConfig[] = [];
-    if (directed) relatedEdges = getOutEdgesNodeId(minNodeId, edges);
-    else relatedEdges = getEdgesByNodeId(minNodeId, edges);
+    let relatedEdges: Edge<EdgeData>[] = [];
+    if (directed) {
+      relatedEdges = graph.getRelatedEdges(minNodeId, 'out');
+    } else {
+      relatedEdges = graph.getRelatedEdges(minNodeId, 'both');
+    }
 
-    relatedEdges.forEach(edge => {
+    relatedEdges.forEach((edge) => {
       const edgeTarget = edge.target;
       const edgeSource = edge.source;
       const w = edgeTarget === minNodeId ? edgeSource : edgeTarget;
-      const weight = weightPropertyName && edge[weightPropertyName] ? edge[weightPropertyName] : 1;
+      const weight = weightPropertyName && edge.data[weightPropertyName] as number ? edge.data[weightPropertyName] as number : 1;
       if (D[w] > D[minNode.id] + weight) {
         D[w] = D[minNode.id] + weight;
         prevs[w] = [minNode.id];
@@ -67,7 +91,7 @@ const dijkstra = (
 
   prevs[source] = [source];
   // 每个节点存可能存在多条最短路径
-  const paths = {};
+  const paths: Record<ID, ID[][]> = {};
   for (const target in D) {
     if (D[target] !== Infinity) {
       findAllPaths(source, target, prevs, paths);
@@ -75,31 +99,9 @@ const dijkstra = (
   }
 
   // 兼容之前单路径
-  const path = {};
+  const path: Record<ID, ID[]> = {};
   for (const target in paths) {
     path[target] = paths[target][0];
   }
   return { length: D, path, allPath: paths };
-};
-
-export default dijkstra;
-
-function findAllPaths(source, target, prevs, foundPaths) {
-  if (source === target) {
-    return [source];
-  }
-  if (foundPaths[target]) {
-    return foundPaths[target];
-  }
-  const paths = [];
-  for (let prev of prevs[target]) {
-    const prevPaths = findAllPaths(source, prev, prevs, foundPaths);
-    if (!prevPaths) return;
-    for (let prePath of prevPaths) {
-      if (isArray(prePath)) paths.push([...prePath, target]);
-      else paths.push([prePath, target]);
-    }
-  }
-  foundPaths[target] = paths;
-  return foundPaths[target];
 }

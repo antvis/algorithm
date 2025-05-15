@@ -1,11 +1,9 @@
-import { indexOf } from "@antv/util";
-
 export const VACANT_EDGE_ID = -1;
 export const VACANT_NODE_ID = -1;
-export const VACANT_EDGE_LABEL = "-1";
-export const VACANT_NODE_LABEL = "-1";
+export const VACANT_EDGE_LABEL = '-1';
+export const VACANT_NODE_LABEL = '-1';
 export const VACANT_GRAPH_ID = -1;
-export const AUTO_EDGE_ID = "-1";
+export const AUTO_EDGE_ID = '-1';
 
 export class Edge {
   public id: number;
@@ -32,7 +30,7 @@ export class Node {
   public to: number;
   public label: string;
   public edges: Edge[];
-  public edgeMap: {};
+  public edgeMap: { [key: number]: Edge };
 
   constructor(id = VACANT_NODE_ID, label = VACANT_NODE_LABEL) {
     this.id = id;
@@ -41,7 +39,7 @@ export class Node {
     this.edgeMap = {};
   }
 
-  addEdge(edge) {
+  addEdge(edge: Edge) {
     this.edges.push(edge);
     this.edgeMap[edge.id] = edge;
   }
@@ -55,11 +53,11 @@ export class Graph {
   public edgeIdAutoIncrease: boolean;
   public nodes: Node[];
   public edges: Edge[];
-  public nodeMap: {};
-  public edgeMap: {};
-  public nodeLabelMap: {}; // key 是 label，value 是节点 id 的数组
-  public edgeLabelMap: {};
-  private counter: number; // 自增用于自动生成边 id
+  public nodeMap: { [key: number]: Node };
+  public edgeMap: { [key: number]: Edge };
+  public nodeLabelMap: { [key: string]: number[] }; // key is label，value is the array of nodes' ids
+  public edgeLabelMap: { [key: string]: Edge[] };
+  private counter: number; // The ID used for generating the graph, incremented automatically.
   public directed: boolean;
 
   constructor(
@@ -93,12 +91,20 @@ export class Graph {
   }
 
   addEdge(id: number, from: number, to: number, label: string) {
-    if (this.edgeIdAutoIncrease || id === undefined) id = this.counter++;
-    if (this.nodeMap[from] && this.nodeMap[to] && this.nodeMap[to].edgeMap[id])
+    let usingId = id;
+    if (this.edgeIdAutoIncrease || usingId === undefined) {
+      usingId = this.counter++;
+    }
+    if (
+      this.nodeMap[from] &&
+      this.nodeMap[to] &&
+      this.nodeMap[to].edgeMap[usingId]
+    ) {
       return;
-    const edge = new Edge(id, from, to, label);
+    }
+    const edge = new Edge(usingId, from, to, label);
     this.edges.push(edge);
-    this.edgeMap[id] = edge;
+    this.edgeMap[usingId] = edge;
 
     this.nodeMap[from].addEdge(edge);
 
@@ -106,7 +112,7 @@ export class Graph {
     this.edgeLabelMap[label].push(edge);
 
     if (!this.directed) {
-      const rEdge = new Edge(id, to, from, label);
+      const rEdge = new Edge(usingId, to, from, label);
       this.nodeMap[to].addEdge(rEdge);
       this.edgeLabelMap[label].push(rEdge);
     }

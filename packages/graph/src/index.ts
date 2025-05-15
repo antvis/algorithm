@@ -1,88 +1,16 @@
-import getAdjMatrix from './adjacent-matrix';
-import breadthFirstSearch from './bfs';
-import connectedComponent from './connected-component';
-import getDegree from './degree';
-import { getInDegree, getOutDegree } from './degree';
-import detectCycle, { detectAllCycles, detectAllDirectedCycle, detectAllUndirectedCycle } from './detect-cycle';
-import depthFirstSearch from './dfs';
-import dijkstra from './dijkstra';
-import { findAllPath, findShortestPath } from './find-path';
-import floydWarshall from './floydWarshall';
-import labelPropagation from './label-propagation';
-import louvain from './louvain';
-import iLouvain from './i-louvain';
-import kCore from './k-core';
-import kMeans from './k-means';
-import cosineSimilarity from './cosine-similarity';
-import nodesCosineSimilarity from './nodes-cosine-similarity';
-import minimumSpanningTree from './mts';
-import pageRank from './pageRank';
-import GADDI from './gaddi';
-import Stack from './structs/stack';
-import { getNeighbors } from './util';
-import { IAlgorithm } from './types';
-
-const detectDirectedCycle = detectCycle;
-
-export {
-  getAdjMatrix,
-  breadthFirstSearch,
-  connectedComponent,
-  getDegree,
-  getInDegree,
-  getOutDegree,
-  detectCycle,
-  detectDirectedCycle,
-  detectAllCycles,
-  detectAllDirectedCycle,
-  detectAllUndirectedCycle,
-  depthFirstSearch,
-  dijkstra,
-  findAllPath,
-  findShortestPath,
-  floydWarshall,
-  labelPropagation,
-  louvain,
-  iLouvain,
-  kCore,
-  kMeans,
-  cosineSimilarity,
-  nodesCosineSimilarity,
-  minimumSpanningTree,
-  pageRank,
-  getNeighbors,
-  Stack,
-  GADDI,
-  IAlgorithm
-};
-
-export default {
-  getAdjMatrix,
-  breadthFirstSearch,
-  connectedComponent,
-  getDegree,
-  getInDegree,
-  getOutDegree,
-  detectCycle,
-  detectDirectedCycle,
-  detectAllCycles,
-  detectAllDirectedCycle,
-  detectAllUndirectedCycle,
-  depthFirstSearch,
-  dijkstra,
-  findAllPath,
-  findShortestPath,
-  floydWarshall,
-  labelPropagation,
-  louvain,
-  iLouvain,
-  kCore,
-  kMeans,
-  cosineSimilarity,
-  nodesCosineSimilarity,
-  minimumSpanningTree,
-  pageRank,
-  getNeighbors,
-  Stack,
-  GADDI,
-};
+export * from './pageRank';
+export * from './findPath';
+export * from './louvain';
+export * from './iLouvain';
+export * from './k-core';
+export * from './floydWarshall';
+export * from './bfs';
+export * from './dfs';
+export * from './cosine-similarity';
+export * from './nodes-cosine-similarity';
+export * from './gaddi';
+export * from './connected-component';
+export * from './mst';
+export * from './k-means';
+export * from './detect-cycle';
+export * from './label-propagation';

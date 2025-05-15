@@ -1,78 +1,111 @@
-import { IAlgorithmCallbacks, GraphData } from './types';
-import { getNeighbors } from './util';
+import { ID } from '@antv/graphlib';
+import { Graph, IAlgorithmCallbacks } from './types';
 
-function initCallbacks(callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks) {
+/**
+ * Initializes the callback functions for the depth-first search algorithm.
+ * @param callbacks (Optional) The original callbacks object containing custom callback functions.
+ * @returns The initialized callbacks object.
+ */
+function initCallbacks(
+  callbacks: IAlgorithmCallbacks = {} as IAlgorithmCallbacks
+) {
   const initiatedCallback = callbacks;
-
   const stubCallback = () => {};
-
-  const allowTraversalCallback = (() => {
-    const seen = {};
-    return ({ next }) => {
-      if (!seen[next]) {
-        seen[next] = true;
-        return true;
-      }
-      return false;
-    };
-  })();
-
-  initiatedCallback.allowTraversal = callbacks.allowTraversal || allowTraversalCallback;
+  const allowTraversalCallback = () => true;
+  initiatedCallback.allowTraversal =
+    callbacks.allowTraversal || allowTraversalCallback;
   initiatedCallback.enter = callbacks.enter || stubCallback;
   initiatedCallback.leave = callbacks.leave || stubCallback;
-
   return initiatedCallback;
 }
 
 /**
- * @param {Graph} graph
- * @param {GraphNode} currentNode
- * @param {GraphNode} previousNode
- * @param {Callbacks} callbacks
+ * Recursively performs a depth-first search on a graph starting from a specified node.
+ * @param graph The graph to perform the depth-first search on.
+ * @param currentNodeId The ID of the current node being visited.
+ * @param previousNodeId The ID of the previous node visited.
+ * @param callbacks The callback functions for the depth-first search algorithm.
+ * @param visit A set containing the visited node IDs.
+ * @param directed A boolean indicating whether the graph is directed.
+ * @param visitOnce A boolean indicating whether each node should be visited only once.
  */
 function depthFirstSearchRecursive(
-  graphData: GraphData,
-  currentNode: string,
-  previousNode: string,
+  graph: Graph,
+  currentNodeId: ID,
+  previousNodeId: ID,
   callbacks: IAlgorithmCallbacks,
+  visit: Set<ID>,
   directed: boolean = true,
+  visitOnce: boolean
 ) {
   callbacks.enter({
-    current: currentNode,
-    previous: previousNode,
+    current: currentNodeId,
+    previous: previousNodeId,
   });
+  const neighbors = directed
+    ? graph
+        .getRelatedEdges(currentNodeId, 'out')
+        .map((e) => graph.getNode(e.target))
+    : graph.getNeighbors(currentNodeId);
 
-  const { edges = [] } = graphData;
-
-  getNeighbors(currentNode, edges, directed ? 'target' : undefined).forEach((nextNode) => {
+  neighbors.forEach((nextNode) => {
+    const nextNodeId = nextNode.id;
+    // `Visit` is not considered when judging recursive conditions
     if (
-      callbacks.allowTraversal({
-        previous: previousNode,
-        current: currentNode,
-        next: nextNode,
-      })
+      visitOnce
+        ? callbacks.allowTraversal({
+            previous: previousNodeId,
+            current: currentNodeId,
+            next: nextNodeId,
+          }) && !visit.has(nextNodeId)
+        : callbacks.allowTraversal({
+            previous: previousNodeId,
+            current: currentNodeId,
+            next: nextNodeId,
+          })
     ) {
-      depthFirstSearchRecursive(graphData, nextNode, currentNode, callbacks, directed);
+      visit.add(nextNodeId);
+      depthFirstSearchRecursive(
+        graph,
+        nextNodeId,
+        currentNodeId,
+        callbacks,
+        visit,
+        directed,
+        visitOnce
+      );
     }
   });
-
   callbacks.leave({
-    current: currentNode,
-    previous: previousNode,
+    current: currentNodeId,
+    previous: previousNodeId,
   });
 }
 
 /**
- * 深度优先遍历图
- * @param data GraphData 图数据
- * @param startNodeId 开始遍历的节点的 ID
- * @param originalCallbacks 回调
+ * Performs a depth-first search on a graph starting from a specified node.
+ * @param graph The graph to perform the depth-first search on.
+ * @param startNodeId The ID of the node to start the search from.
+ * @param originalCallbacks (Optional) The original callbacks object containing custom callback functions.
+ * @param directed A boolean indicating whether the graph is directed (default: false).
+ * @param visitOnce A boolean indicating whether each node should be visited only once (default: true).
  */
-export default function depthFirstSearch(
-  graphData: GraphData,
-  startNodeId: string,
-  callbacks?: IAlgorithmCallbacks,
-  directed: boolean = true,
+export function depthFirstSearch(
+  graph: Graph,
+  startNodeId: ID,
+  originalCallbacks?: IAlgorithmCallbacks,
+  directed: boolean = false,
+  visitOnce: boolean = true
 ) {
-  depthFirstSearchRecursive(graphData, startNodeId, '', initCallbacks(callbacks), directed);
+  const visit = new Set<ID>();
+  visit.add(startNodeId);
+  depthFirstSearchRecursive(
+    graph,
+    startNodeId,
+    '',
+    initCallbacks(originalCallbacks),
+    visit,
+    directed,
+    visitOnce
+  );
 }

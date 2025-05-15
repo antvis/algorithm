@@ -1,8 +1,44 @@
-import getAdjMatrix from "./adjacent-matrix";
-import { GraphData, Matrix } from "./types";
+import { Graph, Matrix } from "./types";
 
-const floydWarshall = (graphData: GraphData, directed?: boolean) => {
-  const adjacentMatrix = getAdjMatrix(graphData, directed);
+function getAdjMatrix(graph: Graph, directed: boolean) {
+  const nodes = graph.getAllNodes();
+  const matrix: Matrix[] = [];
+  // map node with index in data.nodes
+  const nodeMap = new Map<string | number, number>();
+
+  if (!nodes) {
+    throw new Error("invalid nodes data!");
+  }
+
+  if (nodes) {
+    nodes.forEach((node, i) => {
+      nodeMap.set(node.id, i);
+      const row: number[] = [];
+      matrix.push(row);
+    });
+  }
+
+  const edges = graph.getAllEdges();
+  if (edges) {
+    edges.forEach((edge) => {
+      const { source, target } = edge;
+      const sIndex = nodeMap.get(source);
+      const tIndex = nodeMap.get(target);
+      if ((!sIndex && sIndex !== 0) || (!tIndex && tIndex !== 0)) return;
+      matrix[sIndex][tIndex] = 1;
+      if (!directed) {
+        matrix[tIndex][sIndex] = 1;
+      }
+    });
+  }
+  return matrix;
+}
+
+export function floydWarshall(
+  graph: Graph,
+  directed = false,
+) {
+  const adjacentMatrix = getAdjMatrix(graph, directed);
 
   const dist: Matrix[] = [];
   const size = adjacentMatrix.length;
@@ -29,6 +65,4 @@ const floydWarshall = (graphData: GraphData, directed?: boolean) => {
     }
   }
   return dist;
-};
-
-export default floydWarshall;
+}

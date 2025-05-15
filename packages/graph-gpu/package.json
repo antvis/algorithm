@@ -1,0 +1,65 @@
+{
+  "name": "@antv/graph-gpu",
+  "version": "0.2.0",
+  "description": "provide common graph algorithms implemented with WebGPU",
+  "keywords": [
+    "webgpu",
+    "graph",
+    "algorithm",
+    "antv",
+    "G6"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "package.json",
+    "lib",
+    "dist",
+    "LICENSE",
+    "README.md",
+    "README-zh_CN.md"
+  ],
+  "main": "dist/index.min.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "unpkg": "dist/index.min.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:esm",
+    "build:esm": "tsc",
+    "build:umd": "webpack --config webpack.config.js --mode production",
+    "dev:umd": "webpack --config webpack.dev.config.js --mode development",
+    "ci": "npm run build && npm run coverage",
+    "clean": "rimraf lib dist",
+    "lint": "eslint --ext .js,.jsx,.ts,.tsx --format=pretty \"./\"",
+    "lint:src": "eslint --ext .ts --format=pretty \"./src\"",
+    "prettier": "prettier -c --write \"**/*\"",
+    "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx"
+  },
+  "homepage": "https://g6.antv.vision",
+  "bugs": {
+    "url": "https://github.com/antvis/algorithm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antvis/algorithm"
+  },
+  "license": "MIT",
+  "author": "https://github.com/orgs/antvis/people",
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/plugin-proposal-class-properties": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
+    "@babel/preset-typescript": "^7.12.7",
+    "babel-loader": "^8.2.2"
+  },
+  "dependencies": {
+    "@antv/g": "^5.16.26",
+    "@antv/g-webgpu": "^1.7.67",
+    "@antv/g-plugin-gpgpu": "^1.7.49",
+    "@antv/graphlib": "^2.0.0",
+    "@types/offscreencanvas": "^2019.6.4",
+    "@webgpu/types": "^0.1.6",
+    "tslib": "^2.5.2"
+  }
+}

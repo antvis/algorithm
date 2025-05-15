@@ -1,42 +1,78 @@
+import { uniqueId } from "@antv/util";
+import { ClusterData, INode, IEdge, Graph, Matrix } from "./types";
+import { ID } from "@antv/graphlib";
 
-import getAdjMatrix from './adjacent-matrix'
-import { uniqueId } from './util';
-import { GraphData, ClusterData } from './types';
+function getAdjMatrix(graph: Graph, directed: boolean) {
+  const nodes = graph.getAllNodes();
+  const matrix: Matrix[] = [];
+  // map node with index in data.nodes
+  const nodeMap = new Map<string | number, number>();
+
+  if (!nodes) {
+    throw new Error("invalid nodes data!");
+  }
+
+  if (nodes) {
+    nodes.forEach((node, i) => {
+      nodeMap.set(node.id, i);
+      const row: number[] = [];
+      matrix.push(row);
+    });
+  }
+
+  const edges = graph.getAllEdges();
+  if (edges) {
+    edges.forEach((edge) => {
+      const { source, target } = edge;
+      const sIndex = nodeMap.get(source);
+      const tIndex = nodeMap.get(target);
+      if ((!sIndex && sIndex !== 0) || (!tIndex && tIndex !== 0)) return;
+      matrix[sIndex][tIndex] = 1;
+      if (!directed) {
+        matrix[tIndex][sIndex] = 1;
+      }
+    });
+  }
+  return matrix;
+}
 
 /**
- * 标签传播算法
- * @param graphData 图数据
- * @param directed 是否有向图，默认为 false
- * @param weightPropertyName 权重的属性字段
- * @param maxIteration 最大迭代次数
+ * Performs label propagation clustering on the given graph.
+ * @param graph The graph object representing the nodes and edges.
+ * @param directed A boolean indicating whether the graph is directed or not. Default is false.
+ * @param weightPropertyName The name of the property used as the weight for edges. Default is 'weight'.
+ * @param maxIteration The maximum number of iterations for label propagation. Default is 1000.
+ * @returns The clustering result including clusters, cluster edges, and node-to-cluster mapping.
  */
-const labelPropagation = (
-  graphData: GraphData,
+export const labelPropagation = (
+  graph: Graph,
   directed: boolean = false,
-  weightPropertyName: string = 'weight',
+  weightPropertyName: string = "weight",
   maxIteration: number = 1000
 ): ClusterData => {
   // the origin data
-  const { nodes = [], edges = [] } = graphData;
+  const nodes = graph.getAllNodes();
+  const edges = graph.getAllEdges();
 
-  const clusters = {};
-  const nodeMap = {};
+  const clusters: { [key: string]: { id: string; nodes: INode[] } } = {};
+  const nodeMap: { [key: ID]: { node: INode; idx: number } } = {};
+  const nodeToCluster = new Map<ID, string>();
   // init the clusters and nodeMap
   nodes.forEach((node, i) => {
     const cid: string = uniqueId();
-    node.clusterId = cid;
+    nodeToCluster.set(node.id, cid);
     clusters[cid] = {
       id: cid,
-      nodes: [node]
+      nodes: [node],
     };
     nodeMap[node.id] = {
       node,
-      idx: i
+      idx: i,
     };
   });
 
   // the adjacent matrix of calNodes inside clusters
-  const adjMatrix = getAdjMatrix(graphData, directed);
+  const adjMatrix = getAdjMatrix(graph, directed);
   // the sum of each row in adjacent matrix
   const ks = [];
   /**
@@ -46,16 +82,16 @@ const labelPropagation = (
    *  ...
    * }
    */
-  const neighbors = {};
+  const neighbors: Map<ID, Map<ID, number>> = new Map<ID, Map<ID, number>>();
   adjMatrix.forEach((row, i) => {
     let k = 0;
     const iid = nodes[i].id;
-    neighbors[iid] = {};
+    neighbors.set(iid, new Map<ID, number>());
     row.forEach((entry, j) => {
       if (!entry) return;
       k += entry;
       const jid = nodes[j].id;
-      neighbors[iid][jid] = entry;
+      neighbors.get(iid).set(jid, entry);
     });
     ks.push(k);
   });
@@ -64,19 +100,21 @@ const labelPropagation = (
 
   while (iter < maxIteration) {
     let changed = false;
-    nodes.forEach(node => {
-      const neighborClusters = {};
-      Object.keys(neighbors[node.id]).forEach(neighborId => {
-        const neighborWeight = neighbors[node.id][neighborId];
+    nodes.forEach((node) => {
+      const neighborClusters: { [key: string]: number } = {};
+      neighbors.get(node.id).forEach((neighborId, value) => {
+        const neighborWeight = neighbors.get(node.id).get(neighborId);
         const neighborNode = nodeMap[neighborId].node;
-        const neighborClusterId = neighborNode.clusterId;
-        if (!neighborClusters[neighborClusterId]) neighborClusters[neighborClusterId] = 0;
+        const neighborClusterId = nodeToCluster.get(neighborNode.id);
+        if (!neighborClusters[neighborClusterId]) {
+          neighborClusters[neighborClusterId] = 0;
+        }
         neighborClusters[neighborClusterId] += neighborWeight;
       });
       // find the cluster with max weight
       let maxWeight = -Infinity;
-      let bestClusterIds = [];
-      Object.keys(neighborClusters).forEach(clusterId => {
+      let bestClusterIds: string[] = [];
+      Object.keys(neighborClusters).forEach((clusterId) => {
         if (maxWeight < neighborClusters[clusterId]) {
           maxWeight = neighborClusters[clusterId];
           bestClusterIds = [clusterId];
@@ -84,14 +122,19 @@ const labelPropagation = (
           bestClusterIds.push(clusterId);
         }
       });
-      if (bestClusterIds.length === 1 && bestClusterIds[0] === node.clusterId) return;
-      const selfClusterIdx = bestClusterIds.indexOf(node.clusterId);
+      if (
+        bestClusterIds.length === 1 &&
+        bestClusterIds[0] === nodeToCluster.get(node.id)
+      ) {
+        return;
+      }
+      const selfClusterIdx = bestClusterIds.indexOf(nodeToCluster.get(node.id));
       if (selfClusterIdx >= 0) bestClusterIds.splice(selfClusterIdx, 1);
       if (bestClusterIds && bestClusterIds.length) {
         changed = true;
 
         // remove from origin cluster
-        const selfCluster = clusters[node.clusterId as string];
+        const selfCluster = clusters[nodeToCluster.get(node.id)];
         const nodeInSelfClusterIdx = selfCluster.nodes.indexOf(node);
         selfCluster.nodes.splice(nodeInSelfClusterIdx, 1);
 
@@ -99,7 +142,7 @@ const labelPropagation = (
         const randomIdx = Math.floor(Math.random() * bestClusterIds.length);
         const bestCluster = clusters[bestClusterIds[randomIdx]];
         bestCluster.nodes.push(node);
-        node.clusterId = bestCluster.id;
+        nodeToCluster.set(node.id, bestCluster.id);
       }
     });
     if (!changed) break;
@@ -107,7 +150,7 @@ const labelPropagation = (
   }
 
   // delete the empty clusters
-  Object.keys(clusters).forEach(clusterId => {
+  Object.keys(clusters).forEach((clusterId) => {
     const cluster = clusters[clusterId];
     if (!cluster.nodes || !cluster.nodes.length) {
       delete clusters[clusterId];
@@ -115,37 +158,40 @@ const labelPropagation = (
   });
 
   // get the cluster edges
-  const clusterEdges = [];
-  const clusterEdgeMap = {};
-  edges.forEach(edge => {
+  const clusterEdges: IEdge[] = [];
+  const clusterEdgeMap: { [key: string]: IEdge } = {};
+  edges.forEach((edge) => {
+    let i = 0;
     const { source, target } = edge;
-    const weight = edge[weightPropertyName] || 1;
-    const sourceClusterId = nodeMap[source].node.clusterId;
-    const targetClusterId = nodeMap[target].node.clusterId;
+    const weight = (edge.data[weightPropertyName] || 1) as number;
+    const sourceClusterId = nodeToCluster.get(nodeMap[source].node.id);
+    const targetClusterId = nodeToCluster.get(nodeMap[target].node.id);
     const newEdgeId = `${sourceClusterId}---${targetClusterId}`;
     if (clusterEdgeMap[newEdgeId]) {
-      clusterEdgeMap[newEdgeId].weight += weight;
-      clusterEdgeMap[newEdgeId].count++;
+      clusterEdgeMap[newEdgeId].data.weight += weight;
+      (clusterEdgeMap[newEdgeId].data.count as number)++;
     } else {
       const newEdge = {
+        id: i++,
         source: sourceClusterId,
         target: targetClusterId,
-        weight,
-        count: 1
+        data: {
+          weight,
+          count: 1,
+        },
       };
       clusterEdgeMap[newEdgeId] = newEdge;
       clusterEdges.push(newEdge);
     }
   });
 
-  const clustersArray = [];
-  Object.keys(clusters).forEach(clusterId => {
+  const clustersArray: { id: string; nodes: INode[] }[] = [];
+  Object.keys(clusters).forEach((clusterId) => {
     clustersArray.push(clusters[clusterId]);
   });
   return {
     clusters: clustersArray,
-    clusterEdges
-  }
-}
-
-export default labelPropagation;
+    clusterEdges,
+    nodeToCluster,
+  };
+};

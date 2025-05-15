@@ -11,3 +11,9 @@ es
 dist
 *.pem
 !mock-cert.pem
+tsconfig.tsbuildinfo
+target
+Cargo.lock
+pkg
+pkg-node
+pkg-parallel

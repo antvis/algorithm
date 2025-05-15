@@ -1,35 +1,32 @@
-import { GraphData, NodeConfig } from "./types";
-import { getNeighbors } from "./util";
-
+import { ID } from '@antv/graphlib';
+import { Graph, INode } from './types';
 /**
  * Generate all connected components for an undirected graph
  * @param graph
  */
-export const detectConnectedComponents = (graphData: GraphData): NodeConfig[][] => {
-  const { nodes = [], edges = [] } = graphData
-  const allComponents: NodeConfig[][] = [];
-  const visited = {};
-  const nodeStack: NodeConfig[] = [];
-
-  const getComponent = (node: NodeConfig) => {
+export const detectConnectedComponents = (graph: Graph): INode[][] => {
+  const nodes = graph.getAllNodes();
+  const allComponents: INode[][] = [];
+  const visited: { [key: ID]: boolean } = {};
+  const nodeStack: INode[] = [];
+  const getComponent = (node: INode) => {
     nodeStack.push(node);
     visited[node.id] = true;
-    const neighbors = getNeighbors(node.id, edges);
+    const neighbors = graph.getNeighbors(node.id);
     for (let i = 0; i < neighbors.length; ++i) {
-      const neighbor = neighbors[i];
+      const neighbor = neighbors[i].id;
       if (!visited[neighbor]) {
-        const targetNode = nodes.filter(node => node.id === neighbor)
+        const targetNode = nodes.filter((node) => node.id === neighbor);
         if (targetNode.length > 0) {
           getComponent(targetNode[0]);
         }
       }
     }
   };
-
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     if (!visited[node.id]) {
-      // 对于无向图进行dfs遍历，每一次调用后都得到一个连通分量
+      // For DFS traversal of undirected graphs, a connected component is obtained after each call
       getComponent(node);
       const component = [];
       while (nodeStack.length > 0) {
@@ -39,39 +36,37 @@ export const detectConnectedComponents = (graphData: GraphData): NodeConfig[][] 
     }
   }
   return allComponents;
-}
+};
 
 /**
- * Tarjan's Algorithm 复杂度  O(|V|+|E|)
+ * Tarjan's Algorithm O(|V|+|E|)
  * For directed graph only
  * a directed graph is said to be strongly connected if "every vertex is reachable from every other vertex".
  * refer: http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
  * @param graph
  * @return a list of strongly connected components
  */
-export const detectStrongConnectComponents = (graphData: GraphData): NodeConfig[][] => {
-  const { nodes = [], edges = [] } = graphData
-  const nodeStack: NodeConfig[] = [];
-  const inStack = {}; // 辅助判断是否已经在stack中，减少查找开销
-  const indices = {};
-  const lowLink = {};
-  const allComponents: NodeConfig[][] = [];
+export const detectStrongConnectComponents = (graph: Graph): INode[][] => {
+  const nodes = graph.getAllNodes();
+  const nodeStack: INode[] = [];
+  // Assist to determine whether it is already in the stack to reduce the search overhead
+  const inStack: { [key: ID]: boolean } = {};
+  const indices: { [key: ID]: number } = {};
+  const lowLink: { [key: ID]: number } = {};
+  const allComponents: INode[][] = [];
   let index = 0;
-
-  const getComponent = (node: NodeConfig) => {
+  const getComponent = (node: INode) => {
     // Set the depth index for v to the smallest unused index
     indices[node.id] = index;
     lowLink[node.id] = index;
     index += 1;
     nodeStack.push(node);
     inStack[node.id] = true;
-
-    // 考虑每个邻接点
-    const neighbors = getNeighbors(node.id, edges, 'target').filter((n) => nodes.map(node => node.id).indexOf(n) > -1);
-    for (let i = 0; i < neighbors.length; i++) {
-      const targetNodeID = neighbors[i];
+    const relatedEdges = graph.getRelatedEdges(node.id, 'out');
+    for (let i = 0; i < relatedEdges.length; i++) {
+      const targetNodeID = relatedEdges[i].target;
       if (!indices[targetNodeID] && indices[targetNodeID] !== 0) {
-        const targetNode = nodes.filter(node => node.id === targetNodeID)
+        const targetNode = nodes.filter((node) => node.id === targetNodeID);
         if (targetNode.length > 0) {
           getComponent(targetNode[0]);
         }
@@ -82,7 +77,6 @@ export const detectStrongConnectComponents = (graphData: GraphData): NodeConfig[
         lowLink[node.id] = Math.min(lowLink[node.id], indices[targetNodeID]);
       }
     }
-
     // If node is a root node, generate an SCC
     if (lowLink[node.id] === indices[node.id]) {
       const component = [];
@@ -97,17 +91,18 @@ export const detectStrongConnectComponents = (graphData: GraphData): NodeConfig[
       }
     }
   };
-
   for (const node of nodes) {
     if (!indices[node.id] && indices[node.id] !== 0) {
       getComponent(node);
     }
   }
-
   return allComponents;
-}
+};
 
-export default function getConnectedComponents(graphData: GraphData, directed?: boolean): NodeConfig[][] {
-  if (directed) return detectStrongConnectComponents(graphData);
-  return detectConnectedComponents(graphData);
+export function getConnectedComponents(
+  graph: Graph,
+  directed?: boolean
+): INode[][] {
+  if (directed) return detectStrongConnectComponents(graph);
+  return detectConnectedComponents(graph);
 }

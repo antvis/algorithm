@@ -1,5 +1,5 @@
-import { GraphData } from "../types";
-import { clone } from "@antv/util";
+import { clone, uniqueId } from '@antv/util';
+import { GraphData } from '../types';
 import {
   Graph,
   Edge,
@@ -7,20 +7,20 @@ import {
   VACANT_GRAPH_ID,
   Node,
   VACANT_EDGE_LABEL,
-} from "./struct";
+} from './struct';
 
 export interface EdgeMap {
   [key: string]: {
-    // key 的格式为 source-target
-    idx: number; // 该边在原图 graphData.edges 的序号
+    // key formatted as source-target
+    idx: number; // The index of the edge in the original graphData.edges.
     edge: any;
   };
 }
 
 export interface NodeMap {
   [key: string]: {
-    // key 格式为 node.id
-    idx: number; // 该j客店在原图 graphData.nodes 的序号
+    // key formatted as node.id
+    idx: number; // The index of the node in the original graphData.nodes.
     node: any;
     degree: number;
     inDegree: number;
@@ -59,20 +59,20 @@ class DFSedge {
     };
   }
 
-  equalTo(other) {
+  equalTo(other: DFSedge) {
     return (
-      this.fromNode === other.formNode &&
+      this.fromNode === other.fromNode &&
       this.toNode === other.toNode &&
       this.nodeEdgeNodeLabel === other.nodeEdgeNodeLabel
     );
   }
 
-  notEqualTo(other) {
+  notEqualTo(other: DFSedge) {
     return !this.equalTo(other);
   }
 }
 
-// DFScode 是 DESedge 的数组
+// DFScode is the array of DESedge
 class DFScode {
   public dfsEdgeList: DFSedge[];
   public rmpath: any;
@@ -82,7 +82,7 @@ class DFScode {
     this.dfsEdgeList = [];
   }
 
-  equalTo(other) {
+  equalTo(other: DFSedge[]) {
     const aLength = this.dfsEdgeList.length;
     const bLength = other.length;
     if (aLength !== bLength) return false;
@@ -92,19 +92,25 @@ class DFScode {
     return true;
   }
 
-  notEqualTo(other) {
+  notEqualTo(other: DFSedge[]) {
     return !this.equalTo(other);
   }
 
-  /** 增加一条 edge 到 DFScode */
-  pushBack(fromNode, toNode, fromNodeLabel, edgeLabel, toNodeLabel) {
+  /** Add an edge to DFScode */
+  pushBack(
+    fromNode: number,
+    toNode: number,
+    fromNodeLabel: string,
+    edgeLabel: string,
+    toNodeLabel: string
+  ) {
     this.dfsEdgeList.push(
       new DFSedge(fromNode, toNode, fromNodeLabel, edgeLabel, toNodeLabel)
     );
     return this.dfsEdgeList;
   }
 
-  /** 根据 dfs 构建图 */
+  /** Build graph according to dfs */
   toGraph(graphId: number = VACANT_GRAPH_ID, directed = false) {
     const graph = new Graph(graphId, true, directed);
     this.dfsEdgeList.forEach((dfsEdge) => {
@@ -112,14 +118,18 @@ class DFScode {
       const toNodeId = dfsEdge.toNode;
       const { nodeLabel1, edgeLabel, nodeLabel2 } = dfsEdge.nodeEdgeNodeLabel;
 
-      if (nodeLabel1 !== VACANT_NODE_LABEL) graph.addNode(fromNodeId, nodeLabel1);
+      if (nodeLabel1 !== VACANT_NODE_LABEL) {
+        graph.addNode(fromNodeId, nodeLabel1);
+      }
       if (nodeLabel2 !== VACANT_NODE_LABEL) graph.addNode(toNodeId, nodeLabel2);
-      if (nodeLabel1 !== VACANT_NODE_LABEL && nodeLabel2 !== nodeLabel1)  graph.addEdge(undefined, fromNodeId, toNodeId, edgeLabel);
+      if (nodeLabel1 !== VACANT_NODE_LABEL && nodeLabel2 !== nodeLabel1) {
+        graph.addEdge(undefined, fromNodeId, toNodeId, edgeLabel);
+      }
     });
     return graph;
   }
 
-  // 建立 rightmost path
+  // Build rightmost path
   buildRmpath() {
     this.rmpath = [];
     let oldFrom = undefined;
@@ -140,7 +150,7 @@ class DFScode {
   }
 
   getNodeNum() {
-    const nodeMap = {};
+    const nodeMap: { [key: number]: boolean } = {};
     this.dfsEdgeList.forEach((dfsEdge) => {
       if (!nodeMap[dfsEdge.fromNode]) nodeMap[dfsEdge.fromNode] = true;
       if (!nodeMap[dfsEdge.toNode]) nodeMap[dfsEdge.toNode] = true;
@@ -152,8 +162,8 @@ class DFScode {
 class History {
   public his: object;
   public edges: Edge[];
-  public nodesUsed: object;
-  public edgesUsed: object;
+  public nodesUsed: { [key: number]: number };
+  public edgesUsed: { [key: number]: number };
 
   constructor(pdfs: PDFS) {
     this.his = {};
@@ -161,15 +171,16 @@ class History {
     this.edgesUsed = {};
     this.edges = [];
     if (!pdfs) return;
-    while (pdfs) {
-      const e = pdfs.edge;
+    let pdfsIterator = pdfs;
+    while (pdfsIterator) {
+      const e = pdfsIterator.edge;
       this.edges.push(e);
       this.nodesUsed[e.from] = 1;
       this.nodesUsed[e.to] = 1;
       this.edgesUsed[e.id] = 1;
-      pdfs = pdfs.preNode;
+      pdfsIterator = pdfsIterator.preNode;
     }
-    // 倒序
+    // reverse the order
     this.edges = this.edges.reverse();
   }
 
@@ -201,12 +212,12 @@ interface GraphMap {
 }
 
 interface AlgorithmProps {
-  graphs: GraphMap; // 图数据
-  minSupport: number; // 算法参数，最小支持数量，根据 graphs 内图的数量指定
-  directed?: boolean; // 是否有向图，默认为 false
-  minNodeNum?: number; // 每个子图中边的最少个数，默认为 1
-  maxNodeNum?: number; // 每个子图中边的最多个数，默认为 4
-  top?: number; // 返回前 top 个频繁子图，默认为 10
+  graphs: GraphMap; // Graph data
+  minSupport: number; // Minimum support count, specified based on the number of graphs in the graphs list
+  directed?: boolean; // Whether it is a directed graph, false by default
+  minNodeNum?: number; // The minimum number of edges in each subgraph. Default is 1
+  maxNodeNum?: number; // The maximum number of edges in each subgraph. Default is 4
+  top?: number; // Return the top frequent subgraphs. Default is 10
   verbose?: boolean;
 }
 
@@ -222,7 +233,7 @@ class GSpan {
   public minSupport: number;
   public top: number;
   public directed: boolean;
-  private counter: number; // 用于生成图的 id，自增
+  private counter: number; // The ID used for generating the graph, incremented automatically.
   public verbose: boolean;
 
   constructor({
@@ -234,7 +245,7 @@ class GSpan {
     directed = false,
     verbose = false,
   }: AlgorithmProps) {
-    // -------- 第零步，初始化-------
+    // -------- Step 0: Initailizing -------
     this.graphs = graphs;
     this.dfsCode = new DFScode();
     this.support = 0;
@@ -252,13 +263,13 @@ class GSpan {
     this.reportDF = []; // matrix
   }
 
-  // Line 352
   findForwardRootEdges(graph: Graph, fromNode: Node): Edge[] {
-    const result = [];
+    const result: Edge[] = [];
     const nodeMap = graph.nodeMap;
     fromNode.edges.forEach((edge) => {
-      if (this.directed || fromNode.label <= nodeMap[edge.to].label)
+      if (this.directed || fromNode.label <= nodeMap[edge.to].label) {
         result.push(edge);
+      }
     });
 
     return result;
@@ -300,9 +311,9 @@ class GSpan {
   }
 
   findForwardPureEdges(
-    graph,
-    rightmostEdge,
-    minNodeLabel,
+    graph: Graph,
+    rightmostEdge: Edge,
+    minNodeLabel: string,
     history: History
   ): Edge[] {
     const result = [];
@@ -352,21 +363,19 @@ class GSpan {
   }
 
   getSupport(projected: PDFS[]): number {
-    const graphMap = {};
+    const graphMap: { [key: number]: boolean } = {};
     projected.forEach((pro) => {
       if (!graphMap[pro.graphId]) graphMap[pro.graphId] = true;
     });
     return Object.keys(graphMap).length;
   }
 
-  findMinLabel(
-    obj: Root
-  ): {
+  findMinLabel(obj: Root): {
     nodeLabel1?: string;
     edgeLabel: string;
     nodeLabel2?: string;
   } {
-    let minLabel = undefined;
+    let minLabel: { nodeLabel1: string; edgeLabel: string; nodeLabel2: string };
     Object.keys(obj).forEach((nodeEdgeNodeLabel) => {
       const { nodeLabel1, edgeLabel, nodeLabel2 } = obj[nodeEdgeNodeLabel];
       if (!minLabel) {
@@ -397,7 +406,7 @@ class GSpan {
 
   isMin() {
     const dfsCode = this.dfsCode;
-    if (this.verbose) console.log("isMin checking", dfsCode);
+    if (this.verbose) console.log('isMin checking', dfsCode);
     if (dfsCode.dfsEdgeList.length === 1) return true;
     const directed = this.directed;
     const graph = dfsCode.toGraph(VACANT_GRAPH_ID, directed);
@@ -407,15 +416,16 @@ class GSpan {
     graph.nodes.forEach((node) => {
       const forwardEdges = this.findForwardRootEdges(graph, node);
       forwardEdges.forEach((edge) => {
-        let otherNode = nodeMap[edge.to];
+        const otherNode = nodeMap[edge.to];
         const nodeEdgeNodeLabel = `${node.label}-${edge.label}-${otherNode.label}`;
-        if (!root[nodeEdgeNodeLabel])
+        if (!root[nodeEdgeNodeLabel]) {
           root[nodeEdgeNodeLabel] = {
             projected: [],
             nodeLabel1: node.label,
             edgeLabel: edge.label,
             nodeLabel2: otherNode.label,
           };
+        }
         const pdfs: PDFS = {
           graphId: graph.id,
           edge,
@@ -426,7 +436,7 @@ class GSpan {
     });
 
     // 比较 root 中每一项的 nodeEdgeNodeLabel 大小，按照 nodeLabel1、edgeLabe、nodeLabel2 的顺序比较
-    let minLabel = this.findMinLabel(root); // line 419
+    const minLabel = this.findMinLabel(root); // line 419
     if (!minLabel) return;
     dfsCodeMin.dfsEdgeList.push(
       new DFSedge(
@@ -438,8 +448,7 @@ class GSpan {
       )
     );
 
-    // line 423
-    const projectIsMin = (projected: PDFS[]) => {
+    const projectIsMin = (projected: PDFS[]): any => {
       // right most path
       const rmpath = dfsCodeMin.buildRmpath();
       const minNodeLabel =
@@ -447,9 +456,9 @@ class GSpan {
       const maxToC = dfsCodeMin.dfsEdgeList[rmpath[0]].toNode; // node id
 
       const backwardRoot: Root = {};
-      let flag = false,
-        newTo = 0;
-      let end = directed ? -1 : 0; // 遍历到 1 还是到 0
+      let flag = false;
+      let newTo = 0;
+      const end = directed ? -1 : 0;
       for (let i = rmpath.length - 1; i > end; i--) {
         if (flag) break;
         // line 435
@@ -492,8 +501,9 @@ class GSpan {
           )
         );
         const idx = dfsCodeMin.dfsEdgeList.length - 1;
-        if (this.dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx])
+        if (this.dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx]) {
           return false;
+        }
         return projectIsMin(
           backwardRoot[minBackwardEdgeLabel.edgeLabel].projected
         );
@@ -514,12 +524,13 @@ class GSpan {
           newFrom = maxToC;
           forwardPureEdges.forEach((edge) => {
             const key = `${edge.label}-${nodeMap[edge.to].label}`;
-            if (!forwardRoot[key])
+            if (!forwardRoot[key]) {
               forwardRoot[key] = {
                 projected: [],
                 edgeLabel: edge.label,
                 nodeLabel2: nodeMap[edge.to].label,
               };
+            }
             forwardRoot[key].projected.push({
               graphId: graph.id,
               edge,
@@ -546,12 +557,13 @@ class GSpan {
             newFrom = dfsCodeMin.dfsEdgeList[value].fromNode;
             forwardRmpathEdges.forEach((edge) => {
               const key = `${edge.label}-${nodeMap[edge.to].label}`;
-              if (!forwardRoot[key])
+              if (!forwardRoot[key]) {
                 forwardRoot[key] = {
                   projected: [],
                   edgeLabel: edge.label,
                   nodeLabel2: nodeMap[edge.to].label,
                 };
+              }
               forwardRoot[key].projected.push({
                 graphId: graph.id,
                 edge,
@@ -575,8 +587,9 @@ class GSpan {
         )
       );
       const idx = dfsCodeMin.dfsEdgeList.length - 1;
-      if (dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx])
+      if (dfsCode.dfsEdgeList[idx] !== dfsCodeMin.dfsEdgeList[idx]) {
         return false;
+      }
       return projectIsMin(
         forwardRoot[
           `${forwardMinEdgeNodeLabel.edgeLabel}-${forwardMinEdgeNodeLabel.nodeLabel2}`
@@ -594,7 +607,7 @@ class GSpan {
     this.frequentSubgraphs.push(clone(graph));
   }
 
-  subGraphMining(projected) {
+  subGraphMining(projected: PDFS[]) {
     const support = this.getSupport(projected);
     if (support < this.minSupport) return;
     if (!this.isMin()) return;
@@ -603,8 +616,8 @@ class GSpan {
     const nodeNum = this.dfsCode.getNodeNum();
     const rmpath = this.dfsCode.buildRmpath();
     const maxToC = this.dfsCode.dfsEdgeList[rmpath[0]].toNode;
-    const minNodeLabel = this.dfsCode.dfsEdgeList[0].nodeEdgeNodeLabel
-      .nodeLabel1;
+    const minNodeLabel =
+      this.dfsCode.dfsEdgeList[0].nodeEdgeNodeLabel.nodeLabel1;
 
     const forwardRoot: Root = {};
     const backwardRoot: Root = {};
@@ -625,12 +638,13 @@ class GSpan {
           const key = `${this.dfsCode.dfsEdgeList[rmpath[i]].fromNode}-${
             backwardEdge.label
           }`;
-          if (!backwardRoot[key])
+          if (!backwardRoot[key]) {
             backwardRoot[key] = {
               projected: [],
               toNodeId: this.dfsCode.dfsEdgeList[rmpath[i]].fromNode,
               edgeLabel: backwardEdge.label,
             };
+          }
           backwardRoot[key].projected.push({
             graphId: p.graphId,
             edge: backwardEdge,
@@ -649,13 +663,14 @@ class GSpan {
       );
       forwardPureEdges.forEach((edge) => {
         const key = `${maxToC}-${edge.label}-${nodeMap[edge.to].label}`;
-        if (!forwardRoot[key])
+        if (!forwardRoot[key]) {
           forwardRoot[key] = {
             projected: [],
             fromNodeId: maxToC,
             edgeLabel: edge.label,
             nodeLabel2: nodeMap[edge.to].label,
           };
+        }
         forwardRoot[key].projected.push({
           graphId: p.graphId,
           edge,
@@ -675,13 +690,14 @@ class GSpan {
           const key = `${this.dfsCode.dfsEdgeList[rmpath[i]].fromNode}-${
             edge.label
           }-${nodeMap[edge.to].label}`;
-          if (!forwardRoot[key])
+          if (!forwardRoot[key]) {
             forwardRoot[key] = {
               projected: [],
               fromNodeId: this.dfsCode.dfsEdgeList[rmpath[i]].fromNode,
               edgeLabel: edge.label,
               nodeLabel2: nodeMap[edge.to].label,
             };
+          }
           forwardRoot[key].projected.push({
             graphId: p.graphId,
             edge,
@@ -695,7 +711,7 @@ class GSpan {
     Object.keys(backwardRoot).forEach((key) => {
       const { toNodeId, edgeLabel } = backwardRoot[key];
       this.dfsCode.dfsEdgeList.push(
-        new DFSedge(maxToC, toNodeId, "-1", edgeLabel, "-1")
+        new DFSedge(maxToC, toNodeId, '-1', edgeLabel, '-1')
       );
       this.subGraphMining(backwardRoot[key].projected);
       this.dfsCode.dfsEdgeList.pop();
@@ -723,19 +739,26 @@ class GSpan {
     const directed = this.directed;
     const minSupport = this.minSupport;
     const frequentSize1Subgraphs = this.frequentSize1Subgraphs;
-    let nodeLabelCounter = {},
-      nodeEdgeNodeCounter = {};
-    // 保存各个图和各自节点的关系 map，key 格式为 graphKey-node类型
-    const nodeLableCounted = {};
-    // 保存各个图和各自边的关系 map，key 格式为 graphKey-fromNode类型-edge类型-toNode类型
-    const nodeEdgeNodeLabelCounted = {};
+    const nodeLabelCounter: { [key: string]: number } = {};
+    const nodeEdgeNodeCounter: { [key: string]: number } = {};
+    // Save the relationship map between each graph and its respective nodes. The key format is "graphKey-nodeType".
+    const nodeLableCounted: {
+      [key: string]: { graphKey: string; label: string };
+    } = {};
+    // Save the relationship map between each graph and its respective edges. The key format is "graphKey-fromNodeType-edgeType-toNodeType".
+    const nodeEdgeNodeLabelCounted: {
+      [key: string]: {
+        graphId: string;
+        nodeLabel1: string;
+        edgeLabel: string;
+        nodeLabel2: string;
+      };
+    } = {};
     Object.keys(graphs).forEach((key) => {
-      // Line 271
-      const graph = graphs[key];
+      const graph = graphs[Number(key)];
       const nodeMap = graph.nodeMap;
-      // 遍历节点，记录对应图 与 每个节点的 label 到 nodeLableCounted
+      // Traverse the nodes and record the corresponding graph and label for each node in nodeLabelCounted.
       graph.nodes.forEach((node, i) => {
-        // Line 272
         const nodeLabel = node.label;
         const graphNodeKey = `${key}-${nodeLabel}`;
         if (!nodeLableCounted[graphNodeKey]) {
@@ -747,7 +770,7 @@ class GSpan {
           graphKey: key,
           label: nodeLabel,
         };
-        // 遍历该节点的所有边，记录各个图和各自边的关系到 nodeEdgeNodeLabelCounted. Line 276
+        // Traverse all the edges of the node and record the relationship between each graph and its respective edge in nodeEdgeNodeLabelCounted.
         node.edges.forEach((edge) => {
           let nodeLabel1 = nodeLabel;
           let nodeLabel2 = nodeMap[edge.to].label;
@@ -776,14 +799,14 @@ class GSpan {
       });
     });
 
-    // 计算频繁的节点
+    // Calculate the frequent nodes.
     Object.keys(nodeLabelCounter).forEach((label) => {
       const count = nodeLabelCounter[label];
       if (count < minSupport) return;
-      const g = { nodes: [], edges: [] };
+      const g = { nodes: [], edges: [] } as GraphData;
       g.nodes.push({
-        id: "0",
-        label,
+        id: '0',
+        data: { label },
       });
       frequentSize1Subgraphs.push(g);
       // if (minNodeNum <= 1) reportSize1 TODO
@@ -793,7 +816,7 @@ class GSpan {
   }
 
   run() {
-    // -------- 第一步, _generate_1edge_frequent_subgraphs：频繁的单个节点-------
+    // -------- First step: _generate_1edge_frequent_subgraphs - Frequent individual nodes. -------
     this.frequentSize1Subgraphs = this.generate1EdgeFrequentSubGraphs();
 
     if (this.maxNodeNum < 2) return;
@@ -801,25 +824,24 @@ class GSpan {
     const graphs = this.graphs;
     const directed = this.directed;
 
-    // PDFS 数组的 map Line 304
+    // PDFS array map
     const root: Root = {};
     Object.keys(graphs).forEach((graphId: any) => {
       const graph = graphs[graphId];
       const nodeMap = graph.nodeMap;
-      // Line 306
       graph.nodes.forEach((node) => {
         const forwardRootEdges = this.findForwardRootEdges(graph, node);
-        // Line 308
         forwardRootEdges.forEach((edge) => {
-          let toNode = nodeMap[edge.to];
+          const toNode = nodeMap[edge.to];
           const nodeEdgeNodeLabel = `${node.label}-${edge.label}-${toNode.label}`;
-          if (!root[nodeEdgeNodeLabel])
+          if (!root[nodeEdgeNodeLabel]) {
             root[nodeEdgeNodeLabel] = {
               projected: [],
               nodeLabel1: node.label as string,
               edgeLabel: edge.label as string,
               nodeLabel2: toNode.label as string,
             };
+          }
           const pdfs: PDFS = {
             graphId,
             edge,
@@ -830,11 +852,9 @@ class GSpan {
       });
     });
 
-    // Line 313
     Object.keys(root).forEach((nodeEdgeNodeLabel) => {
-      const { projected, nodeLabel1, edgeLabel, nodeLabel2 } = root[
-        nodeEdgeNodeLabel
-      ];
+      const { projected, nodeLabel1, edgeLabel, nodeLabel2 } =
+        root[nodeEdgeNodeLabel];
 
       this.dfsCode.dfsEdgeList.push(
         new DFSedge(0, 1, nodeLabel1, edgeLabel, nodeLabel2)
@@ -855,15 +875,20 @@ const formatGraphs = (
   Object.keys(graphs).forEach((key, i) => {
     const graph = graphs[key];
     const fGraph = new Graph(i, true, directed);
-    const nodeIdxMap = {};
+    const nodeIdxMap: { [key: string]: number } = {};
     graph.nodes.forEach((node, j) => {
-      fGraph.addNode(j, node[nodeLabelProp]);
+      fGraph.addNode(j, node.data[nodeLabelProp] as string);
       nodeIdxMap[node.id] = j;
     });
     graph.edges.forEach((edge, k) => {
       const sourceIdx = nodeIdxMap[edge.source];
       const targetIdx = nodeIdxMap[edge.target];
-      fGraph.addEdge(-1, sourceIdx, targetIdx, edge[edgeLabelProp]);
+      fGraph.addEdge(
+        -1,
+        sourceIdx,
+        targetIdx,
+        edge.data[edgeLabelProp] as string
+      );
     });
     if (fGraph && fGraph.getNodeNum()) result[fGraph.id] = fGraph;
   });
@@ -875,20 +900,23 @@ const toGraphDatas = (
   nodeLabelProp: string,
   edgeLabelProp: string
 ) => {
-  const result = [];
+  const result: GraphData[] = [];
   graphs.forEach((graph) => {
-    const graphData = { nodes: [], edges: [] };
+    const graphData = { nodes: [], edges: [] } as GraphData;
     graph.nodes.forEach((node) => {
       graphData.nodes.push({
         id: `${node.id}`,
-        [nodeLabelProp]: node.label,
+        data: { [nodeLabelProp]: node.label },
       });
     });
     graph.edges.forEach((edge) => {
       graphData.edges.push({
+        id: uniqueId(),
         source: `${edge.from}`,
         target: `${edge.to}`,
-        [edgeLabelProp]: edge.label,
+        data: {
+          [edgeLabelProp]: edge.label,
+        },
       });
     });
     result.push(graphData);
@@ -897,25 +925,25 @@ const toGraphDatas = (
 };
 
 interface Props {
-  graphs: GraphDataMap; // 图数据
-  minSupport: number; // 算法参数，最小支持数量，根据 graphs 内图的数量指定
-  directed?: boolean; // 是否有向图，默认为 false
-  nodeLabelProp?: string; // 节点类型的属性名
-  edgeLabelProp?: string; // 边类型的属性名
-  minNodeNum?: number; // 每个子图中节点的最少个数，默认为 1
-  maxNodeNum?: number; // 每个子图中节点的最多个数，默认为 4
-  top?: number; // 返回前 top 个频繁子图，默认为 10
-  verbose?: boolean;
+  graphs: GraphDataMap; // Graph data
+  minSupport: number; // Algorithm parameter, minimum support count specified based on the number of graphs in the 'graphs' property
+  directed?: boolean; // Whether the graphs are directed. Default is false.
+  nodeLabelProp?: string; // Property name for the node type
+  edgeLabelProp?: string; // Property name for the edge type
+  minNodeNum?: number; // Minimum number of nodes in each subgraph. Default is 1.
+  maxNodeNum?: number; // Maximum number of nodes in each subgraph. Default is 4.
+  top?: number; // Number of top frequent subgraphs to return. Default is 10.
+  verbose?: boolean; // Whether to display verbose output.
 }
 
-const DEFAULT_LABEL_NAME = "cluster";
+const DEFAULT_LABEL_NAME = 'cluster';
 
 /**
- * gSpan 频繁子图计算算法（frequent graph mining）
- * @param params 参数
+ * gSpan is a frequent graph mining algorithm used to discover frequent subgraphs in graph data.
+ * @param params
  */
 const gSpan = (params: Props): GraphData[] => {
-  // ------- 将图数据 GraphData 的 map 转换为格式 -------
+  // ------- Convert the map of graph data, GraphData, into a specific format. -------
   const {
     graphs,
     directed = false,
@@ -930,7 +958,7 @@ const gSpan = (params: Props): GraphData[] => {
   );
   const { minSupport, maxNodeNum, minNodeNum, verbose, top } = params;
 
-  // ------- 初始化与执行算法 -------
+  // ------- Initialize and execute the algorithm. -------
   const algoParams = {
     graphs: formattedGraphs,
     minSupport,

@@ -1,50 +1,43 @@
 import { clone } from '@antv/util';
-import { NodeConfig } from './types';
-import { getAllProperties } from './utils/node-properties';
-import { oneHot } from './utils/data-preprocessing';
-import cosineSimilarity from './cosine-similarity';
+import { getAllProperties, oneHot } from './utils';
+import { NodeSimilarity } from './types';
+import { cosineSimilarity } from './cosine-similarity';
+
 /**
- *  nodes-cosine-similarity算法 基于节点属性计算余弦相似度(基于种子节点寻找相似节点)
- * @param nodes 图节点数据
- * @param seedNode 种子节点
- * @param propertyKey 属性的字段名
- * @param involvedKeys 参与计算的key集合
- * @param uninvolvedKeys 不参与计算的key集合
- */
-const nodesCosineSimilarity = (
-  nodes: NodeConfig[] = [],
-  seedNode: NodeConfig,
-  propertyKey: string = undefined,
+Calculates the cosine similarity based on node attributes using the nodes-cosine-similarity algorithm.
+This algorithm is used to find similar nodes based on a seed node in a graph.
+@param nodes - The data of graph nodes.
+@param seedNode - The seed node for similarity calculation.
+@param involvedKeys - The collection of keys that are involved in the calculation.
+@param uninvolvedKeys - The collection of keys that are not involved in the calculation.
+@returns An array of nodes that are similar to the seed node based on cosine similarity.
+*/
+export const nodesCosineSimilarity = (
+  nodes: NodeSimilarity[] = [],
+  seedNode: NodeSimilarity,
   involvedKeys: string[] = [],
   uninvolvedKeys: string[] = [],
 ): {
   allCosineSimilarity: number[],
-  similarNodes: NodeConfig[],
+  similarNodes: NodeSimilarity[],
 } => {
-  const similarNodes = clone(nodes.filter(node => node.id !== seedNode.id));
-  const seedNodeIndex = nodes.findIndex(node => node.id === seedNode.id);
-  // 所有节点属性集合
-  const properties = getAllProperties(nodes, propertyKey);
-  // 所有节点属性one-hot特征向量集合
-  const allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys);
-  // 种子节点属性
+  const similarNodes = clone(nodes.filter((node) => node.id !== seedNode.id));
+  const seedNodeIndex = nodes.findIndex((node) => node.id === seedNode.id);
+  // Collection of all node properties
+  const properties = getAllProperties(nodes);
+  // One-hot feature vectors for all node properties
+  const allPropertiesWeight = oneHot(properties, involvedKeys, uninvolvedKeys) as number[][];
+  // Seed node properties
   const seedNodeProperties = allPropertiesWeight[seedNodeIndex];
-
   const allCosineSimilarity: number[] = [];
-  similarNodes.forEach((node, index) => {
-    if (node.id !== seedNode.id) {
-      // 节点属性
-      const nodeProperties = allPropertiesWeight[index];
-      // 计算节点向量和种子节点向量的余弦相似度
-      const cosineSimilarityValue = cosineSimilarity(nodeProperties, seedNodeProperties);
-      allCosineSimilarity.push(cosineSimilarityValue);
-      node.cosineSimilarity = cosineSimilarityValue;
-    }
+  similarNodes.forEach((node: NodeSimilarity, index: number) => {
+    const nodeProperties = allPropertiesWeight[index];
+    // Calculate the cosine similarity between node vector and seed node vector
+    const cosineSimilarityValue = cosineSimilarity(nodeProperties, seedNodeProperties);
+    allCosineSimilarity.push(cosineSimilarityValue);
+    node.data.cosineSimilarity = cosineSimilarityValue;
   });
-
-  // 将返回的节点按照余弦相似度大小排序
-  similarNodes.sort((a, b) => b.cosineSimilarity - a.cosineSimilarity);
+  // Sort the returned nodes according to cosine similarity
+  similarNodes.sort((a: NodeSimilarity, b: NodeSimilarity) => b.data.cosineSimilarity - a.data.cosineSimilarity);
   return { allCosineSimilarity, similarNodes };
-}
-
-export default nodesCosineSimilarity;
+};

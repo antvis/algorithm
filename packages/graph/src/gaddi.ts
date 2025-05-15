@@ -1,16 +1,21 @@
-import floydWarshall from './floydWarshall';
-import { GraphData, Matrix } from './types';
+import { floydWarshall } from './floydWarshall';
+import { Matrix, Graph, GraphData, IEdge, INode } from './types';
 import gSpan, { EdgeMap, NodeMap } from './gSpan/gSpan';
-import dijkstra from './dijkstra';
-import { uniqueId } from './util';
+import { dijkstra } from './dijkstra';
+import { Graph as GraphCore, ID } from '@antv/graphlib';
 
-/** 节点对 map */
+let uniqueId = 1;
+
+/** Node pairs map. */
 interface NodePairMap {
+  /** key is formatted as startNodeIdx-endNodeIdx */
   [key: string]: {
-    // key 的格式为 startNodeIdx-endNodeIdx
-    start: number; // 第一个节点的 idx
-    end: number; // 第二个节点的 idx
-    distance: number; // 两节点最短路径长度
+    /** ids of the first node */
+    start: number;
+    /** ids of the second node */
+    end: number;
+    /** the shortest path between these two nodes */
+    distance: number;
   };
 }
 
@@ -18,38 +23,42 @@ interface LabelMap {
   [label: string]: any;
 }
 
-/** 邻居单元类型 */
+/** Neighbor unit. */
 interface NeighborUnit {
-  nodeId: string;
+  nodeId: ID;
   nodeIdx: number;
-  nodeIdxs: number[]; // the first one is nodeIdx
+  /** the first one is nodeIdx */
+  nodeIdxs: number[];
   neighbors: any[]; //
   neighborNum: number;
   nodeLabelCountMap: {
     [label: string]: {
       count: number;
-      dists: number[]; // 按照从小到大排序的距离数组
+      /** Distances array, sortted from small to large */
+      dists: number[];
     };
   };
 }
 
-/** 节点对的邻居交集的诱导子图 map */
+/** Induced subgraph map of neighbor intersection for node pairs */
 interface InterGraphMap {
-  [key: string]: GraphData; // key 格式由节点对的 idx 组成：beginIdx-endIdx，和 nodePairMap 对应
+  /** The key format consists of the indices of node pairs: beginIdx-endIdx, corresponding to nodePairMap */
+  [key: string]: GraphData;
 }
 
 /**
- * 为 graphData 中每个节点生成邻居单元数组
- * @param graphData
- * @param spm
- * @param nodeLabelProp
- * @param k k-近邻
- */
+ *  Generates an array of neighbor units for each node in graphData.
+ *  @param {GraphData} graphData - The graph data.
+ *  @param {Matrix[]} spm - The shortest path matrix.
+ *  @param {string} [nodeLabelProp='cluster'] - The property name of the node label.
+ *  @param {number} [k=2] - The number of nearest neighbors to find.
+ *  @returns {NeighborUnit[]} - An array of neighbor units.
+ * */
 const findKNeighborUnits = (
   graphData: GraphData,
   spm: Matrix[],
   nodeLabelProp: string = 'cluster',
-  k: number = 2,
+  k: number = 2
 ): NeighborUnit[] => {
   const units: NeighborUnit[] = [];
   const nodes = graphData.nodes;
@@ -58,26 +67,44 @@ const findKNeighborUnits = (
   });
   return units;
 };
-
-const findKNeighborUnit = (nodes, row, i, nodeLabelProp, k) => {
+/**
+ * Finds the neighbor unit for a given node.
+ * @param {INode[]} nodes - The array of nodes.
+ * @param {number[]} row - The row of proximity values from the sparse proximity matrix.
+ * @param {number} i - The index of the node.
+ * @param {string} nodeLabelProp - The property name of the node label.
+ * @param {number} k - The number of nearest neighbors.
+ * @returns {NeighborUnit} - The neighbor unit for the node.
+ * */
+const findKNeighborUnit = (
+  nodes: INode[],
+  row: number[],
+  i: number,
+  nodeLabelProp: string,
+  k: number
+) => {
   const unitNodeIdxs = [i];
-  const neighbors = [];
-  const labelCountMap = {};
+  const neighbors: INode[] = [];
+  const labelCountMap: { [key: string]: { count: number; dists: number[] } } =
+    {};
   row.forEach((v, j) => {
     if (v <= k && i !== j) {
       unitNodeIdxs.push(j);
       neighbors.push(nodes[j]);
-      const label = nodes[j][nodeLabelProp];
-      if (!labelCountMap[label]) labelCountMap[label] = { count: 1, dists: [v] };
-      else {
+      const label = nodes[j].data[nodeLabelProp] as string;
+      if (!labelCountMap[label]) {
+        labelCountMap[label] = { count: 1, dists: [v] };
+      } else {
         labelCountMap[label].count++;
         labelCountMap[label].dists.push(v);
       }
     }
   });
-  // 将 labelCountMap 中的 dists 按照从小到大排序，方便后面使用
-  Object.keys(labelCountMap).forEach(label => {
-    labelCountMap[label].dists = labelCountMap[label].dists.sort((a, b) => a - b);
+  // Sort the dists in labelCountMap in ascending order for later use
+  Object.keys(labelCountMap).forEach((label) => {
+    labelCountMap[label].dists = labelCountMap[label].dists.sort(
+      (a, b) => a - b
+    );
   });
   return {
     nodeIdx: i,
@@ -90,43 +117,56 @@ const findKNeighborUnit = (nodes, row, i, nodeLabelProp, k) => {
 };
 
 /**
- * 随机寻找点对，满足距离小于 k
- * @param k 参数 k，表示 k-近邻
- * @param nodeNum 参数 length
- * @param maxNodePairNum 寻找点对的数量不超过 maxNodePairNum
- * @param spm 最短路径矩阵
- */
+ * Randomly finds node pairs that satisfy the distance criterion of being less than k.
+ * @param {number} k - The value of k for k-nearest neighbors.
+ * @param {number} nodeNum - The number of nodes.
+ * @param {number} maxNodePairNum - The maximum number of node pairs to be found.
+ * @param {NeighborUnit[]} kNeighborUnits - The array of neighbor units.
+ * @param {Matrix[]} spm - The shortest path matrix.
+ * @returns {NodePairMap} - The map of node pairs.
+ * */
 const findNodePairsRandomly = (
   k: number,
   nodeNum: number,
   maxNodePairNum: number,
   kNeighborUnits: NeighborUnit[],
-  spm: Matrix[],
+  spm: Matrix[]
 ): NodePairMap => {
-  // 每个节点需要随机找出的点对数
+  // Find the pairs randomly for each node
   let nodePairNumEachNode = Math.ceil(maxNodePairNum / nodeNum);
-  const nodePairMap = {};
+  const nodePairMap: {
+    [key: string]: { start: number; end: number; distance: number };
+  } = {};
   let foundNodePairCount = 0;
 
-  // 遍历节点，为每个节点随机找出 nodePairNumEachNode 个点对，满足距离小于 k。找到的点对数量超过 maxNodePairNum 或所有节点遍历结束时终止
+  // Traverse the nodes and find nodePairNumEachNode pairs of nodes, each pair has distance smaller than k.
   kNeighborUnits.forEach((unit, i) => {
-    // 若未达到 nodePairNumEachNode，或循环次数小于最大循环次数(2 * nodeNum)，继续循环
+    // If the number of pairs does not reach nodePairNumEachNode, or the loop times is smaller than (2 * nodeNum), keep looping.
     let nodePairForICount = 0;
     let outerLoopCount = 0;
     const neighbors = unit.nodeIdxs; // the first one is the center node
     const neighborNum = unit.neighborNum - 1;
+    const visited: { [key: number]: boolean } = {};
     while (nodePairForICount < nodePairNumEachNode) {
-      // 另一端节点在节点数组中的的 index
+      // The other node's indx in the nodes array
       let oidx = neighbors[1 + Math.floor(Math.random() * neighborNum)];
       let innerLoopCount = 0;
-      // 若随机得到的另一端 idx 不符合条件，则继续 random。条件是不是同一个节点、这个点对没有被记录过、距离小于 k
-      while (nodePairMap[`${i}-${oidx}`] || nodePairMap[`${oidx}-${i}`]) {
+      // If the idx of the other end does not meet the requirement, keep looping to random.
+      // The requirements are: not the same node, not used, distance smaller than k.
+      while (
+        spm[i][oidx] > k &&
+        (visited[oidx] ||
+          nodePairMap[`${i}-${oidx}`] ||
+          nodePairMap[`${oidx}-${i}`])
+      ) {
         oidx = Math.floor(Math.random() * nodeNum);
+        visited[oidx] = true;
         innerLoopCount++;
-        if (innerLoopCount > 2 * nodeNum) break; // 循环次数大于最大循环次数(2 * nodeNum)跳出循环，避免死循环
+        // Break the loop when the loop times is bigger than (2 * nodeNum) to avoid endless loop.
+        if (innerLoopCount > 2 * nodeNum) break;
       }
       if (innerLoopCount < 2 * nodeNum) {
-        // 未达到最大循环次数，说明找到了合适的另一端
+        // The loop times does not reach the maximum, means the proper other end is found
         nodePairMap[`${i}-${oidx}`] = {
           start: i,
           end: oidx,
@@ -134,13 +174,14 @@ const findNodePairsRandomly = (
         };
         nodePairForICount++;
         foundNodePairCount++;
-        // 如果当前找到的点对数量达到了上限，返回结果
+        // When the number of the node pairs reaches the maxNodePairNum, return
         if (foundNodePairCount >= maxNodePairNum) return nodePairMap;
       }
       outerLoopCount++;
-      if (outerLoopCount > 2 * nodeNum) break; // 循环次数大于最大循环次数(2 * nodeNum)跳出循环，避免死循环
+      // Break when the loop times reaches the maximum (2 * nodeNum) to avoid endless loop
+      if (outerLoopCount > 2 * nodeNum) break;
     }
-    // 这个节点没有找到足够 nodePairNumEachNode 的点对。更新 nodePairNumEachNode，让后续节点找更多的点对
+    // The node does not have enough node pairs. Update nodePairNumEachNode to find more pairs for other nodes.
     if (nodePairForICount < nodePairNumEachNode) {
       const gap = nodePairNumEachNode - nodePairForICount;
       nodePairNumEachNode = (nodePairNumEachNode + gap) / (nodeNum - i - 1);
@@ -150,69 +191,80 @@ const findNodePairsRandomly = (
 };
 
 /**
- * 计算所有 nodePairMap 中节点对的相交邻居诱导子图
- * @param nodePairMap 节点对 map，key 为 node1.id-node2.id，value 为 { startNodeIdx, endNodeIdx, distance }
- * @param neighborUnits 每个节点的邻居元数组
- * @param graphData 原图数据
- * @param edgeMap 边的 map，方便检索
- * @param cachedInducedGraphMap 缓存的结果，下次进入该函数将继续更新该缓存，若 key 在缓存中存在则不需要重复计算
- */
+ * Computes the induced subgraph of the intersection neighbor induced by all node pairs in nodePairMap.
+ * @param {NodePairMap} nodePairMap - The map of node pairs, where the key is "node1.id-node2.id" and the value is { start: startNodeIdx, end: endNodeIdx, distance }.
+ * @param {NeighborUnit[]} neighborUnits - The array of neighbor units for each node.
+ * @param {GraphData} graphData - The original graph data.
+ * @param {InterGraphMap} cachedInducedGraphMap - The cached results to avoid redundant computations. If a key exists in the cache, the result is already computed and stored.
+ * @returns {InterGraphMap} - The map of induced subgraphs for each node pair.
+ * */
 const getIntersectNeighborInducedGraph = (
   nodePairMap: NodePairMap,
   neighborUnits: NeighborUnit[],
   graphData: GraphData,
-  cachedInducedGraphMap?: InterGraphMap,
+  cachedInducedGraphMap?: InterGraphMap
 ): InterGraphMap => {
+  let usingCachedInducedGraphmap = cachedInducedGraphMap;
   const nodes = graphData.nodes;
-  if (!cachedInducedGraphMap) cachedInducedGraphMap = {};
-  Object.keys(nodePairMap).forEach(key => {
-    if (cachedInducedGraphMap && cachedInducedGraphMap[key]) return;
-    cachedInducedGraphMap[key] = { nodes: [], edges: [] };
+  if (!usingCachedInducedGraphmap) usingCachedInducedGraphmap = {};
+  Object.keys(nodePairMap).forEach((key) => {
+    if (usingCachedInducedGraphmap && usingCachedInducedGraphmap[key]) return;
+    usingCachedInducedGraphmap[key] = { nodes: [], edges: [] };
     const pair = nodePairMap[key];
     const startUnitNodeIds = neighborUnits[pair.start]?.nodeIdxs;
     const endUnitNodeIds = neighborUnits[pair.end]?.nodeIdxs;
-    if (!startUnitNodeIds || !endUnitNodeIds) return; // 不存在邻元，返回空图
+    // Return empty graph if there are no neighbor units
+    if (!startUnitNodeIds || !endUnitNodeIds) return;
     const endSet = new Set(endUnitNodeIds);
-    const intersect = startUnitNodeIds.filter(x => endSet.has(x)); // 可能会爆栈（在 1580 + 6 nodes full-connected 时出现）
-    if (!intersect || !intersect.length) return; // 没有交集，返回空图
-    const intersectIdMap = {};
+    const intersect = startUnitNodeIds.filter((x) => endSet.has(x));
+    // Return empty graph if there is no intersection
+    if (!intersect || !intersect.length) return;
+    const intersectIdMap: { [key: string]: boolean } = {};
     const intersectLength = intersect.length;
     for (let i = 0; i < intersectLength; i++) {
       const node = nodes[intersect[i]];
-      cachedInducedGraphMap[key].nodes.push(node); // 将交集中的点加入诱导子图
+      // Add intersected nodes to the induced subgraph
+      usingCachedInducedGraphmap[key].nodes.push(node);
       intersectIdMap[node.id] = true;
     }
-    // 遍历所有边数据，如果边的两端都在交集中，将该边加入诱导子图
-    graphData.edges.forEach(edge => {
-      if (intersectIdMap[edge.source] && intersectIdMap[edge.target])
-        cachedInducedGraphMap[key].edges.push(edge);
+    graphData.edges.forEach((edge) => {
+      if (intersectIdMap[edge.source] && intersectIdMap[edge.target]) {
+        // Add edges to the induced subgraph if both endpoints are in the intersection
+        usingCachedInducedGraphmap[key].edges.push(edge);
+      }
     });
   });
-  return cachedInducedGraphMap;
+  return usingCachedInducedGraphmap;
 };
 
 /**
- * 计算 strcutre 在 graph 上的匹配数量
- * @param graph 图数据
- * @param structure 目前支持只有两个节点一条边的最简单结构
- * @param nodeLabelProp 节点类型字段名
- * @param edgeLabelProp 边类型字段名
- */
-const getMatchedCount = (graph, structure, nodeLabelProp, edgeLabelProp) => {
-  const nodeMap = {};
-  graph.nodes.forEach(node => {
-    nodeMap[node.id] = node;
+ * Computes the number of matches of the structure on the graph.
+ * @param {GraphData} graph - The graph data.
+ * @param {GraphData} structure - The structure to match, currently only supports the simplest structure with two nodes and one edge.
+ * @param {string} nodeLabelProp - The property name for node labels.
+ * @param {string} edgeLabelProp - The property name for edge labels.
+ * @returns {number} - The number of matches.
+ * */
+const getMatchedCount = (
+  graph: GraphData,
+  structure: GraphData,
+  nodeLabelProp: string,
+  edgeLabelProp: string
+) => {
+  const nodeMap: Map<ID, INode> = new Map();
+  graph.nodes.forEach((node) => {
+    nodeMap.set(node.id, node);
   });
   let count = 0;
   if (!structure?.edges?.length || structure?.nodes?.length < 2) return 0;
-  graph.edges.forEach(e => {
-    const sourceLabel = nodeMap[e.source][nodeLabelProp];
-    const targetLabel = nodeMap[e.target][nodeLabelProp];
-    const strNodeLabel1 = structure?.nodes[0][nodeLabelProp];
-    const strNodeLabel2 = structure?.nodes[1][nodeLabelProp];
-    const strEdgeLabel = structure?.edges[0][edgeLabelProp];
+  graph.edges.forEach((e) => {
+    const sourceLabel = nodeMap.get(e.source).data[nodeLabelProp];
+    const targetLabel = nodeMap.get(e.target).data[nodeLabelProp];
+    const strNodeLabel1 = structure?.nodes[0].data[nodeLabelProp];
+    const strNodeLabel2 = structure?.nodes[1].data[nodeLabelProp];
+    const strEdgeLabel = structure?.edges[0].data[edgeLabelProp];
 
-    if (e[edgeLabelProp] !== strEdgeLabel) return;
+    if (e.data[edgeLabelProp] !== strEdgeLabel) return;
     if (
       (sourceLabel === strNodeLabel1 && targetLabel === strNodeLabel2) ||
       (sourceLabel === strNodeLabel2 && targetLabel === strNodeLabel1)
@@ -224,44 +276,55 @@ const getMatchedCount = (graph, structure, nodeLabelProp, edgeLabelProp) => {
 };
 
 /**
- * structures 中寻找最具有代表性的一个。这个结构是使得 matchedCountMap 的分组方式类内间距最小，类间间距最大
- * @param matchedCountMap 每个 structure 分类后的各图匹配数量，格式 { [strcture.idx]: { [interInducedGraphKey]: count } }
- * @param structureNum strcuture 个数，与 matchedCountMap.length 对应
- * @param structures
- */
-const findRepresentStructure = (matchedCountMap, structureNum, structures) => {
-  let maxOffset = Infinity,
-    representClusterType = 0;
+ * Finds the most representative structure among structures. This structure minimizes the intra-cluster distance and maximizes the inter-cluster distance based on the matchedCountMap grouping.
+ * @param {Array} matchedCountMap - The matched count map for each structure grouping, in the format { [graphId]: count }.
+ * @param {number} structureNum - The number of structures, corresponding to the length of matchedCountMap.
+ * @param {Array} structures - The array of structures.
+ * @returns {Object} - The most representative structure and its count map.
+ **/
+const findRepresentStructure = (
+  matchedCountMap: { [graphId: string]: number }[],
+  structureNum: number,
+  structures: GraphData[]
+) => {
+  let maxOffset = Infinity;
+  let representClusterType = 0;
   for (let i = 0; i < structureNum; i++) {
-    // 一种分组的 map，key 是 intGraph 的 key，value 是 structures[i] 的匹配个数
+    // Group's map, key is the keys in intGraph, values is the number of matches in structures[i]
     const countMapI = matchedCountMap[i];
-    // 按照 value 为该组排序，生成 keys 的数组：
+    // Sort the array bay value, and generate the array of keys:
     const sortedGraphKeys = Object.keys(countMapI).sort((a, b) => {
       return countMapI[a] - countMapI[b];
     });
 
-    // 共 100 个 graphKeys，将 graphKeys 按顺序分为 groupNum 组
+    // 100 graphKeys in total, devided groupKeys into groupNum groups in order
     const groupNum = 10;
-    const clusters = []; // 总共有 groupNum 个项
+    const clusters: {
+      graphs: string[];
+      totalCount: number;
+      aveCount: number;
+    }[] = []; // groupNum items
     sortedGraphKeys.forEach((key, j) => {
-      if (!clusters[j % groupNum])
+      if (!clusters[j % groupNum]) {
         clusters[j % groupNum] = { graphs: [], totalCount: 0, aveCount: 0 };
+      }
       clusters[j % groupNum].graphs.push(key);
       clusters[j % groupNum].totalCount += countMapI[key];
     });
 
-    // 计算 cluster 与 cluster 之间的距离 innerDist，每个 cluster 内部的距离 intraDist
-    let aveIntraDist = 0; // 该类的类内平均值
-    const aveCounts = []; // 类内平均匹配数量，将用于计算类间距离
-    clusters.forEach(graphsInCluster => {
-      // 类内均值
-      const aveCount = graphsInCluster.totalCount / graphsInCluster.graphs.length;
+    // Calculate the distance innerDist between cluster and cluster, and inner distance intraDist inside each cluster.
+    let aveIntraDist = 0; // The average distances inside the cluster
+    const aveCounts: number[] = []; // The average of number of matches inside the cluster, will be used to calculate thedistance between clusters.
+    clusters.forEach((graphsInCluster) => {
+      // Average count inside the cluster
+      const aveCount =
+        graphsInCluster.totalCount / graphsInCluster.graphs.length;
       graphsInCluster.aveCount = aveCount;
       aveCounts.push(aveCount);
 
-      // 对于每类，计算类内间距平均值
+      // Calculate the average distance inside each cluster
       let aveIntraPerCluster = 0;
-      const graphsNum = graphsInCluster.length;
+      const graphsNum = graphsInCluster.graphs.length;
       graphsInCluster.graphs.forEach((graphKey1, j) => {
         const graph1Count = countMapI[graphKey1];
         graphsInCluster.graphs.forEach((graphKey2, k) => {
@@ -275,7 +338,7 @@ const findRepresentStructure = (matchedCountMap, structureNum, structures) => {
 
     aveIntraDist /= clusters.length;
 
-    // 用类内均值计算类间距
+    // Calculate the distance between clusters with the average inside the cluster
     let aveInterDist = 0; // 类间间距平均值
     aveCounts.forEach((aveCount1, j) => {
       aveCounts.forEach((aveCount2, k) => {
@@ -285,7 +348,7 @@ const findRepresentStructure = (matchedCountMap, structureNum, structures) => {
       aveInterDist /= (aveCounts.length * (aveCounts.length - 1)) / 2;
     });
 
-    // 寻找 (类间间距均值-类内间距均值) 最大的一种分组方式（对应的 structure 就是最终要找的唯一 DS(G)）
+    // Find the group with max(average distance between clusters - average dictance inside a cluster). The corresponding structure is the target DS(G).
     const offset = aveInterDist - aveIntraDist;
     if (maxOffset < offset) {
       maxOffset = offset;
@@ -298,12 +361,15 @@ const findRepresentStructure = (matchedCountMap, structureNum, structures) => {
   };
 };
 
-const getNodeMaps = (nodes, nodeLabelProp): { nodeMap: NodeMap; nodeLabelMap: LabelMap } => {
-  const nodeMap: NodeMap = {},
-    nodeLabelMap: LabelMap = {};
+const getNodeMaps = (
+  nodes: INode[],
+  nodeLabelProp: string
+): { nodeMap: NodeMap; nodeLabelMap: LabelMap } => {
+  const nodeMap: NodeMap = {};
+  const nodeLabelMap: LabelMap = {};
   nodes.forEach((node, i) => {
     nodeMap[node.id] = { idx: i, node, degree: 0, inDegree: 0, outDegree: 0 };
-    const label = node[nodeLabelProp];
+    const label = node.data[nodeLabelProp] as string;
     if (!nodeLabelMap[label]) nodeLabelMap[label] = [];
     nodeLabelMap[label].push(node);
   });
@@ -311,15 +377,15 @@ const getNodeMaps = (nodes, nodeLabelProp): { nodeMap: NodeMap; nodeLabelMap: La
 };
 
 const getEdgeMaps = (
-  edges,
-  edgeLabelProp,
-  nodeMap: NodeMap,
+  edges: IEdge[],
+  edgeLabelProp: string,
+  nodeMap: NodeMap
 ): { edgeMap: EdgeMap; edgeLabelMap: LabelMap } => {
-  const edgeMap = {},
-    edgeLabelMap = {};
+  const edgeMap: { [key: string]: { idx: number; edge: IEdge } } = {};
+  const edgeLabelMap: { [key: string]: IEdge[] } = {};
   edges.forEach((edge, i) => {
-    edgeMap[`${uniqueId}`] = { idx: i, edge };
-    const label = edge[edgeLabelProp];
+    edgeMap[`${uniqueId++}`] = { idx: i, edge };
+    const label = edge.data[edgeLabelProp] as string;
     if (!edgeLabelMap[label]) edgeLabelMap[label] = [];
     edgeLabelMap[label].push(edge);
 
@@ -338,14 +404,19 @@ const getEdgeMaps = (
 };
 
 /**
- * 输出最短路径的 map，key 为 sourceNode.id-targetNode.id，value 为这两个节点的最短路径长度
- * @param nodes
- * @param spm
- * @param directed
+ * Generates a map of the shortest paths, where the key is in the format sourceNode.id-targetNode.id, and the value is the shortest path length between the two nodes.
+ * @param {Array} nodes - The array of nodes.
+ * @param {Array} spm - The shortest path matrix.
+ * @param {boolean} directed - Indicates if the graph is directed or not.
+ * @returns {Object} - The map of shortest paths.
  */
-const getSpmMap = (nodes, spm, directed): { [key: string]: number } => {
+const getSpmMap = (
+  nodes: INode[],
+  spm: number[][],
+  directed: boolean
+): { [key: string]: number } => {
   const length = spm.length;
-  const map = {};
+  const map: { [key: string]: number } = {};
   spm.forEach((row, i) => {
     const start = directed ? 0 : i + 1;
     const iId = nodes[i].id;
@@ -361,122 +432,174 @@ const getSpmMap = (nodes, spm, directed): { [key: string]: number } => {
 };
 
 /**
- * 计算一对节点（node1，node2）的 NDS 距离
- * @param graph 原图数据
- * @param node1
- * @param node2
- */
+ * Calculates the NDS distance between a pair of nodes (node1, node2).
+ * @param {Object} graph - The original graph data.
+ * @param {Object} node1 - The first node.
+ * @param {Object} node2 - The second node.
+ * @param {Object} nodeMap - The map of nodes.
+ * @param {number} spDist - The shortest path distance between the nodes.
+ * @param {Array} kNeighborUnits - The array of k-neighbor units.
+ * @param {Object} structure - The structure graph data.
+ * @param {string} nodeLabelProp - The node label property.
+ * @param {string} edgeLabelProp - The edge label property.
+ * @param {Object} cachedNDSMap - The cached NDS map.
+ * @param {Object} cachedInterInducedGraph - The cached inter-induced graph map.
+ * @returns {number} - The NDS distance.
+ * */
 const getNDSDist = (
-  graph,
-  node1,
-  node2,
-  nodeMap,
-  spDist,
-  kNeighborUnits,
-  structure,
-  nodeLabelProp,
-  edgeLabelProp,
-  cachedNDSMap,
-  cachedInterInducedGraph,
+  graph: GraphData,
+  node1: INode,
+  node2: INode,
+  nodeMap: NodeMap,
+  spDist: number,
+  kNeighborUnits: NeighborUnit[],
+  structure: GraphData,
+  nodeLabelProp: string,
+  edgeLabelProp: string,
+  cachedNDSMap: { [key: string]: number },
+  cachedInterInducedGraph: InterGraphMap
 ) => {
+  let usingCachedInterInducedGraph = cachedInterInducedGraph;
   const key = `${node1.id}-${node2.id}`;
   if (cachedNDSMap && cachedNDSMap[key]) return cachedNDSMap[key];
-  let interInducedGraph = cachedInterInducedGraph ? cachedInterInducedGraph[key] : undefined;
-  // 若没有缓存相交邻居诱导子图，计算
+  let interInducedGraph = usingCachedInterInducedGraph
+    ? usingCachedInterInducedGraph[key]
+    : undefined;
+  // If there is no cached intersected induced graph, calculate it
   if (!interInducedGraph) {
     const pairMap: NodePairMap = {
       [key]: {
-        start: nodeMap[node1.id].idx,
-        end: nodeMap[node2.id].idx,
+        start: nodeMap[node1.id].idx as number,
+        end: nodeMap[node2.id].idx as number,
         distance: spDist,
       },
     };
 
-    cachedInterInducedGraph = getIntersectNeighborInducedGraph(
+    usingCachedInterInducedGraph = getIntersectNeighborInducedGraph(
       pairMap,
       kNeighborUnits,
       graph,
-      cachedInterInducedGraph,
+      usingCachedInterInducedGraph
     );
-    interInducedGraph = cachedInterInducedGraph[key];
+    interInducedGraph = usingCachedInterInducedGraph[key];
   }
 
-  return getMatchedCount(interInducedGraph, structure, nodeLabelProp, edgeLabelProp);
+  return getMatchedCount(
+    interInducedGraph,
+    structure,
+    nodeLabelProp,
+    edgeLabelProp
+  );
 };
 
 /**
- * 计算 pattern 上绩点的度数并存储到 minPatternNodeLabelDegreeMap
- */
-const stashPatternNodeLabelDegreeMap = (minPatternNodeLabelDegreeMap, neighborLabel, patternNodeMap, patternNodeLabelMap) => {
-  let minPatternNodeLabelDegree = minPatternNodeLabelDegreeMap[neighborLabel]?.degree;
-  let minPatternNodeLabelInDegree = minPatternNodeLabelDegreeMap[neighborLabel]?.inDegree;
-  let minPatternNodeLabelOutDegree = minPatternNodeLabelDegreeMap[neighborLabel]?.outDegree;
+ * Calculates the degrees of nodes in the pattern and stores them in the minPatternNodeLabelDegreeMap.
+ * @param {Object} minPatternNodeLabelDegreeMap - The map for storing the minimum degrees of nodes in the pattern.
+ * @param {string} neighborLabel - The label of the neighbor.
+ * @param {Object} patternNodeMap - The map of nodes in the pattern.
+ * @param {Object} patternNodeLabelMap - The map of node labels in the pattern.
+ * @returns {Object} - The minimum degrees of nodes in the pattern.
+ * */
+const stashPatternNodeLabelDegreeMap = (
+  minPatternNodeLabelDegreeMap: {
+    [key: string]: {
+      degree: number;
+      inDegree: number;
+      outDegree: number;
+    };
+  },
+  neighborLabel: string,
+  patternNodeMap: NodeMap,
+  patternNodeLabelMap: LabelMap
+) => {
+  let minPatternNodeLabelDegree =
+    minPatternNodeLabelDegreeMap[neighborLabel]?.degree;
+  let minPatternNodeLabelInDegree =
+    minPatternNodeLabelDegreeMap[neighborLabel]?.inDegree;
+  let minPatternNodeLabelOutDegree =
+    minPatternNodeLabelDegreeMap[neighborLabel]?.outDegree;
 
   if (minPatternNodeLabelDegreeMap[neighborLabel] === undefined) {
     minPatternNodeLabelDegree = Infinity;
     minPatternNodeLabelInDegree = Infinity;
     minPatternNodeLabelOutDegree = Infinity;
-    patternNodeLabelMap[neighborLabel].forEach(patternNodeWithLabel => {
-      const patternNodeDegree = patternNodeMap[patternNodeWithLabel.id].degree;
-      if (minPatternNodeLabelDegree > patternNodeDegree)
-        minPatternNodeLabelDegree = patternNodeDegree;
-      const patternNodeInDegree = patternNodeMap[patternNodeWithLabel.id].inDegree;
-      if (minPatternNodeLabelInDegree > patternNodeInDegree)
-        minPatternNodeLabelInDegree = patternNodeInDegree;
-      const patternNodeOutDegree = patternNodeMap[patternNodeWithLabel.id].outDegree;
-      if (minPatternNodeLabelOutDegree > patternNodeOutDegree)
-        minPatternNodeLabelOutDegree = patternNodeOutDegree;
-    });
+    patternNodeLabelMap[neighborLabel].forEach(
+      (patternNodeWithLabel: INode) => {
+        const patternNodeDegree =
+          patternNodeMap[patternNodeWithLabel.id].degree;
+        if (minPatternNodeLabelDegree > patternNodeDegree) {
+          minPatternNodeLabelDegree = patternNodeDegree;
+        }
+        const patternNodeInDegree =
+          patternNodeMap[patternNodeWithLabel.id].inDegree;
+        if (minPatternNodeLabelInDegree > patternNodeInDegree) {
+          minPatternNodeLabelInDegree = patternNodeInDegree;
+        }
+        const patternNodeOutDegree =
+          patternNodeMap[patternNodeWithLabel.id].outDegree;
+        if (minPatternNodeLabelOutDegree > patternNodeOutDegree) {
+          minPatternNodeLabelOutDegree = patternNodeOutDegree;
+        }
+      }
+    );
     minPatternNodeLabelDegreeMap[neighborLabel] = {
       degree: minPatternNodeLabelDegree,
       inDegree: minPatternNodeLabelInDegree,
-      outDegree: minPatternNodeLabelOutDegree
+      outDegree: minPatternNodeLabelOutDegree,
     };
   }
 
   return {
-    minPatternNodeLabelDegree, 
+    minPatternNodeLabelDegree,
     minPatternNodeLabelInDegree,
-    minPatternNodeLabelOutDegree
-  }
-}
+    minPatternNodeLabelOutDegree,
+  };
+};
 
 /**
- * GADDI 模式匹配
- * @param graphData 原图数据
- * @param pattern 搜索图（需要在原图上搜索的模式）数据
- * @param directed 是否计算有向图，默认 false
- * @param k 参数 k，表示 k-近邻
- * @param length 参数 length
- * @param nodeLabelProp 节点数据中代表节点标签（分类信息）的属性名。默认为 cluster
- * @param edgeLabelProp 边数据中代表边标签（分类信息）的属性名。默认为 cluster
+ * GADDI Pattern Match.
+ * @param graph The graphlib structure storing the original data
+ * @param pattern The pattern graph data to search
+ * @param directed Whether it is a directed graph, false by default
+ * @param k k-nearest-neighbors
+ * @param length length
+ * @param nodeLabelProp The field name for the label (clustering info) in the node data, 'cluster' by default
+ * @param edgeLabelProp The field name for the label (clustering info) in the edge data, 'cluster' by default
  */
-const GADDI = (
-  graphData: GraphData,
+export const GADDI = (
+  graph: Graph,
   pattern: GraphData,
   directed: boolean = false,
   k: number,
   length: number,
   nodeLabelProp: string = 'cluster',
-  edgeLabelProp: string = 'cluster',
+  edgeLabelProp: string = 'cluster'
 ): GraphData[] => {
-  if (!graphData || !graphData.nodes) return;
-  // 分为三步：
-  // 0. 预计算：节点/边数，邻接矩阵、最短路径矩阵
-  // 1. 处理原图 graphData。再分为 1~5 小步
-  // 2. 匹配
+  const graphData = {
+    nodes: graph.getAllNodes(),
+    edges: graph.getAllEdges(),
+  };
+  if (!graph || !graphData.nodes) return;
+  const patternGraph = new GraphCore(pattern);
+  let usingLength = length;
+  let usingK = k;
+
+  // Three steps:
+  // 0. Pre-processing: number of nodes/edges, adjacency matrix, shortest path distance matrix
+  // 1. Processing original graph data in 5 steps
+  // 2. Matching
 
   // console.log("----- stage-pre: preprocessing -------");
 
-  // -------- 第零步，预计算：节点/边数，邻接矩阵、最短路径矩阵-------
+  // -------- Step 0: Pre-processing: number of nodes/edges, adjacency matrix, shortest path distance matrix-------
   const nodeNum = graphData.nodes.length;
   if (!nodeNum) return;
   // console.log("----- stage-pre.1: calc shortest path matrix for graph -------");
-  const spm = floydWarshall(graphData, directed);
+  const spm = floydWarshall(graph, directed);
   // console.log(
   //   "----- stage-pre.2: calc shortest path matrix for pattern -------"
   // );
-  const patternSpm = floydWarshall(pattern, directed);
+  const patternSpm = floydWarshall(patternGraph, directed);
   // console.log(
   //   "----- stage-pre.3: calc shortest path matrix map for graph -------"
   // );
@@ -487,72 +610,79 @@ const GADDI = (
   const patternSpmMap = getSpmMap(pattern.nodes, patternSpm, directed);
 
   // console.log("----- stage-pre.5: establish maps -------");
-  // 节点的 map，以 id 为 id 映射，方便后续快速检索
+  // A node map is created to map nodes to their IDs, facilitating fast retrieval in subsequent operations.
   const { nodeMap, nodeLabelMap } = getNodeMaps(graphData.nodes, nodeLabelProp);
-  const { nodeMap: patternNodeMap, nodeLabelMap: patternNodeLabelMap } = getNodeMaps(
-    pattern.nodes,
-    nodeLabelProp,
-  );
+  const { nodeMap: patternNodeMap, nodeLabelMap: patternNodeLabelMap } =
+    getNodeMaps(pattern.nodes, nodeLabelProp);
 
-  // 计算节点度数
+  // Calculate the node degrees
   getEdgeMaps(graphData.edges, edgeLabelProp, nodeMap);
 
   const { edgeLabelMap: patternEdgeLabelMap } = getEdgeMaps(
     pattern.edges,
     edgeLabelProp,
-    patternNodeMap,
+    patternNodeMap
   );
 
-  // 若未指定 length，自动计算 pattern 半径（最短路径最大值）
-  let patternSpmSpread = [];
-  patternSpm?.forEach(row => {
+  // If the length is not assigned, calculate the radius (max shortest path distance) of the pattern
+  let patternSpmSpread: number[] = [];
+  patternSpm?.forEach((row) => {
     patternSpmSpread = patternSpmSpread.concat(row);
-  })
-  if (!length) length = Math.max(...patternSpmSpread, 2);
-  if (!k) k = length;
-
-  // console.log("params", directed, length, k);
+  });
+  if (!usingLength) usingLength = Math.max(...patternSpmSpread, 2);
+  if (!usingK) usingK = usingLength;
 
   // console.log("----- stage-pre.6: calc k neighbor units -------");
-  // 计算每个节点的 k 邻元集合
-  const kNeighborUnits = findKNeighborUnits(graphData, spm, nodeLabelProp, k);
-  const patternKNeighborUnits = findKNeighborUnits(pattern, patternSpm, nodeLabelProp, k);
+  // Calculate the k-nearest-neighbor collection for each node
+  const kNeighborUnits = findKNeighborUnits(
+    graphData,
+    spm,
+    nodeLabelProp,
+    usingK
+  );
+  const patternKNeighborUnits = findKNeighborUnits(
+    pattern,
+    patternSpm,
+    nodeLabelProp,
+    usingK
+  );
 
   // console.log(
   //   "----- stage0: going to processing graph and find intersect neighbor induced graphs -------"
   // );
 
   // console.log("----- stage0.1: going to select random node pairs -------");
-  // -------- 第一步，处理原图 graphData-------
+  // -------- Step 1: Processing the original graph data-------
 
-  // 1.1. 随机选择最多 100 个点对，满足距离小于 Length 和 k
-  // 当 graphData 少于 20 个节点，则不能找出 100 个点对，只找出不多于 n(n-1)/2 个点对
+  // 1.1. Find 100 node pairs in max, the distance smaller than Length and k
+  // When the number of nodes in graphData is smaller then  20, 100 node pairs are not able to be found. Only find no more than n(n-1)/2 pairs.
   const maxNodePairNum = Math.min(100, (nodeNum * (nodeNum - 1)) / 2);
   const nodePairsMap = findNodePairsRandomly(
-    k,
+    usingK,
     nodeNum,
     maxNodePairNum,
     kNeighborUnits,
-    spm,
+    spm
   );
 
   // console.log(
   //   "----- stage0.2: going to calculate intersect neighbor induced graphs -------"
   // );
-  // 1.2. 生成上面节点对的相应相交邻居诱导子图。格式为 {'beginNodeIdx-endNodeIdx': {nodes: [], edges: []}}
-  let intGMap = getIntersectNeighborInducedGraph(nodePairsMap, kNeighborUnits, graphData);
-  // 1.3. 使用 gSpan 算法（frequent graph mining）计算 ISIntG 的前 10 个频率最高的子结构（3-4条边）
-  const top = 10,
-    minSupport = 1,
-    minNodeNum = 1,
-    maxNodeNum = 4;
+  // 1.2. Generate the intersected induced neighbor subgraph for each node pairs, formatted as {'beginNodeIdx-endNodeIdx': {nodes: [], edges: []}}
+  let intGMap = getIntersectNeighborInducedGraph(
+    nodePairsMap,
+    kNeighborUnits,
+    graphData
+  );
+  // 1.3. Calculate the top frequent sub structures with 3-4 edges in ISIntG, with gSpan(frequent graph mining) algorithm
+  const top = 10;
   const params = {
     graphs: intGMap,
     nodeLabelProp,
     edgeLabelProp,
-    minSupport,
-    minNodeNum,
-    maxNodeNum,
+    minSupport: 1,
+    minNodeNum: 1,
+    maxNodeNum: 4,
     directed,
   };
 
@@ -560,18 +690,23 @@ const GADDI = (
   //   "----- stage1: (gSpan) going to find frequent structure dsG -------"
   // );
   // console.log("----- stage1.1: going to run gSpan -------");
-  // 暂时假设生成的 sub structure 都只有一条边
+  // suppose that the generated sub structure has only one edge
   const freStructures = gSpan(params).slice(0, top);
-  // structureNum 可能小于 top
+  // structureNum can be less than top
   const structureNum = freStructures.length;
 
-  // 1.4. 计算上述 10 个子结构在 intGMap 中每个诱导子图的匹配个数
-  const matchedCountMap = [];
+  // 1.4. Calculate the number of matches of each induced subgraph in intGMap
+  const matchedCountMap: { [key: string]: number }[] = [];
   freStructures.forEach((structure, i) => {
     matchedCountMap[i] = {};
-    Object.keys(intGMap).forEach(key => {
+    Object.keys(intGMap).forEach((key) => {
       const graph = intGMap[key];
-      const subStructureCount = getMatchedCount(graph, structure, nodeLabelProp, edgeLabelProp);
+      const subStructureCount = getMatchedCount(
+        graph,
+        structure,
+        nodeLabelProp,
+        edgeLabelProp
+      );
       matchedCountMap[i][key] = subStructureCount;
     });
   });
@@ -580,23 +715,23 @@ const GADDI = (
   //   "----- stage1.1: going to find the most represent strucutre -------"
   // );
 
-  // 1.5. 对于每个子结构，根据匹配个数为 intGMap 中的诱导子图分组，生成 structureNum 种分组
-  // 计算每种分组的类间距和类内间距，找到类间距最大、类内间距最小的一种分组，这种分组对应的子结构被选为唯一代表性子结构 DS(G)
+  // 1.5. For each sub structure, group the induced sub graph in initGMap accroding to the matches number. There will be structureNum groups.
+  // Calculate the intra and inner distances of each group, find the max and min groups. These groups' corresponding su structure will be selected as the representing structure DS(G)
   const { structure: dsG, structureCountMap: ndsDist } = findRepresentStructure(
     matchedCountMap,
     structureNum,
-    freStructures,
+    freStructures
   );
 
-  // -------- 第二步，匹配-------
+  // -------- Step 2: Matching-------
   // 2.1 找到从 Q 中的一个节点作为起始节点，寻找 G 中的匹配。这个其实节点的标签可以在 G 中找到最多的节点
-  let beginPNode = pattern.nodes[0],
-    candidates = [],
-    label = pattern.nodes[0]?.[nodeLabelProp],
-    maxNodeNumWithSameLabel = -Infinity;
-  pattern.nodes.forEach(node => {
-    const pLabel = node[nodeLabelProp];
-    const nodesWithSameLabel = nodeLabelMap[pLabel]
+  let beginPNode = pattern.nodes[0];
+  let candidates: INode[] = [];
+  let label = pattern.nodes[0]?.data[nodeLabelProp];
+  let maxNodeNumWithSameLabel = -Infinity;
+  pattern.nodes.forEach((node) => {
+    const pLabel = node.data[nodeLabelProp] as string;
+    const nodesWithSameLabel = nodeLabelMap[pLabel];
     if (nodesWithSameLabel?.length > maxNodeNumWithSameLabel) {
       maxNodeNumWithSameLabel = nodesWithSameLabel.length;
       candidates = nodesWithSameLabel;
@@ -607,14 +742,14 @@ const GADDI = (
 
   // console.log("----- stage2: going to find candidates -------");
 
-  // 全局缓存，避免重复计算
-  const minPatternNodeLabelDegreeMap = {}; // key 是 label，value 是该 label 节点的最小度数
-  let patternIntGraphMap = {},
-    patternNDSDist = {}, // key 为 node.id-node.id
-    patternNDSDistMap = {}; // key 为 node.id-label2，value nds距离值数组（按从大到小排序，无需关心具体对应哪个 node2）
-  // 2.2.2 对于 Q 中的另一个标签的 k 个节点，计算它们到 node 的最短路径以及 NDS 距离
-  const patternSpDist = {};
-  const patternSpDistBack = {};
+  // Global caching is used to avoid redundant calculations.
+  const minPatternNodeLabelDegreeMap = {}; // Key is label, value is the minimum degree of the nodes with label
+  let patternIntGraphMap: InterGraphMap = {};
+  const patternNDSDist: { [key: string]: number } = {}; // key is node.id-node.id
+  const patternNDSDistMap: { [key: string]: number[] } = {}; // key is node.id-label2, value nds array is sortted from large to small
+  // 2.2.2 For the k nodes with another label in Q, calculate the shortest path distance to the node and the NDS distance
+  const patternSpDist: { [key: string]: number[] } = {};
+  const patternSpDistBack: { [key: string]: number[] } = {};
   Object.keys(patternNodeLabelMap).forEach((label2, j) => {
     patternSpDist[label2] = [];
     if (directed) {
@@ -622,8 +757,14 @@ const GADDI = (
     }
     let maxDist = -Infinity;
     const patternNodesWithLabel2 = patternNodeLabelMap[label2];
-    const patternNodePairMap = {};
-    patternNodesWithLabel2.forEach(nodeWithLabel2 => {
+    const patternNodePairMap: {
+      [key: string]: {
+        start: number;
+        end: number;
+        distance: number;
+      };
+    } = {};
+    patternNodesWithLabel2.forEach((nodeWithLabel2: INode) => {
       const dist = patternSpmMap[`${beginPNode.id}-${nodeWithLabel2.id}`];
       dist && patternSpDist[label2].push(dist);
       if (maxDist < dist) maxDist = dist;
@@ -638,34 +779,47 @@ const GADDI = (
       }
     });
 
-    // spDist[label2] 按照从小到大排序
+    // spDist[label2] sortted from small to large
     patternSpDist[label2] = patternSpDist[label2].sort((a, b) => a - b);
-    if (directed) patternSpDistBack[label2] = patternSpDistBack[label2].sort((a, b) => a - b);
+    if (directed) {
+      patternSpDistBack[label2] = patternSpDistBack[label2].sort(
+        (a, b) => a - b
+      );
+    }
 
-    // 计算 Q 中所有 label2 节点到 beginPNode 的 NDS 距离
-    // 所有 label2 节点到 beginPNode 的邻居相交诱导子图：
+    // Calculate NDS distances from all the nodes in Q with label2 to beginPNode
+    // The intersected neighbor induced subgraph from label2 nodes to beginPNode:
     // key: node1.id-node2.id
     patternIntGraphMap = getIntersectNeighborInducedGraph(
       patternNodePairMap,
       patternKNeighborUnits,
       pattern,
-      patternIntGraphMap,
+      patternIntGraphMap
     );
-    // pattern 中 beginNode 到当前 label2 节点 的 NDS 距离（数组，无需关心具体对应到哪个节点）
-    let currentPatternNDSDistArray = [];
-    Object.keys(patternNodePairMap).forEach(key => {
+    // array of NDS distances from beginNode in pattern to the current node with label2, the corresponding relations does not matter
+    let currentPatternNDSDistArray: number[] = [];
+    Object.keys(patternNodePairMap).forEach((key) => {
       if (patternNDSDist[key]) {
         currentPatternNDSDistArray.push(patternNDSDist[key]);
-        return; // 缓存过则不需要再次计算
+        // If it is cached, no need to calculate again
+        return;
       }
       const patternIntGraph = patternIntGraphMap[key];
-      patternNDSDist[key] = getMatchedCount(patternIntGraph, dsG, nodeLabelProp, edgeLabelProp);
+      patternNDSDist[key] = getMatchedCount(
+        patternIntGraph,
+        dsG,
+        nodeLabelProp,
+        edgeLabelProp
+      );
       currentPatternNDSDistArray.push(patternNDSDist[key]);
     });
 
-    // 根据值为 currentPatternNDSDist 从大到小排序
-    currentPatternNDSDistArray = currentPatternNDSDistArray.sort((a, b) => b - a);
-    patternNDSDistMap[`${beginPNode.id}-${label2}`] = currentPatternNDSDistArray;
+    // Sortted by currentPatternNDSDist from large to small
+    currentPatternNDSDistArray = currentPatternNDSDistArray.sort(
+      (a, b) => b - a
+    );
+    patternNDSDistMap[`${beginPNode.id}-${label2}`] =
+      currentPatternNDSDistArray;
 
     if (label2 === label) return;
 
@@ -673,17 +827,22 @@ const GADDI = (
     for (let m = candidatesNum - 1; m >= 0; m--) {
       const cNode = candidates[m];
 
-      // prune1：若 candidates 中节点 cNode 的 kNeighborUnits 中标签为 label2 的节点个数少于 pattern 中 label2 个数，删去它
+      // prune1: If the number of nodes with label2 in the kNeighborUnits of node cNode in candidates is less than the number of nodes with label2 in the pattern, remove it.
       const graphNeighborUnit = kNeighborUnits[nodeMap[cNode.id].idx];
-      const graphNeighborUnitCountMap = graphNeighborUnit.nodeLabelCountMap[label2];
+      const graphNeighborUnitCountMap =
+        graphNeighborUnit.nodeLabelCountMap[label2];
       const patternLabel2Num = patternNodeLabelMap[label2].length;
-      if (!graphNeighborUnitCountMap || graphNeighborUnitCountMap.count < patternLabel2Num) {
+      if (
+        !graphNeighborUnitCountMap ||
+        graphNeighborUnitCountMap.count < patternLabel2Num
+      ) {
         candidates.splice(m, 1);
         continue;
       }
 
-      // prune2：若 candidates 中节点 cNode 到 kNeighborUnits 中标签为 label2 的节点最短路径大于 patternSpDist[label2]，删去它
-      // (prune2 规则即：candidate 相关的最短路径的最大 spDist[label2].length 个，按照大小顺序依次和 patternSpDist[label2] 中的值比较，只要遇到一个是 G > Q 的，就删去这个 candidate)
+      // prune2: If the shortest path from node cNode in candidates to any node with label2 in the kNeighborUnits is greater than patternSpDist[label2], remove it.
+      // The prune2 rule states that for each candidate, we compare the top spDist[label2].length shortest path distances from the candidate to any node with label2 in the kNeighborUnits,
+      // in order of their magnitude, with the corresponding values in patternSpDist[label2]. If we encounter a value where G > Q, we remove that candidate.
       let prune2Invalid = false;
       for (let n = 0; n < patternLabel2Num; n++) {
         if (graphNeighborUnitCountMap.dists[n] > patternSpDist[label2][n]) {
@@ -696,13 +855,15 @@ const GADDI = (
         continue;
       }
 
-      // prune3：若 candidates 中节点 cNode 到 kNeighborUnits 中标签为 label2 的节点 NDS 距离小于 patternNDSDist[beginNode.id-label2]，删去它
-      // TODO：prune3，currentPatternNDSDistArray 与 currentNDSDist 的比较
+      // prune3: If the NDS distance from node cNode in candidates to any node with label2 in the kNeighborUnits is less than patternNDSDist[beginNode.id-label2], remove it.
+      // TODO：prune3: compare currentPatternNDSDistArray and currentNDSDist
 
-      // 计算 G 中所有 label2 节点到 cNode 的 NDS 距离
-      // 所有 label2 节点到 cNode 的邻居相交诱导子图：
-      const cNodePairMap = {};
-      graphNeighborUnit.neighbors.forEach(neighborNode => {
+      // Calculate the NDS distances from all the nodes in label2 in G to the cNode
+      // All the intersected neighbor induced subgraph of nodes with label2 to cNode:
+      const cNodePairMap: {
+        [key: string]: { start: number; end: number; distance: number };
+      } = {};
+      graphNeighborUnit.neighbors.forEach((neighborNode) => {
         const dist = spmMap[`${cNode.id}-${neighborNode.id}`];
         cNodePairMap[`${cNode.id}-${neighborNode.id}`] = {
           start: nodeMap[cNode.id].idx,
@@ -710,21 +871,31 @@ const GADDI = (
           distance: dist,
         };
       });
-      // 更新 intGMap
-      intGMap = getIntersectNeighborInducedGraph(cNodePairMap, kNeighborUnits, graphData, intGMap);
-      // candidate 到它周围 label2 节点的 NDS 距离, key 是 node.id-node.id
-      let currentNDSDistArray = [];
-      Object.keys(cNodePairMap).forEach(key => {
+      // Update intGMap
+      intGMap = getIntersectNeighborInducedGraph(
+        cNodePairMap,
+        kNeighborUnits,
+        graphData,
+        intGMap
+      );
+      // NDS distance from candidate to the neighbor nodes with label2, key is node.id-node.id
+      let currentNDSDistArray: number[] = [];
+      Object.keys(cNodePairMap).forEach((key) => {
         if (ndsDist[key]) {
           currentNDSDistArray.push(ndsDist[key]);
-          return; // 缓存过则不需要再次计算
+          return; // If it is cached, there is no need to calculate it again.
         }
         const intGraph = intGMap[key];
-        ndsDist[key] = getMatchedCount(intGraph, dsG, nodeLabelProp, edgeLabelProp);
+        ndsDist[key] = getMatchedCount(
+          intGraph,
+          dsG,
+          nodeLabelProp,
+          edgeLabelProp
+        );
         currentNDSDistArray.push(ndsDist[key]);
       });
 
-      // 根据值为 currentNDSDistArray 从大到小排序
+      // Sortted by currentNDSDistArray from large to small
       currentNDSDistArray = currentNDSDistArray.sort((a, b) => b - a);
 
       let prune3Invalid = false;
@@ -741,46 +912,53 @@ const GADDI = (
     }
   });
 
-  const candidateGraphs = [];
+  const candidateGraphs: GraphData[] = [];
 
   // console.log(
   //   "----- stage3: going to splice neighbors for each candidate graph -------"
   // );
 
-  // candidates 经过筛选后，以每个 candidate 为中心，生成 Length-neighbor 的邻居诱导子图
-  // 并在诱导子图中去除不可能在 Q 上找到匹配的点：在 Q 上不存在的 label，其他 label 到 candidate 的最大最短距离符合 Q、NDS 距离符合 Q
-  candidates?.forEach(candidate => {
+  // After filtering the candidates, generate a Length-neighbor induced subgraph with each candidate as the center.
+  // In the induced subgraph, remove points that cannot be matched on Q: labels that do not exist in Q,
+  // and labels where the maximum shortest distance from other labels to the candidate is not in accordance with Q and the NDS distance is not in accordance with Q.
+  candidates?.forEach((candidate, ci) => {
     const nodeIdx = nodeMap[candidate.id].idx;
     const lengthNeighborUnit = findKNeighborUnit(
       graphData.nodes,
       spm[nodeIdx],
       nodeIdx,
       nodeLabelProp,
-      length,
+      usingLength
     );
 
     const neighborNodes = lengthNeighborUnit.neighbors;
 
-    // 删除不可能找到匹配的邻居点
+    // Remove the neighbor node which has no probability to find the matches
     const neighborNum = neighborNodes.length;
     let unmatched = false;
     for (let i = neighborNum - 1; i >= 0; i--) {
-      // 如果通过裁剪，符合条件的节点数量已过少，说明不能匹配这个 candidate 相关的图
+      // If, after pruning, the number of nodes that meet the criteria is too small, it indicates that the candidate graph cannot be matched.
       if (neighborNodes.length + 1 < pattern.nodes.length) {
         unmatched = true;
         return;
       }
       const neighborNode = neighborNodes[i];
-      const neighborLabel = neighborNode[nodeLabelProp];
-      // prune1: 若该邻居点的 label 不存在于 pattern 中，移除这个点
-      if (!patternNodeLabelMap[neighborLabel] || !patternNodeLabelMap[neighborLabel].length) {
+      const neighborLabel = neighborNode.data[nodeLabelProp] as string;
+      // prune1: If the label of neighbor nodes does not exist in pattern, remove the node
+      if (
+        !patternNodeLabelMap[neighborLabel] ||
+        !patternNodeLabelMap[neighborLabel].length
+      ) {
         neighborNodes.splice(i, 1);
         continue;
       }
 
-      // prune2: 若该邻居点到 candidate 的最短路径比和它有相同 label 的节点到 beginPNode 的最大最短路径长度长，移除这个点
-      // prune2.1: 如果没有这个标签到 beginPNode 的距离记录，说明 pattern 上（可能 beginPNode 是这个 label）没有其他这个 label 的节点
-      if (!patternSpDist[neighborLabel] || !patternSpDist[neighborLabel].length) {
+      // prune2: If the shortest path from the neighbor node to the candidate is longer than the maximum shortest path length from any node with the same label as the neighbor node to beginPNode, remove this node.
+      // prune2.1: If there is no distance record from this label to beginPNode, it means that there are no other nodes with this label on the pattern (possibly beginPNode has this label).
+      if (
+        !patternSpDist[neighborLabel] ||
+        !patternSpDist[neighborLabel].length
+      ) {
         neighborNodes.splice(i, 1);
         continue;
       }
@@ -790,24 +968,25 @@ const GADDI = (
       // prune2.2
       const distToCandidate = spmMap[key];
       let idx = patternSpDist[neighborLabel].length - 1;
-      let maxDistWithLabelInPattern = patternSpDist[neighborLabel][idx]; // patternSpDist[neighborLabel] 已经按照从小到大排序
+      const maxDistWithLabelInPattern = patternSpDist[neighborLabel][idx]; // patternSpDist[neighborLabel] has been sortted from small to large
       if (distToCandidate > maxDistWithLabelInPattern) {
         neighborNodes.splice(i, 1);
         continue;
       }
 
-    if (directed) {
-      const keyBack = `${neighborNode.id}-${candidate.id}`;
-      const distFromCandidate = spmMap[keyBack];
-      idx = patternSpDistBack[neighborLabel].length - 1;
-      let maxBackDistWithLabelInPattern = patternSpDistBack[neighborLabel][idx];
-      if (distFromCandidate > maxBackDistWithLabelInPattern) {
-        neighborNodes.splice(i, 1);
-        continue;
+      if (directed) {
+        const keyBack = `${neighborNode.id}-${candidate.id}`;
+        const distFromCandidate = spmMap[keyBack];
+        idx = patternSpDistBack[neighborLabel].length - 1;
+        const maxBackDistWithLabelInPattern =
+          patternSpDistBack[neighborLabel][idx];
+        if (distFromCandidate > maxBackDistWithLabelInPattern) {
+          neighborNodes.splice(i, 1);
+          continue;
+        }
       }
-    }
 
-      // prune3: 若该邻居点到 candidate 的 NDS 距离比和它有相同 label 的节点到 beginPNode 的最小 NDS 距离小，移除这个点
+      // prune3: If the NDS distance from the neighbor node to the candidate is smaller than the minimum NDS distance from any node with the same label as the neighbor node to beginPNode, remove this node.
       const ndsToCandidate = ndsDist[key]
         ? ndsDist[key]
         : getNDSDist(
@@ -821,22 +1000,27 @@ const GADDI = (
             nodeLabelProp,
             edgeLabelProp,
             ndsDist,
-            intGMap,
+            intGMap
           );
       const patternKey = `${beginPNode.id}-${neighborLabel}`;
       const minNdsWithLabelInPattern =
-        patternNDSDistMap[patternKey][patternNDSDistMap[patternKey].length - 1]; // patternNDSDist[key] 一定存在
+        patternNDSDistMap[patternKey][patternNDSDistMap[patternKey].length - 1]; // patternNDSDist[key] exists for sure
       if (ndsToCandidate < minNdsWithLabelInPattern) {
         neighborNodes.splice(i, 1);
         continue;
       }
 
-      // prune4: 若该邻居点的度数小于 pattern 同 label 节点最小度数，删去该点
+      // prune4: If the degree of the neighbor node is less than the minimum degree of nodes with the same label in the pattern, remove this node.
       const {
         minPatternNodeLabelDegree,
         minPatternNodeLabelInDegree,
-        minPatternNodeLabelOutDegree
-      } = stashPatternNodeLabelDegreeMap(minPatternNodeLabelDegreeMap, neighborLabel, patternNodeMap,patternNodeLabelMap);
+        minPatternNodeLabelOutDegree,
+      } = stashPatternNodeLabelDegreeMap(
+        minPatternNodeLabelDegreeMap,
+        neighborLabel,
+        patternNodeMap,
+        patternNodeLabelMap
+      );
 
       if (nodeMap[neighborNode.id].degree < minPatternNodeLabelDegree) {
         neighborNodes.splice(i, 1);
@@ -844,7 +1028,7 @@ const GADDI = (
       }
     }
 
-    // 节点在个数上符合匹配（不少于 pattern 的节点个数），现在筛选相关边
+    // The number of nodes satisfies the matching requirement (not less than the number of nodes in the pattern). Now, we will filter the related edges.
     if (!unmatched) {
       candidateGraphs.push({
         nodes: [candidate].concat(neighborNodes),
@@ -856,56 +1040,73 @@ const GADDI = (
   //   "----- stage4: going to splice edges and neighbors for each candidate graph -------"
   // );
 
-  const { length: undirectedLengthsToBeginPNode } = dijkstra(pattern, beginPNode.id, false);
+  const { length: undirectedLengthsToBeginPNode } = dijkstra(
+    patternGraph,
+    beginPNode.id,
+    false
+  );
 
-  let undirectedLengthsToBeginPNodeLabelMap = {};
+  let undirectedLengthsToBeginPNodeLabelMap: { [key: string]: number[] } = {};
   if (directed) {
-    Object.keys(undirectedLengthsToBeginPNode).forEach(nodeId => {
-      const nodeLabel = patternNodeMap[nodeId].node[nodeLabelProp];
-      if (!undirectedLengthsToBeginPNodeLabelMap[nodeLabel])
-        undirectedLengthsToBeginPNodeLabelMap[nodeLabel] = [undirectedLengthsToBeginPNode[nodeId]];
-      else
-        undirectedLengthsToBeginPNodeLabelMap[nodeLabel].push(
+    Object.keys(undirectedLengthsToBeginPNode).forEach((nodeId) => {
+      const nodeLabel = patternNodeMap[nodeId].node.data[nodeLabelProp];
+      if (!undirectedLengthsToBeginPNodeLabelMap[nodeLabel]) {
+        undirectedLengthsToBeginPNodeLabelMap[nodeLabel] = [
           undirectedLengthsToBeginPNode[nodeId],
+        ];
+      } else {
+        undirectedLengthsToBeginPNodeLabelMap[nodeLabel].push(
+          undirectedLengthsToBeginPNode[nodeId]
         );
+      }
     });
-    Object.keys(undirectedLengthsToBeginPNodeLabelMap).forEach(pLabel => {
+    Object.keys(undirectedLengthsToBeginPNodeLabelMap).forEach((pLabel) => {
       undirectedLengthsToBeginPNodeLabelMap[pLabel].sort((a, b) => a - b);
     });
   } else {
     undirectedLengthsToBeginPNodeLabelMap = patternSpDist;
   }
 
-  // 现在 candidateGraphs 里面只有节点，进行边的筛选
-  let candidateGraphNum = candidateGraphs.length;
+  // Only nodes in andidateGraphs now. Filter edges:
+  const candidateGraphNum = candidateGraphs.length;
   for (let i = candidateGraphNum - 1; i >= 0; i--) {
     const candidateGraph = candidateGraphs[i];
     const candidate = candidateGraph.nodes[0];
 
-    const candidateNodeLabelCountMap = {};
-    const candidateNodeMap = {};
+    const candidateNodeLabelCountMap: { [key: string]: number } = {};
+    const candidateNodeMap: {
+      [key: string]: {
+        idx: number;
+        node: INode;
+        degree: number;
+        inDegree: number;
+        outDegree: number;
+      };
+    } = {};
     candidateGraph.nodes.forEach((node, q) => {
       candidateNodeMap[node.id] = {
         idx: q,
         node,
         degree: 0,
         inDegree: 0,
-        outDegree: 0
+        outDegree: 0,
       };
-      const cNodeLabel = node[nodeLabelProp];
-      if (!candidateNodeLabelCountMap[cNodeLabel]) candidateNodeLabelCountMap[cNodeLabel] = 1;
-      else candidateNodeLabelCountMap[cNodeLabel]++;
+      const cNodeLabel = node.data[nodeLabelProp] as string;
+      if (!candidateNodeLabelCountMap[cNodeLabel]) {
+        candidateNodeLabelCountMap[cNodeLabel] = 1;
+      } else candidateNodeLabelCountMap[cNodeLabel]++;
     });
 
-    // 根据 candidate 和 neighborNodes 中的节点生成 G 的诱导子图
-    // 即，将 graphData 上两端都在 candidateGraph.nodes 中的边放入 candidateEdges
-    const candidateEdges = [];
-    const edgeLabelCountMap = {};
-    graphData.edges.forEach(edge => {
+    // Generate the induced subgraph of G based on the nodes in candidates and neighborNodes.
+    // In other words, include the edges from graphData where both endpoints are in candidateGraph.nodes into candidateEdges.
+    const candidateEdges: IEdge[] = [];
+    const edgeLabelCountMap: { [key: string]: number } = {};
+    graphData.edges.forEach((edge) => {
       if (candidateNodeMap[edge.source] && candidateNodeMap[edge.target]) {
         candidateEdges.push(edge);
-        if (!edgeLabelCountMap[edge[edgeLabelProp]]) edgeLabelCountMap[edge[edgeLabelProp]] = 1;
-        else edgeLabelCountMap[edge[edgeLabelProp]]++;
+        if (!edgeLabelCountMap[edge.data[edgeLabelProp] as string]) {
+          edgeLabelCountMap[edge.data[edgeLabelProp] as string] = 1;
+        } else edgeLabelCountMap[edge.data[edgeLabelProp] as string]++;
         candidateNodeMap[edge.source].degree++;
         candidateNodeMap[edge.target].degree++;
         candidateNodeMap[edge.source].outDegree++;
@@ -913,7 +1114,7 @@ const GADDI = (
       }
     });
 
-    // prune：若有一个 edgeLabel 在 candidateGraph 上的个数少于 pattern，去除该图
+    // prune: If the number of occurrences of a specific edgeLabel in candidateGraph is fewer than in the pattern, remove that graph.
     const pattenrEdgeLabelNum = Object.keys(patternEdgeLabelMap).length;
     let prunedByEdgeLabel = false;
     for (let e = 0; e < pattenrEdgeLabelNum; e++) {
@@ -931,10 +1132,10 @@ const GADDI = (
       continue;
     }
 
-    // 遍历 candidateEdges，进行边的筛选
+    // Traverse candidateEdges to filter the edges
     let candidateEdgeNum = candidateEdges.length;
 
-    // prune：若边数过少，去除该图
+    // prune: If the edge number is too small, remove the graph
     if (candidateEdgeNum < pattern.edges.length) {
       candidateGraphs.splice(i, 1);
       break;
@@ -942,14 +1143,17 @@ const GADDI = (
     let candidateGraphInvalid = false;
     for (let e = candidateEdgeNum - 1; e >= 0; e--) {
       const edge = candidateEdges[e];
-      const edgeLabel = edge[edgeLabelProp];
+      const edgeLabel = edge.data[edgeLabelProp] as string;
       const patternEdgesWithLabel = patternEdgeLabelMap[edgeLabel];
 
-      // prune 1: 若边的 label 不存在于 pattern 边 label 中，去除该边
+      // prune 1: If the label of an edge does not exist in the edge labels of the pattern, remove that edge.
       if (!patternEdgesWithLabel || !patternEdgesWithLabel.length) {
         edgeLabelCountMap[edgeLabel]--;
-        // 若这个 label 的 count 减少之后，该 label 的边数不足，去除该图
-        if (patternEdgesWithLabel && edgeLabelCountMap[edgeLabel] < patternEdgesWithLabel.length) {
+        // If the count of a certain label decreases and the number of edges with that label becomes insufficient, remove that graph.
+        if (
+          patternEdgesWithLabel &&
+          edgeLabelCountMap[edgeLabel] < patternEdgesWithLabel.length
+        ) {
           candidateGraphInvalid = true;
           break;
         }
@@ -961,30 +1165,37 @@ const GADDI = (
         continue;
       }
 
-      // prune 2: 若边的 label +两端 label 的三元组关系不能在 pattern 中找到，去除该边
-      const sourceLabel = candidateNodeMap[edge.source].node[nodeLabelProp];
-      const targetLabel = candidateNodeMap[edge.target].node[nodeLabelProp];
+      // prune 2: If the triplet relationship of the edge label + both endpoint labels cannot be found in the pattern, remove that edge.
+      const sourceLabel =
+        candidateNodeMap[edge.source].node.data[nodeLabelProp];
+      const targetLabel =
+        candidateNodeMap[edge.target].node.data[nodeLabelProp];
 
       let edgeMatched = false;
-      patternEdgesWithLabel.forEach(patternEdge => {
+      patternEdgesWithLabel.forEach((patternEdge: IEdge) => {
         const patternSource = patternNodeMap[patternEdge.source].node;
         const patternTarget = patternNodeMap[patternEdge.target].node;
         if (
-          patternSource[nodeLabelProp] === sourceLabel &&
-          patternTarget[nodeLabelProp] === targetLabel
-        )
+          patternSource.data[nodeLabelProp] === sourceLabel &&
+          patternTarget.data[nodeLabelProp] === targetLabel
+        ) {
           edgeMatched = true;
+        }
         if (
           !directed &&
-          patternSource[nodeLabelProp] === targetLabel &&
-          patternTarget[nodeLabelProp] === sourceLabel
-        )
+          patternSource.data[nodeLabelProp] === targetLabel &&
+          patternTarget.data[nodeLabelProp] === sourceLabel
+        ) {
           edgeMatched = true;
+        }
       });
       if (!edgeMatched) {
         edgeLabelCountMap[edgeLabel]--;
-        // 若这个 label 的 count 减少之后，该 label 的边数不足，去除该图
-        if (patternEdgesWithLabel && edgeLabelCountMap[edgeLabel] < patternEdgesWithLabel.length) {
+        // If the count of a label decreases and the number of edges with that label is insufficient, remove that graph.
+        if (
+          patternEdgesWithLabel &&
+          edgeLabelCountMap[edgeLabel] < patternEdgesWithLabel.length
+        ) {
           candidateGraphInvalid = true;
           break;
         }
@@ -997,7 +1208,7 @@ const GADDI = (
       }
     }
 
-    // prune2: 删除边的过程中，发现边数过少/边 label 数过少时，去除该图
+    // prune2: During the process of deleting edges, if it is found that there are too few edges or too few edge labels, remove that graph.
     if (candidateGraphInvalid) {
       candidateGraphs.splice(i, 1);
       continue;
@@ -1006,17 +1217,21 @@ const GADDI = (
     candidateGraph.edges = candidateEdges;
 
     const { length: lengthsToCandidate } = dijkstra(
-      candidateGraph,
+      new GraphCore(candidateGraph),
       candidateGraph.nodes[0].id,
-      false, // 此处计算路径长度用于判断是否连通，因此使用无向图
+      false // The calculation of path length here is used to determine connectivity, so an undirected graph is used.
     );
     Object.keys(lengthsToCandidate)
       .reverse()
-      .forEach(targetId => {
-        if (targetId === candidateGraph.nodes[0].id || candidateGraphInvalid) return;
-        // prune4: 通过上述裁剪，可能导致该邻居子图变为不连通。裁剪掉目前在这个邻居子图中和 candidate（第一个节点）不连通的节点
+      .forEach((targetId) => {
+        if (targetId === candidateGraph.nodes[0].id || candidateGraphInvalid) {
+          return;
+        }
+        // prune4: The pruning described above may result in the neighbor subgraph becoming disconnected. Remove the nodes in the neighbor subgraph that are currently not connected to the candidate (first node).
         if (lengthsToCandidate[targetId] === Infinity) {
-          const targetNodeLabel = candidateNodeMap[targetId].node[nodeLabelProp];
+          const targetNodeLabel = candidateNodeMap[targetId].node.data[
+            nodeLabelProp
+          ] as string;
           candidateNodeLabelCountMap[targetNodeLabel]--;
           if (
             candidateNodeLabelCountMap[targetNodeLabel] <
@@ -1025,13 +1240,15 @@ const GADDI = (
             candidateGraphInvalid = true;
             return;
           }
-          const idx = candidateGraph.nodes.indexOf(candidateNodeMap[targetId].node);
+          const idx = candidateGraph.nodes.indexOf(
+            candidateNodeMap[targetId].node
+          );
           candidateGraph.nodes.splice(idx, 1);
           candidateNodeMap[targetId] = undefined;
           return;
         }
-        // prune5: 经过边裁剪后，可能又出现了最短路径过长的节点 （比 pattern 中同 label 的节点到 beginNode 最大最短距离远），删去这些节点
-        const nLabel = nodeMap[targetId].node[nodeLabelProp];
+        // prune5: After the edge pruning, it is possible that there are nodes with excessively long shortest paths (compared to the maximum shortest distance from nodes with the same label in the pattern to beginNode). Remove these nodes.
+        const nLabel = nodeMap[targetId].node.data[nodeLabelProp];
         if (
           !undirectedLengthsToBeginPNodeLabelMap[nLabel] ||
           !undirectedLengthsToBeginPNodeLabelMap[nLabel].length ||
@@ -1040,7 +1257,9 @@ const GADDI = (
               undirectedLengthsToBeginPNodeLabelMap[nLabel].length - 1
             ]
         ) {
-          const targetNodeLabel = candidateNodeMap[targetId].node[nodeLabelProp];
+          const targetNodeLabel = candidateNodeMap[targetId].node.data[
+            nodeLabelProp
+          ] as string;
           candidateNodeLabelCountMap[targetNodeLabel]--;
           if (
             candidateNodeLabelCountMap[targetNodeLabel] <
@@ -1049,7 +1268,9 @@ const GADDI = (
             candidateGraphInvalid = true;
             return;
           }
-          const idx = candidateGraph.nodes.indexOf(candidateNodeMap[targetId].node);
+          const idx = candidateGraph.nodes.indexOf(
+            candidateNodeMap[targetId].node
+          );
           candidateGraph.nodes.splice(idx, 1);
           candidateNodeMap[targetId] = undefined;
         }
@@ -1065,49 +1286,60 @@ const GADDI = (
     while (degreeChanged && !candidateGraphInvalid) {
       degreeChanged = false;
 
-      // candidate 度数不足，删去该图
-      const condition = directed ? (candidateNodeMap[candidate.id].degree < patternNodeMap[beginPNode.id].degree || 
-        candidateNodeMap[candidate.id].inDegree < patternNodeMap[beginPNode.id].inDegree ||
-        candidateNodeMap[candidate.id].outDegree < patternNodeMap[beginPNode.id].outDegree) :
-        candidateNodeMap[candidate.id].degree < patternNodeMap[beginPNode.id].degree;
+      // degree of candidate is not enough, remove it
+      const condition = directed
+        ? candidateNodeMap[candidate.id].degree <
+            patternNodeMap[beginPNode.id].degree ||
+          candidateNodeMap[candidate.id].inDegree <
+            patternNodeMap[beginPNode.id].inDegree ||
+          candidateNodeMap[candidate.id].outDegree <
+            patternNodeMap[beginPNode.id].outDegree
+        : candidateNodeMap[candidate.id].degree <
+          patternNodeMap[beginPNode.id].degree;
       if (condition) {
         candidateGraphInvalid = true;
         break;
       }
-      // candidate label 个数不足，删去该图
+      // the number of candidate label is not enough, remove it
       if (
-        candidateNodeLabelCountMap[candidate[nodeLabelProp]] <
-        patternNodeLabelMap[candidate[nodeLabelProp]].length
+        candidateNodeLabelCountMap[candidate.data[nodeLabelProp] as string] <
+        patternNodeLabelMap[candidate.data[nodeLabelProp] as string].length
       ) {
         candidateGraphInvalid = true;
         break;
       }
 
-      // prune6：去除度数过小的节点
+      // prune6: remove the nodes with small degree
       const currentCandidateNodeNum = candidateGraph.nodes.length;
       for (let o = currentCandidateNodeNum - 1; o >= 0; o--) {
         const cgNode = candidateGraph.nodes[o];
         const nodeDegree = candidateNodeMap[cgNode.id].degree;
         const nodeInDegree = candidateNodeMap[cgNode.id].inDegree;
         const nodeOutDegree = candidateNodeMap[cgNode.id].outDegree;
-        const cNodeLabel = cgNode[nodeLabelProp];
-        
+        const cNodeLabel = cgNode.data[nodeLabelProp] as string;
+
         const {
           minPatternNodeLabelDegree,
           minPatternNodeLabelInDegree,
-          minPatternNodeLabelOutDegree
-        } = stashPatternNodeLabelDegreeMap(minPatternNodeLabelDegreeMap, cNodeLabel, patternNodeMap,patternNodeLabelMap);
-        
-        const deleteCondition = directed ? (nodeDegree < minPatternNodeLabelDegree || 
-          nodeInDegree < minPatternNodeLabelInDegree ||
-          nodeOutDegree < minPatternNodeLabelOutDegree) :
-          nodeDegree < minPatternNodeLabelDegree;
+          minPatternNodeLabelOutDegree,
+        } = stashPatternNodeLabelDegreeMap(
+          minPatternNodeLabelDegreeMap,
+          cNodeLabel,
+          patternNodeMap,
+          patternNodeLabelMap
+        );
+
+        const deleteCondition = directed
+          ? nodeDegree < minPatternNodeLabelDegree ||
+            nodeInDegree < minPatternNodeLabelInDegree ||
+            nodeOutDegree < minPatternNodeLabelOutDegree
+          : nodeDegree < minPatternNodeLabelDegree;
         if (deleteCondition) {
-          candidateNodeLabelCountMap[cgNode[nodeLabelProp]]--;
+          candidateNodeLabelCountMap[cgNode.data[nodeLabelProp] as string]--;
           // 节点 label 个数不足
           if (
-            candidateNodeLabelCountMap[cgNode[nodeLabelProp]] <
-            patternNodeLabelMap[cgNode[nodeLabelProp]].length
+            candidateNodeLabelCountMap[cgNode.data[nodeLabelProp] as string] <
+            patternNodeLabelMap[cgNode.data[nodeLabelProp] as string].length
           ) {
             candidateGraphInvalid = true;
             break;
@@ -1118,13 +1350,16 @@ const GADDI = (
         }
       }
       if (candidateGraphInvalid || (!degreeChanged && loopCount !== 0)) break;
-      // 经过 prune5 节点裁剪，删去端点已经不在 candidateGraph 中的边
+      // After the prune5 node pruning, remove the edges whose endpoints are no longer in candidateGraph.
       candidateEdgeNum = candidateEdges.length;
       for (let y = candidateEdgeNum - 1; y >= 0; y--) {
         const cedge = candidateEdges[y];
-        if (!candidateNodeMap[cedge.source] || !candidateNodeMap[cedge.target]) {
+        if (
+          !candidateNodeMap[cedge.source] ||
+          !candidateNodeMap[cedge.target]
+        ) {
           candidateEdges.splice(y, 1);
-          const edgeLabel = cedge[edgeLabelProp];
+          const edgeLabel = cedge.data[edgeLabelProp] as string;
           edgeLabelCountMap[edgeLabel]--;
           if (candidateNodeMap[cedge.source]) {
             candidateNodeMap[cedge.source].degree--;
@@ -1134,7 +1369,7 @@ const GADDI = (
             candidateNodeMap[cedge.target].degree--;
             candidateNodeMap[cedge.target].inDegree--;
           }
-          // 边 label 数量不足
+          // Label number is not enough
           if (
             patternEdgeLabelMap[edgeLabel] &&
             edgeLabelCountMap[edgeLabel] < patternEdgeLabelMap[edgeLabel].length
@@ -1153,7 +1388,7 @@ const GADDI = (
       continue;
     }
 
-    // prune: 若节点/边数过少，节点/边 label 过少，去掉这个图
+    // prune: If there are too few nodes/edges or too few node/edge labels, remove this graph.
     if (
       candidateGraphInvalid ||
       candidateGraph.nodes.length < pattern.nodes.length ||
@@ -1164,28 +1399,28 @@ const GADDI = (
     }
   }
 
-  // 此时已经生成的多个 candidateGraphs，可能有重复
+  // At this point, multiple candidateGraphs have been generated, and there may be duplicates.
 
   // console.log(
   //   "----- stage5: going to splice dulplicated candidate graphs -------"
   // );
 
-  // 删去 candidateGraphs 中一模一样的子图，通过边的 node-node-edgeLabel 作为 key，这类边个数作为 value，进行匹配
+  // Remove identical subgraphs in candidateGraphs by using the node-node-edgeLabel of edges as the key and the count of such edges as the value for matching.
   let currentLength = candidateGraphs.length;
   for (let i = 0; i <= currentLength - 1; i++) {
     const cg1 = candidateGraphs[i];
-    const cg1EdgeMap = {}; // [node1.id-node2.id-edge.label]: count
-    cg1.edges.forEach(edge => {
-      const key = `${edge.source}-${edge.target}-${edge.label}`;
+    const cg1EdgeMap: { [key: string]: number } = {}; // [node1.id-node2.id-edge.label]: count
+    cg1.edges.forEach((edge) => {
+      const key = `${edge.source}-${edge.target}-${edge.data.label}`;
       if (!cg1EdgeMap[key]) cg1EdgeMap[key] = 1;
       else cg1EdgeMap[key]++;
     });
 
     for (let j = currentLength - 1; j > i; j--) {
       const cg2 = candidateGraphs[j];
-      const cg2EdgeMap = {}; // [node1.id-node2.id-edge.label]: count
-      cg2.edges.forEach(edge => {
-        const key = `${edge.source}-${edge.target}-${edge.label}`;
+      const cg2EdgeMap: { [key: string]: number } = {}; // [node1.id-node2.id-edge.label]: count
+      cg2.edges.forEach((edge) => {
+        const key = `${edge.source}-${edge.target}-${edge.data.label}`;
         if (!cg2EdgeMap[key]) cg2EdgeMap[key] = 1;
         else cg2EdgeMap[key]++;
       });
@@ -1194,7 +1429,7 @@ const GADDI = (
       if (Object.keys(cg2EdgeMap).length !== Object.keys(cg1EdgeMap).length) {
         same = false;
       } else {
-        Object.keys(cg1EdgeMap).forEach(key => {
+        Object.keys(cg1EdgeMap).forEach((key) => {
           if (cg2EdgeMap[key] !== cg1EdgeMap[key]) same = false;
         });
       }
@@ -1207,5 +1442,3 @@ const GADDI = (
 
   return candidateGraphs;
 };
-
-export default GADDI;
