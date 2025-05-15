@@ -1,15 +1,15 @@
-name: CI
+name: build
 
 on: ["push", "pull_request"]
 
 jobs:
-  ci:
-    runs-on: ubuntu-20.04
+  build:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [15]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
           version: 7
